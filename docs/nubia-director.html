@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nubia · Panel del Director</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=Alegreya:wght@400;700&family=Alegreya+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --tinta:#12283f; --tinta-suave:#3d556e; --mar:#0e7c8b;
+  --arena:#f6e7c4; --arena-hueso:#fdf6e6; --oro:#e0951c;
+  --selva:#2e7d4f; --fucsia:#c6386b; --sombra:rgba(18,40,63,.18);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--tinta);color:var(--arena-hueso);
+  font-family:'Alegreya',Georgia,serif;font-size:17px;line-height:1.62;
+  min-height:100vh;display:flex;flex-direction:column}
+.wrap{max-width:1080px;margin:0 auto;padding:0 22px;width:100%}
+h1,h2,h3{font-family:'Silkscreen','Courier New',monospace;line-height:1.25}
+.vueltiao{height:14px;background:
+  repeating-linear-gradient(135deg,var(--oro) 0 8px,transparent 8px 16px),
+  repeating-linear-gradient(45deg,var(--oro) 0 8px,var(--tinta) 8px 16px)}
+
+.hero{padding:64px 0 46px;text-align:center;flex:0 0 auto}
+.hero .marca{font-family:'Silkscreen',monospace;font-size:12px;color:#8fc8d3;letter-spacing:.14em}
+.hero h1{font-size:clamp(38px,10vw,86px);margin:14px 0 0;color:var(--arena-hueso)}
+.hero h1 span{color:var(--oro);display:block}
+.hero p{max-width:56ch;margin:20px auto 0;color:#cfe0e6}
+
+main{flex:1 0 auto;padding:8px 0 60px}
+.cartas{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:22px}
+a.carta{
+  display:block;text-decoration:none;background:var(--arena-hueso);color:var(--tinta);
+  border:3px solid var(--oro);box-shadow:7px 7px 0 rgba(0,0,0,.32);padding:0;overflow:hidden;
+}
+a.carta:hover{background:#fff}
+a.carta:active{transform:translate(4px,4px);box-shadow:3px 3px 0 rgba(0,0,0,.32)}
+a.carta:focus-visible{outline:4px solid var(--fucsia);outline-offset:3px}
+.icono{height:118px;display:grid;place-items:center;border-bottom:3px solid var(--tinta)}
+.icono svg{width:78px;height:78px}
+.cuerpo{padding:18px 20px 22px}
+.carta h2{font-size:15px;margin:0 0 4px}
+.carta .que{font-family:'Alegreya Sans',sans-serif;font-size:13px;color:var(--mar);margin:0 0 10px}
+.carta p{margin:0;font-size:16px;line-height:1.5}
+.carta .ir{font-family:'Silkscreen',monospace;font-size:10px;color:var(--fucsia);display:block;margin-top:14px}
+
+.pronto{border:3px dashed #4d7183;padding:20px 22px;margin-top:34px;color:#a8c2ce}
+.pronto h3{font-size:13px;margin:0 0 10px;color:#8fc8d3}
+.pronto ul{margin:0;padding-left:20px}
+.pronto li{margin-bottom:7px}
+.pronto li:last-child{margin-bottom:0}
+.pronto b{color:var(--arena-hueso);font-family:'Alegreya Sans',sans-serif;font-size:15px}
+
+footer{flex:0 0 auto;padding:22px 0 30px;color:#7d9dad;
+  font-family:'Alegreya Sans',sans-serif;font-size:13px;text-align:center}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<style>
+/* animaciones compartidas de Nubia */
+@keyframes nb-surgir{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:none}}
+@keyframes nb-brotar{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:none}}
+main>.wrap>*,section.tab.on>.wrap>*{animation:nb-surgir .3s ease both}
+.card,.ruta,.item,.npc,.lider,.tir,.carta{animation:nb-surgir .24s ease both}
+.panel,.mapa-caja,.tilewrap,.bloque,.res{animation:nb-brotar .28s ease both}
+.bt,button,.chip,.dado,a.carta,nav button{transition:background .14s,color .14s,transform .09s,box-shadow .14s,border-color .14s}
+.bt:active,button:active,.chip:active,.dado:active{transform:translateY(1px)}
+a.carta:hover,.card:hover{transform:translateY(-3px)}
+a.carta,.card{transition:transform .16s,background .14s}
+.t,.tk{transition:transform .12s,filter .12s}
+.t.pt:hover,.t.npc:hover{filter:brightness(1.08)}
+tr,.punto,.npc{transition:background .14s}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="wrap">
+    <p class="marca">PANEL DEL DIRECTOR · NO COMPARTIR</p>
+    <h1>Región de<span>Nubia</span></h1>
+    <p>Ocho ciudades, tres pueblos y una montaña nevada que nace al borde del mar. Todo lo que la mesa necesita, en un solo lugar.</p>
+  </div>
+</div>
+<div class="vueltiao"></div>
+
+<main>
+<div class="wrap">
+  <div class="cartas">
+
+    <a class="carta" href="nubia-codex.html">
+      <div class="icono" style="background:#7ec46b">
+        <svg viewBox="0 0 64 64" aria-hidden="true">
+          <rect x="6" y="8" width="52" height="48" fill="#fdf6e6" stroke="#12283f" stroke-width="3"/>
+          <path d="M6 20 H58" stroke="#12283f" stroke-width="3"/>
+          <circle cx="22" cy="34" r="5" fill="#c6386b" stroke="#12283f" stroke-width="3"/>
+          <circle cx="42" cy="44" r="5" fill="#c6386b" stroke="#12283f" stroke-width="3"/>
+          <circle cx="44" cy="29" r="4" fill="#e0951c" stroke="#12283f" stroke-width="3"/>
+          <path d="M22 34 L44 29 M44 29 L42 44" stroke="#12283f" stroke-width="2.5" stroke-dasharray="4 3"/>
+        </svg>
+      </div>
+      <div class="cuerpo">
+        <h2>CÓDICE DE NUBIA</h2>
+        <p class="que">El mundo</p>
+        <p>Mapa regional, las once localidades con su esquema de casillas, cincuenta y cinco NPC con diálogo, las 32 clases de entrenador, los ocho gimnasios, el Alto Mando y la campaña de El Dorado en cuatro actos.</p>
+        <span class="ir">ABRIR →</span>
+      </div>
+    </a>
+
+    <a class="carta" href="nubia-rutas.html">
+      <div class="icono" style="background:#d6ac74">
+        <svg viewBox="0 0 64 64" aria-hidden="true">
+          <rect x="6" y="8" width="52" height="48" fill="#efd9a2" stroke="#12283f" stroke-width="3"/>
+          <path d="M10 48 Q22 44 24 34 Q26 22 38 20 Q50 18 54 12" fill="none" stroke="#12283f" stroke-width="4" stroke-dasharray="6 5"/>
+          <rect x="14" y="30" width="9" height="9" fill="#3f8f45" stroke="#12283f" stroke-width="2.5"/>
+          <rect x="38" y="34" width="9" height="9" fill="#3f8f45" stroke="#12283f" stroke-width="2.5"/>
+          <circle cx="54" cy="12" r="5" fill="#c6386b" stroke="#12283f" stroke-width="3"/>
+        </svg>
+      </div>
+      <div class="cuerpo">
+        <h2>ATLAS DE RUTAS</h2>
+        <p class="que">El camino</p>
+        <p>Cómo debe verse cada una de las doce rutas, en cuántos mapas se parte, dónde va la hierba alta y quién espera en el trayecto. Termina en los cuatro pisos del Camino Victoria y en la Liga.</p>
+        <span class="ir">ABRIR →</span>
+      </div>
+    </a>
+
+    <a class="carta" href="nubia-dados.html">
+      <div class="icono" style="background:#c6386b">
+        <svg viewBox="0 0 64 64" aria-hidden="true">
+          <path d="M32 6 L56 20 L56 44 L32 58 L8 44 L8 20 Z" fill="#fdf6e6" stroke="#12283f" stroke-width="3"/>
+          <path d="M32 6 L32 30 M32 30 L8 20 M32 30 L56 20 M32 30 L32 58" stroke="#12283f" stroke-width="2.5"/>
+          <text x="32" y="26" text-anchor="middle" font-family="Silkscreen,monospace" font-size="13" fill="#12283f">20</text>
+        </svg>
+      </div>
+      <div class="cuerpo">
+        <h2>MESA DE DADOS</h2>
+        <p class="que">La mesa</p>
+        <p>Del d2 al d100, varios dados a la vez, modificadores, ventaja y desventaja, atajos de Pokémon 5E y registro compartido. Los jugadores entran con un enlace de sala, sin cuentas ni registro.</p>
+        <span class="ir">ABRIR →</span>
+      </div>
+    </a>
+
+    <a class="carta" href="nubia-tablero.html#dm=1">
+      <div class="icono" style="background:#3f9ed6">
+        <svg viewBox="0 0 64 64" aria-hidden="true">
+          <rect x="6" y="10" width="52" height="44" fill="#fdf6e6" stroke="#12283f" stroke-width="3"/>
+          <path d="M6 24H58M6 40H58M23 10V54M41 10V54" stroke="#12283f" stroke-width="2"/>
+          <path d="M41 24H58V40H41Z" fill="#0b1622"/>
+          <circle cx="14" cy="32" r="6" fill="#c6386b" stroke="#12283f" stroke-width="3"/>
+          <circle cx="32" cy="17" r="5" fill="#e0951c" stroke="#12283f" stroke-width="3"/>
+        </svg>
+      </div>
+      <div class="cuerpo">
+        <h2>TABLERO</h2>
+        <p class="que">La partida</p>
+        <p>Los veintisiete esquemas ya cargados, fichas con foto que todos ven moverse, niebla de guerra que solo el director levanta y el orden de combate con puntos de salud a la vista.</p>
+        <span class="ir">ABRIR &rarr;</span>
+      </div>
+    </a>
+
+
+    <a class="carta" href="nubia-planos.html">
+      <div class="icono" style="background:#c6bfae">
+        <svg viewBox="0 0 64 64" aria-hidden="true">
+          <rect x="8" y="8" width="48" height="48" fill="#fdf6e6" stroke="#12283f" stroke-width="3"/>
+          <path d="M8 24H56M8 40H56M24 8V56M40 8V56" stroke="#12283f" stroke-width="1.5" opacity=".45"/>
+          <rect x="16" y="16" width="24" height="16" fill="#c6386b" stroke="#12283f" stroke-width="3"/>
+          <path d="M44 34 H54 M49 30 L54 34 L49 38" stroke="#e0951c" stroke-width="3" fill="none"/>
+          <path d="M28 44 V54 M24 49 L28 54 L32 49" stroke="#e0951c" stroke-width="3" fill="none"/>
+        </svg>
+      </div>
+      <div class="cuerpo">
+        <h2>PLANOS Y MEDIDAS</h2>
+        <p class="que">La construcci&oacute;n</p>
+        <p>Rejilla, p&iacute;xeles y salidas de las once localidades, las quince rutas y los quince interiores. Todo deducido del mapa regional, para construir en Tiled sin rehacer nada.</p>
+        <span class="ir">ABRIR &rarr;</span>
+      </div>
+    </a>
+
+    <a class="carta" href="nubia-encuentros.html">
+      <div class="icono" style="background:#3f8f45">
+        <svg viewBox="0 0 64 64" aria-hidden="true">
+          <path d="M10 30h44" stroke="#12283f" stroke-width="4"/>
+          <circle cx="32" cy="30" r="22" fill="none" stroke="#12283f" stroke-width="4"/>
+          <path d="M10 30a22 22 0 0 1 44 0Z" fill="#c6386b"/>
+          <circle cx="32" cy="30" r="7" fill="#fdf6e6" stroke="#12283f" stroke-width="4"/>
+          <path d="M14 52h36" stroke="#12283f" stroke-width="3" stroke-dasharray="5 4"/>
+        </svg>
+      </div>
+      <div class="cuerpo">
+        <h2>ENCUENTROS</h2>
+        <p class="que">Lo salvaje</p>
+        <p>Veintid&oacute;s zonas listas para que las llenes. Ajustas pesos, tiras primero si hay encuentro y luego cu&aacute;l, y la ilustraci&oacute;n llega sola desde Pok&eacute;API.</p>
+        <span class="ir">ABRIR &rarr;</span>
+      </div>
+    </a>
+
+  </div>
+
+  <div class="pronto">
+    <h3>C&Oacute;MO SE MONTA LA MESA</h3>
+    <ul>
+      <li><b>Antes de la sesi&oacute;n.</b> El director pega su URL y su clave de Supabase en <b>nubia-dados.html</b> y <b>nubia-tablero.html</b>, sube la carpeta a GitHub Pages o Netlify y reparte los dos enlaces de invitaci&oacute;n.</li>
+      <li><b>Al empezar.</b> Cada jugador escribe su nombre, crea su ficha en el tablero y publica sus PS e iniciativa. El director pulsa SOY EL DIRECTOR y carga el mapa de la escena.</li>
+      <li><b>Durante el juego.</b> Dados en una pesta&ntilde;a, tablero en otra. El director cubre con niebla y va revelando; los jugadores arrastran su propia ficha.</li>
+      <li><b>Lo que falta es tuyo.</b> Llenar las veintid&oacute;s tablas de encuentro con los Pok&eacute;mon de Nubia.</li>
+    </ul>
+  </div>
+</div>
+</main>
+
+<footer>Contenido de fans. Sin relación con Nintendo, Game Freak ni Wizards of the Coast.</footer>
+</body>
+</html>

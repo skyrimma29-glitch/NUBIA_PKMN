@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Encuentros — Nubia</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=Alegreya:wght@400;700&family=Alegreya+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --tinta:#12283f; --tinta-suave:#3d556e; --mar:#0e7c8b;
+  --arena:#f6e7c4; --arena-hueso:#fdf6e6; --oro:#e0951c;
+  --selva:#2e7d4f; --fucsia:#c6386b; --sombra:rgba(18,40,63,.18);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--arena);color:var(--tinta);
+  font-family:'Alegreya',Georgia,serif;font-size:16px;line-height:1.58}
+.wrap{max-width:1220px;margin:0 auto;padding:0 20px}
+h1,h2,h3{font-family:'Silkscreen','Courier New',monospace;line-height:1.3}
+.vueltiao{height:12px;background:
+  repeating-linear-gradient(135deg,var(--tinta) 0 7px,transparent 7px 14px),
+  repeating-linear-gradient(45deg,var(--tinta) 0 7px,var(--arena-hueso) 7px 14px)}
+
+header{background:var(--tinta);color:var(--arena-hueso);padding:24px 0}
+header .f{display:flex;justify-content:space-between;align-items:baseline;gap:18px;flex-wrap:wrap}
+header h1{margin:0;font-size:clamp(21px,3.4vw,32px);color:var(--arena-hueso)}
+header h1 span{color:var(--oro)}
+header a{color:#8fc8d3;font-family:'Alegreya Sans',sans-serif;font-size:14px;text-decoration:none;border-bottom:1px solid #4d7183}
+header a:hover{color:var(--arena-hueso)}
+header p{max-width:66ch;margin:11px 0 0;color:#cfe0e6}
+
+input,select,textarea{font-family:'Alegreya Sans',sans-serif;font-size:14px;padding:7px 8px;
+  border:2px solid var(--tinta);background:#fff;color:var(--tinta)}
+input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--mar);outline-offset:1px}
+button{font-family:'Silkscreen',monospace;cursor:pointer}
+.bt{font-size:10px;padding:9px 11px;border:2px solid var(--tinta);background:var(--arena-hueso);color:var(--tinta)}
+.bt:hover{background:#fff}
+.bt.rosa{background:var(--fucsia);color:#fff}
+.bt.rosa:hover{background:#d8437c}
+.bt:focus-visible{outline:3px solid var(--fucsia);outline-offset:2px}
+
+.barra{background:var(--arena-hueso);border-bottom:3px solid var(--tinta)}
+.barra .wrap{display:flex;gap:13px;align-items:end;flex-wrap:wrap;padding:13px 20px}
+.campo{display:flex;flex-direction:column;gap:3px}
+.campo span{font-family:'Silkscreen',monospace;font-size:9px;color:var(--tinta-suave)}
+
+main{padding:26px 0 70px}
+.dos{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:26px;align-items:start}
+@media(max-width:940px){.dos{grid-template-columns:1fr}}
+
+.panel{background:var(--arena-hueso);border:3px solid var(--tinta);padding:18px 20px;box-shadow:6px 6px 0 var(--sombra);margin-bottom:20px}
+.panel h2{font-size:12px;margin:0 0 12px;color:var(--mar)}
+.panel p{margin:0 0 9px} .panel p:last-child{margin:0}
+.nota{font-family:'Alegreya Sans',sans-serif;font-size:13px;color:var(--tinta-suave)}
+
+.cabZ{display:flex;justify-content:space-between;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:3px}
+.cabZ h2{font-size:21px;margin:0;color:var(--tinta)}
+.etq{font-family:'Silkscreen',monospace;font-size:10px;background:var(--tinta);color:var(--oro);padding:6px 9px}
+.subZ{font-family:'Alegreya Sans',sans-serif;font-size:14px;color:var(--tinta-suave);margin:0 0 16px}
+
+table{width:100%;border-collapse:collapse;background:var(--arena-hueso);border:3px solid var(--tinta)}
+th{font-family:'Silkscreen',monospace;font-size:9px;text-align:left;background:var(--tinta);color:var(--arena-hueso);padding:9px 8px}
+td{border-top:2px solid #e2d5b4;padding:6px 7px;vertical-align:middle}
+td input{width:100%;border-width:1px;padding:6px 7px}
+td.num{width:74px} td.acc{width:44px;text-align:center}
+td.rango{font-family:'Silkscreen',monospace;font-size:10px;color:var(--tinta-suave);width:74px;white-space:nowrap}
+.equis{font-size:11px;padding:5px 8px;border:2px solid var(--tinta-suave);background:#fff;color:var(--fucsia)}
+.equis:hover{border-color:var(--fucsia)}
+.vacia td{padding:22px;text-align:center;color:var(--tinta-suave);font-family:'Alegreya Sans',sans-serif;font-size:14px}
+.acciones{display:flex;gap:9px;margin-top:14px;flex-wrap:wrap}
+
+/* resultado */
+.res{border:3px solid var(--fucsia);background:#fff;padding:18px;box-shadow:6px 6px 0 var(--sombra);text-align:center}
+.res .paso{font-family:'Alegreya Sans',sans-serif;font-size:13px;color:var(--tinta-suave);margin:0 0 8px}
+.res img{width:150px;height:150px;object-fit:contain;image-rendering:auto;display:block;margin:4px auto}
+.res .nom{font-family:'Silkscreen',monospace;font-size:19px;margin:6px 0 2px}
+.res .lv{font-family:'Silkscreen',monospace;font-size:12px;color:var(--fucsia)}
+.res .nt{font-size:15px;margin:10px 0 0}
+.res .nada{font-family:'Silkscreen',monospace;font-size:16px;color:var(--tinta-suave);padding:24px 0}
+.dado{font-family:'Silkscreen',monospace;font-size:30px;color:var(--oro);background:var(--tinta);padding:12px;display:block;margin-bottom:12px}
+
+textarea{width:100%;min-height:150px;font-family:ui-monospace,monospace;font-size:12px;line-height:1.45}
+
+footer{background:var(--tinta);color:#a8c2ce;padding:22px 0;font-family:'Alegreya Sans',sans-serif;font-size:13px}
+footer code{background:#1c3a56;padding:2px 5px;color:#cfe0e6}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<style>
+/* animaciones compartidas de Nubia */
+@keyframes nb-surgir{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:none}}
+@keyframes nb-brotar{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:none}}
+main>.wrap>*,section.tab.on>.wrap>*{animation:nb-surgir .3s ease both}
+.card,.ruta,.item,.npc,.lider,.tir,.carta{animation:nb-surgir .24s ease both}
+.panel,.mapa-caja,.tilewrap,.bloque,.res{animation:nb-brotar .28s ease both}
+.bt,button,.chip,.dado,a.carta,nav button{transition:background .14s,color .14s,transform .09s,box-shadow .14s,border-color .14s}
+.bt:active,button:active,.chip:active,.dado:active{transform:translateY(1px)}
+a.carta:hover,.card:hover{transform:translateY(-3px)}
+a.carta,.card{transition:transform .16s,background .14s}
+.t,.tk{transition:transform .12s,filter .12s}
+.t.pt:hover,.t.npc:hover{filter:brightness(1.08)}
+tr,.punto,.npc{transition:background .14s}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<header><div class="wrap">
+  <div class="f">
+    <h1>Tablas de <span>Encuentro</span></h1>
+    <a href="nubia-director.html">← Volver al panel</a>
+  </div>
+  <p>Veintidós zonas listas para llenar. Escribe los Pokémon, ajusta los pesos y tira: primero decide si hay encuentro y después cuál. Cuando termines, exporta y pega el resultado dentro del archivo para que quede fijo.</p>
+</div></header>
+<div class="vueltiao"></div>
+
+<div class="barra"><div class="wrap">
+  <label class="campo"><span>ZONA</span><select id="zona" style="min-width:290px"></select></label>
+  <button class="bt rosa" id="tirar">TIRAR ENCUENTRO</button>
+  <button class="bt" id="exportar">EXPORTAR</button>
+  <button class="bt" id="importar">IMPORTAR</button>
+</div></div>
+
+<main><div class="wrap dos">
+  <div>
+    <div class="cabZ"><h2 id="zNom">—</h2><span class="etq" id="zEtq">—</span></div>
+    <p class="subZ" id="zSub">—</p>
+
+    <div class="panel" style="padding:0;box-shadow:none;border:0;margin-bottom:0">
+      <table id="tabla"><thead><tr>
+        <th>Pokémon</th><th>Clave PokéAPI</th><th class="num">Peso</th><th class="num">Nivel</th><th>Nota</th><th class="rango">d100</th><th class="acc"></th>
+      </tr></thead><tbody id="filas"></tbody></table>
+      <div class="acciones">
+        <button class="bt" id="agregar">AGREGAR FILA</button>
+        <label class="campo"><span>PROBABILIDAD DE ENCUENTRO (%)</span><input id="prob" type="number" min="0" max="100" style="width:110px"></label>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top:26px">
+      <h2>CÓMO USAR ESTA TABLA</h2>
+      <p>El <b>peso</b> no es un porcentaje: es cuántas partes de la tabla ocupa esa entrada. Si pones 40, 30, 20 y 10, la columna d100 se recalcula sola y te muestra el rango de cada uno. Puedes poner los números que quieras y el reparto se ajusta.</p>
+      <p>La <b>clave PokéAPI</b> es el nombre en inglés y en minúscula, con guion si son dos palabras: <code style="background:#efe4c6;padding:1px 5px">pikachu</code>, <code style="background:#efe4c6;padding:1px 5px">mr-mime</code>. Solo sirve para traer la ilustración; si la dejas vacía se usa el nombre de la primera columna.</p>
+      <p class="nota">Lo que edites aquí vive solo en esta pestaña. Usa EXPORTAR y pega el resultado en la constante <code>TABLAS</code> del archivo para dejarlo guardado de verdad.</p>
+    </div>
+  </div>
+
+  <div>
+    <div class="res" id="res">
+      <p class="paso">Elige una zona y tira.</p>
+      <div class="nada">SIN TIRAR</div>
+    </div>
+
+    <div class="panel" id="cajaJSON" style="display:none;margin-top:20px">
+      <h2 id="jsonTit">JSON DE TUS TABLAS</h2>
+      <textarea id="json"></textarea>
+      <div class="acciones">
+        <button class="bt rosa" id="aplicar" style="display:none">APLICAR</button>
+        <button class="bt" id="copiarJson">COPIAR</button>
+        <button class="bt" id="cerrarJson">CERRAR</button>
+      </div>
+    </div>
+  </div>
+</div></main>
+
+<div class="vueltiao"></div>
+<footer><div class="wrap">
+  Las ilustraciones se consultan en vivo a <code>pokeapi.co</code>. Si no hay internet, el tirador funciona igual y solo se queda sin imagen.
+</div></footer>
+
+<script>
+/* ==========================================================================
+   TABLAS — aquí va tu contenido. Cada zona tiene:
+     prob     probabilidad de que haya encuentro, en porcentaje
+     lista[]  [nombre, clavePokeAPI, peso, nivel, nota]
+   La Ruta 1 trae cuatro filas de ejemplo para que veas el formato.
+   Bórralas y pon las tuyas.
+   ========================================================================== */
+const TABLAS = {
+ 'r1':  {nom:'Ruta 1 · Mangal de la Ciénaga', ter:'Hierba alta', niv:'Nv 1-3', prob:35, lista:[
+          ['Wingull','wingull',35,'2','Bajan al camino a robar comida de las mochilas.'],
+          ['Yanma','yanma',30,'2','Zumban sobre el agua estancada al atardecer.'],
+          ['Bellsprout','bellsprout',25,'3','Entre las raíces del mangle.'],
+          ['Croagunk','croagunk',10,'3','Poco común. Sale del barro cuando alguien lo pisa.']]},
+ 'r2':  {nom:'Ruta 2 · Dunas de Bocas de Ceniza', ter:'Hierba costera y arena', niv:'Nv 3-5', prob:35, lista:[]},
+ 'r3':  {nom:'Ruta 3 · Sabana de los Corrales', ter:'Hierba alta seca', niv:'Nv 5-7', prob:30, lista:[]},
+ 'r4':  {nom:'Ruta 4 · Monte Espinoso', ter:'Matorral cerrado', niv:'Nv 6-8', prob:40, lista:[]},
+ 'r5':  {nom:'Ruta 5 · Barcaza del Cauca', ter:'Agua de río', niv:'Nv 8-10', prob:30, lista:[]},
+ 'r6':  {nom:'Ruta 6 · Cafetales y Túnel', ter:'Cultivo en ladera', niv:'Nv 9-11', prob:35, lista:[]},
+ 'r6t': {nom:'Ruta 6 · Interior del Túnel', ter:'Cueva sin luz', niv:'Nv 10-12', prob:55, lista:[]},
+ 'r7':  {nom:'Ruta 7 · Páramo de Frailejones', ter:'Pajonal de altura', niv:'Nv 11-13', prob:35, lista:[]},
+ 'r8':  {nom:'Ruta 8 · Cañón Rojo', ter:'Roca y precipicio', niv:'Nv 12-14', prob:30, lista:[]},
+ 'r9':  {nom:'Ruta 9 · Falda de la Sierra', ter:'Transición seco-húmedo', niv:'Nv 13-15', prob:35, lista:[]},
+ 'r10': {nom:'Ruta 10 · Travesía de Sietecolores', ter:'Mar abierto', niv:'Nv 14-16', prob:30, lista:[]},
+ 'r11': {nom:'Ruta 11 · Bosque Nublado', ter:'Selva húmeda cerrada', niv:'Nv 15-17', prob:45, lista:[]},
+ 'cv1': {nom:'Camino Victoria I · Selva húmeda', ter:'Selva y quebradas', niv:'Nv 17', prob:45, lista:[]},
+ 'cv2': {nom:'Camino Victoria II · Bosque nublado', ter:'Niebla permanente', niv:'Nv 18', prob:50, lista:[]},
+ 'cv3': {nom:'Camino Victoria III · Páramo', ter:'Altura y viento', niv:'Nv 19', prob:50, lista:[]},
+ 'cv4': {nom:'Camino Victoria IV · Nieve perpetua', ter:'Glaciar y roca', niv:'Nv 20', prob:55, lista:[]},
+ 'mar': {nom:'Mar Caribe de Nubia', ter:'Agua salada abierta', niv:'Nv 8-16', prob:30, lista:[]},
+ 'mag': {nom:'Río Magdalena', ter:'Agua dulce turbia', niv:'Nv 3-12', prob:30, lista:[]},
+ 'cau': {nom:'Río Cauca', ter:'Agua dulce de fondo', niv:'Nv 8-12', prob:30, lista:[]},
+ 'cie': {nom:'Ciénaga Grande', ter:'Humedal salobre', niv:'Nv 1-5', prob:40, lista:[]},
+ 'mor': {nom:'Golfo de Morrosquillo', ter:'Agua somera y cálida', niv:'Nv 5-9', prob:30, lista:[]},
+ 'arr': {nom:'Barrera de Sietecolores', ter:'Arrecife, siete profundidades', niv:'Nv 14-18', prob:45, lista:[]}
+};
+/* ======================================================================== */
+
+let T = JSON.parse(JSON.stringify(TABLAS));
+const $ = s => document.querySelector(s);
+const esc = s => String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const d = n => Math.floor(Math.random()*n)+1;
+
+$('#zona').innerHTML = Object.entries(T).map(([k,z])=>`<option value="${k}">${esc(z.nom)}</option>`).join('');
+$('#zona').onchange = pintar;
+
+function actual(){ return T[$('#zona').value]; }
+
+function rangos(lista){
+  const total = lista.reduce((a,f)=>a+(+f[2]||0),0) || 1;
+  let acc = 0;
+  return lista.map(f=>{
+    const desde = Math.floor(acc/total*100)+1;
+    acc += (+f[2]||0);
+    const hasta = Math.floor(acc/total*100);
+    return hasta < desde ? '—' : (desde===hasta ? String(desde) : desde+'–'+hasta);
+  });
+}
+
+function pintar(){
+  const z = actual();
+  $('#zNom').textContent = z.nom;
+  $('#zEtq').textContent = z.niv;
+  $('#zSub').textContent = z.ter + ' · ' + z.lista.length + (z.lista.length===1?' entrada':' entradas');
+  $('#prob').value = z.prob;
+
+  const rg = rangos(z.lista);
+  $('#filas').innerHTML = z.lista.length ? z.lista.map((f,i)=>`
+    <tr>
+      <td><input value="${esc(f[0])}" data-i="${i}" data-c="0" placeholder="Nombre en la mesa"></td>
+      <td><input value="${esc(f[1])}" data-i="${i}" data-c="1" placeholder="clave-en-ingles"></td>
+      <td class="num"><input type="number" min="0" value="${+f[2]||0}" data-i="${i}" data-c="2"></td>
+      <td class="num"><input value="${esc(f[3])}" data-i="${i}" data-c="3" placeholder="3"></td>
+      <td><input value="${esc(f[4])}" data-i="${i}" data-c="4" placeholder="Cómo aparece"></td>
+      <td class="rango">${rg[i]}</td>
+      <td class="acc"><button class="equis" data-x="${i}" aria-label="Quitar fila">✕</button></td>
+    </tr>`).join('')
+    : '<tr class="vacia"><td colspan="7">Esta zona está vacía. Agrega la primera fila.</td></tr>';
+}
+
+$('#filas').addEventListener('input', e=>{
+  const t = e.target; if(t.dataset.i===undefined) return;
+  const z = actual(), c = +t.dataset.c;
+  z.lista[+t.dataset.i][c] = c===2 ? (+t.value||0) : t.value;
+  if(c===2){
+    const rg = rangos(z.lista);
+    document.querySelectorAll('#filas .rango').forEach((n,i)=>n.textContent = rg[i]);
+    $('#zSub').textContent = z.ter + ' · ' + z.lista.length + (z.lista.length===1?' entrada':' entradas');
+  }
+});
+$('#filas').addEventListener('click', e=>{
+  const b = e.target.closest('[data-x]'); if(!b) return;
+  actual().lista.splice(+b.dataset.x, 1); pintar();
+});
+$('#agregar').onclick = ()=>{ actual().lista.push(['','',10,'','']); pintar(); };
+$('#prob').oninput = ()=>{ actual().prob = Math.max(0, Math.min(100, +$('#prob').value||0)); };
+
+/* ---------------- tirada ---------------- */
+$('#tirar').onclick = async ()=>{
+  const z = actual(), caja = $('#res');
+  const t1 = d(100);
+
+  if(t1 > z.prob){
+    caja.innerHTML = `<span class="dado">${t1}</span>
+      <p class="paso">Tirada de aparición contra ${z.prob}%</p>
+      <div class="nada">CAMINO DESPEJADO</div>`;
+    return;
+  }
+  if(!z.lista.length){
+    caja.innerHTML = `<span class="dado">${t1}</span>
+      <p class="paso">Hay encuentro, pero la tabla está vacía</p>
+      <div class="nada">LLENA LA ZONA</div>`;
+    return;
+  }
+
+  const total = z.lista.reduce((a,f)=>a+(+f[2]||0),0);
+  let t2 = Math.random()*total, elegido = z.lista[z.lista.length-1];
+  for(const f of z.lista){ t2 -= (+f[2]||0); if(t2 <= 0){ elegido = f; break; } }
+
+  const clave = (elegido[1] || elegido[0] || '').trim().toLowerCase().replace(/\s+/g,'-');
+  caja.innerHTML = `<span class="dado">${t1}</span>
+    <p class="paso">Aparición superada contra ${z.prob}%</p>
+    <div class="nom">${esc(elegido[0]||'Sin nombre')}</div>
+    <div class="lv">${elegido[3] ? 'Nivel '+esc(elegido[3]) : z.niv}</div>
+    ${elegido[4] ? `<p class="nt">${esc(elegido[4])}</p>` : ''}`;
+
+  if(!clave) return;
+  try{
+    const r = await fetch('https://pokeapi.co/api/v2/pokemon/'+encodeURIComponent(clave));
+    if(!r.ok) return;
+    const j = await r.json();
+    const src = j.sprites?.other?.['official-artwork']?.front_default || j.sprites?.front_default;
+    if(!src) return;
+    const im = new Image(); im.src = src; im.alt = elegido[0];
+    caja.insertBefore(im, caja.querySelector('.nom'));
+  }catch{ /* sin internet: se queda sin ilustración */ }
+};
+
+/* ---------------- exportar e importar ---------------- */
+function abrirJSON(titulo, texto, conAplicar){
+  $('#jsonTit').textContent = titulo;
+  $('#json').value = texto;
+  $('#aplicar').style.display = conAplicar ? '' : 'none';
+  $('#cajaJSON').style.display = 'block';
+  $('#json').focus();
+}
+$('#exportar').onclick = ()=> abrirJSON('COPIA ESTO EN LA CONSTANTE TABLAS', JSON.stringify(T, null, 1), false);
+$('#importar').onclick = ()=> abrirJSON('PEGA AQUÍ TU JSON Y APLICA', '', true);
+$('#aplicar').onclick = ()=>{
+  try{
+    const n = JSON.parse($('#json').value);
+    if(typeof n !== 'object' || !Object.keys(n).length) throw 0;
+    T = n;
+    $('#zona').innerHTML = Object.entries(T).map(([k,z])=>`<option value="${k}">${esc(z.nom)}</option>`).join('');
+    $('#cajaJSON').style.display = 'none';
+    pintar();
+  }catch{ $('#jsonTit').textContent = 'ESE TEXTO NO ES UN JSON VÁLIDO'; }
+};
+$('#copiarJson').onclick = async ()=>{
+  try{ await navigator.clipboard.writeText($('#json').value); $('#copiarJson').textContent='COPIADO'; }
+  catch{ $('#json').select(); }
+  setTimeout(()=>$('#copiarJson').textContent='COPIAR', 2200);
+};
+$('#cerrarJson').onclick = ()=> $('#cajaJSON').style.display='none';
+
+pintar();
+</script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+# Salidas generadas por herramientas
+mapas.json
+tools/mapas.json
+
+# Python
+__pycache__/
+*.py[cod]
+
+# Sistema operativo y editores
+.DS_Store
+Thumbs.db
+.vscode/

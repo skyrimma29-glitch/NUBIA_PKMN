@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Planos y medidas — Nubia</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=Alegreya:wght@400;700&family=Alegreya+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--tinta:#12283f;--tinta-suave:#3d556e;--mar:#0e7c8b;--arena:#f6e7c4;
+ --arena-hueso:#fdf6e6;--oro:#e0951c;--selva:#2e7d4f;--fucsia:#c6386b;--sombra:rgba(18,40,63,.18)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--arena);color:var(--tinta);font-family:'Alegreya',Georgia,serif;font-size:16px;line-height:1.6}
+.wrap{max-width:1240px;margin:0 auto;padding:0 20px}
+h1,h2,h3{font-family:'Silkscreen','Courier New',monospace;line-height:1.3}
+.vueltiao{height:12px;background:
+ repeating-linear-gradient(135deg,var(--tinta) 0 7px,transparent 7px 14px),
+ repeating-linear-gradient(45deg,var(--tinta) 0 7px,var(--arena-hueso) 7px 14px)}
+header{background:var(--tinta);color:var(--arena-hueso);padding:28px 0}
+header .f{display:flex;justify-content:space-between;align-items:baseline;gap:18px;flex-wrap:wrap}
+header h1{margin:0;font-size:clamp(22px,3.6vw,34px);color:var(--arena-hueso)}
+header h1 span{color:var(--oro)}
+header a{color:#8fc8d3;font-family:'Alegreya Sans',sans-serif;font-size:14px;text-decoration:none;border-bottom:1px solid #4d7183}
+header p{max-width:70ch;margin:11px 0 0;color:#cfe0e6}
+main{padding:30px 0 70px}
+.intro{border:3px solid var(--tinta);background:var(--arena-hueso);padding:20px 22px;box-shadow:6px 6px 0 var(--sombra);margin-bottom:34px}
+.intro h2{font-size:14px;margin:0 0 11px;color:var(--mar)}
+.intro ul{margin:0;padding-left:19px} .intro li{margin-bottom:8px} .intro li:last-child{margin-bottom:0}
+h2.sec{font-size:20px;margin:38px 0 6px}
+p.lead{margin:0 0 20px;color:var(--tinta-suave);max-width:74ch}
+table{width:100%;border-collapse:collapse;background:var(--arena-hueso);border:3px solid var(--tinta);box-shadow:6px 6px 0 var(--sombra)}
+th{font-family:'Silkscreen',monospace;font-size:9px;text-align:left;background:var(--tinta);color:var(--arena-hueso);padding:10px 9px}
+td{border-top:2px solid #e6d9b8;padding:10px 9px;vertical-align:top}
+tr:hover td{background:#fffaf0}
+td.nom{font-family:'Silkscreen',monospace;font-size:11px;width:22%}
+td.rej{font-family:'Silkscreen',monospace;font-size:12px;color:var(--fucsia);white-space:nowrap;width:11%}
+td.px{font-family:'Alegreya Sans',sans-serif;font-size:13px;color:var(--tinta-suave);white-space:nowrap;width:11%}
+td.sal{width:13%}
+td.notas{font-size:15px}
+.dia{display:block}
+.hecho{background:#e9f5ec}
+.hecho td.nom::after{content:' ✓';color:var(--selva)}
+.pill{display:inline-block;font-family:'Silkscreen',monospace;font-size:9px;
+ background:var(--mar);color:#fff;padding:3px 6px;margin-top:4px}
+.pill.alt{background:var(--oro);color:var(--tinta)}
+footer{background:var(--tinta);color:#a8c2ce;padding:22px 0;font-family:'Alegreya Sans',sans-serif;font-size:13px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<header><div class="wrap">
+  <div class="f"><h1>Planos y <span>medidas</span></h1>
+  <a href="nubia-director.html">← Volver al panel</a></div>
+  <p>Rejilla, tamaño en píxeles y salidas de cada mapa de Nubia, deducidas del mapa regional. Si construyes con estas medidas, las rutas encajan con la dirección que marca el mapa y no vas a tener que rehacer nada.</p>
+</div></header>
+<div class="vueltiao"></div>
+
+<main><div class="wrap">
+
+  <div class="intro">
+    <h2>CÓMO LEER ESTA HOJA</h2>
+    <ul>
+      <li><b>Rejilla</b> es el tamaño en casillas que configuras en Tiled. <b>Píxeles</b> es lo que debe medir el PNG exportado al 100 % con tiles de 32.</li>
+      <li><b>Salidas</b> indica en qué bordes va la conexión, con los puntos cardinales del mapa regional. Una ruta que en el mapa baja hacia el sur, en el esquema sale por el borde inferior. Esa es toda la coherencia que hace falta.</li>
+      <li>Las salidas de dos mapas vecinos son <b>espejo</b>: si Sabanal sale al este hacia la Ruta 4, la Ruta 4 entra por el oeste.</li>
+      <li>Las filas en verde con ✓ ya están construidas. Esas no se tocan: el resto del mapa se acomodó a ellas.</li>
+      <li>Los tamaños varían a propósito. Un pueblo de veinte casillas y una capital de treinta se sienten distintos en mesa, aunque el jugador no sepa contar la diferencia.</li>
+    </ul>
+  </div>
+
+  <h2 class="sec">Localidades</h2>
+  <p class="lead">Once mapas. Tres escalas: pueblo, ciudad media y capital. Las capitales tienen más de un acceso, que es lo que hace que se sientan grandes.</p>
+  <table>
+    <thead><tr><th>Localidad</th><th>Rejilla</th><th>Píxeles</th><th>Salidas</th><th>Notas de composición</th></tr></thead>
+    <tbody>
+      <tr class="hecho"><td class="nom">Pueblo Fundación</td><td class="rej">22 × 14</td><td class="px">704 × 448</td>
+        <td class="sal">O → Ruta 1</td>
+        <td class="notas">Ya construido en Tiled. Todo lo demás se ajustó a este mapa: por eso la Ruta 1 quedó horizontal y Cumbia está al oeste.</td></tr>
+      <tr><td class="nom">Ciudad Cumbia</td><td class="rej">30 × 20</td><td class="px">960 × 640</td>
+        <td class="sal">E → Ruta 1<br>SO → Ruta 2</td>
+        <td class="notas">La más grande de la región. Dos niveles de altura unidos por escaleras, el malecón cruzando todo el borde norte y el río saliendo por el noreste. El gimnasio y la torre de Café Dorado se miran de frente desde extremos opuestos.</td></tr>
+      <tr><td class="nom">Ciudad Muralla</td><td class="rej">28 × 18</td><td class="px">896 × 576</td>
+        <td class="sal">NE → Ruta 2<br>S → Ruta 3</td>
+        <td class="notas">Anillo de muralla cerrando el mapa entero, con dos portones. El mar ocupa el tercio oeste y el fuerte se come la esquina noroeste. Dentro, calles estrechas de dos casillas.</td></tr>
+      <tr><td class="nom">Pueblo Sabanal</td><td class="rej">20 × 14</td><td class="px">640 × 448</td>
+        <td class="sal">N → Ruta 3<br>E → Ruta 4</td>
+        <td class="notas">El más pequeño después de Fundación. Plaza central con la olla de sancocho, corral comunitario al sur, bodega de Café Dorado apartada en el borde este.</td></tr>
+      <tr><td class="nom">Puerto Bermejo</td><td class="rej">24 × 16</td><td class="px">768 × 512</td>
+        <td class="sal">O → Ruta 4<br>S → Ruta 5</td>
+        <td class="notas">El río ocupa las cuatro filas del sur y los muelles se meten en él. La bodega mayor de tres pisos domina el borde este. Todo el pueblo mira al agua.</td></tr>
+      <tr><td class="nom">Ciudad Cañaveral</td><td class="rej">26 × 18</td><td class="px">832 × 576</td>
+        <td class="sal">N → Ruta 5<br>NO → Ruta 6</td>
+        <td class="notas">Cañaverales rodeando el casco por tres lados, con el río Pance entrando por el noreste. El gimnasio es un laberinto de caña pegado al borde sur.</td></tr>
+      <tr><td class="nom">Ciudad Orquídea</td><td class="rej">28 × 22</td><td class="px">896 × 704</td>
+        <td class="sal">SE → Ruta 6<br>E → Ruta 7</td>
+        <td class="notas">La única más alta que ancha. Valle estrecho: laderas de roca cerrando este y oeste, el metro elevado cruzando de norte a sur por el centro y dos estaciones de teleférico subiendo a los bordes.</td></tr>
+      <tr><td class="nom">Ciudad Páramo</td><td class="rej">30 × 20</td><td class="px">960 × 640</td>
+        <td class="sal">O → Ruta 7<br>NE → Ruta 8</td>
+        <td class="notas">La capital administrativa: retícula ordenada, plaza grande en el centro, Museo del Oro y Federación enfrentados. Frailejones y llovizna en todo el borde exterior.</td></tr>
+      <tr><td class="nom">Ciudad Vallenar</td><td class="rej">24 × 16</td><td class="px">768 × 512</td>
+        <td class="sal">SO → Ruta 8<br>N → Ruta 9</td>
+        <td class="notas">El río Guatapurí parte el mapa en dos mitades con un solo puente. Tarima del festival al oeste, gimnasio al este. La Sierra se ve al fondo del borde norte.</td></tr>
+      <tr><td class="nom">Ciudad Brisamar</td><td class="rej">26 × 18</td><td class="px">832 × 576</td>
+        <td class="sal">S → Ruta 9<br>O → Ruta 10<br>E → Ruta 11</td>
+        <td class="notas">Tres salidas: es el nudo de la región. Bahía en el oeste con el muelle del ferry, ciudad en el centro, estación del teleférico en el borde este marcando el inicio del Camino Victoria.</td></tr>
+      <tr><td class="nom">Isla Sietecolores</td><td class="rej">22 × 22</td><td class="px">704 × 704</td>
+        <td class="sal">E → Ruta 10</td>
+        <td class="notas">Cuadrada, rodeada de agua por los cuatro lados en franjas de color por profundidad. El pueblo ocupa el centro, el gimnasio de coral el sur.</td></tr>
+    </tbody>
+  </table>
+
+  <h2 class="sec">Rutas</h2>
+  <p class="lead">Once rutas más los cuatro pisos del Camino Victoria. Cinco son horizontales, tres verticales y tres diagonales: la variedad sale de la geografía, no de un capricho.</p>
+  <table>
+    <thead><tr><th>Ruta</th><th>Rejilla</th><th>Píxeles</th><th>Recorrido</th><th>Notas de composición</th></tr></thead>
+    <tbody>
+      <tr class="hecho"><td class="nom">Ruta 1 · Mangal</td><td class="rej">30 × 9</td><td class="px">960 × 288</td>
+        <td class="sal">E ← Fundación<br>O → Cumbia</td>
+        <td class="notas">Ya construida. Horizontal pura.</td></tr>
+      <tr><td class="nom">Ruta 2 · Dunas</td><td class="rej">32 × 12</td><td class="px">1024 × 384</td>
+        <td class="sal">NE ← Cumbia<br>SO → Muralla</td>
+        <td class="notas">Horizontal con descenso: entra arriba a la derecha y sale abajo a la izquierda. El mar ocupa la franja superior en toda su longitud. <span class="pill">2 segmentos</span></td></tr>
+      <tr><td class="nom">Ruta 3 · Sabana</td><td class="rej">12 × 26</td><td class="px">384 × 832</td>
+        <td class="sal">N ← Muralla<br>S → Sabanal</td>
+        <td class="notas">Primera ruta vertical. Estrecha y larga, cercas de alambre cruzando de lado a lado que obligan a buscar las tranqueras. <span class="pill">2 segmentos</span></td></tr>
+      <tr><td class="nom">Ruta 4 · Monte Espinoso</td><td class="rej">30 × 10</td><td class="px">960 × 320</td>
+        <td class="sal">O ← Sabanal<br>E → Bermejo</td>
+        <td class="notas">Horizontal hacia el este, con descenso suave hacia el río al final. <span class="pill">2 segmentos</span></td></tr>
+      <tr><td class="nom">Ruta 5 · Barcaza del Cauca</td><td class="rej">14 × 28</td><td class="px">448 × 896</td>
+        <td class="sal">N ← Bermejo<br>S → Cañaveral</td>
+        <td class="notas">Vertical y navegable: el río corre de arriba abajo por el centro y las orillas son solo decorado. La isla de en medio va en el centro exacto. <span class="pill">3 segmentos</span></td></tr>
+      <tr><td class="nom">Ruta 6 · Cafetales y Túnel</td><td class="rej">22 × 20</td><td class="px">704 × 640</td>
+        <td class="sal">SE ← Cañaveral<br>NO → Orquídea</td>
+        <td class="notas">Diagonal ascendente: entra por la esquina inferior derecha y sale por la superior izquierda. El túnel ocupa el tercio final. <span class="pill">3 segmentos</span></td></tr>
+      <tr><td class="nom">Ruta 7 · Páramo</td><td class="rej">36 × 10</td><td class="px">1152 × 320</td>
+        <td class="sal">O ← Orquídea<br>E → Páramo</td>
+        <td class="notas">La más larga de la región. Horizontal, abierta, sin árboles. La longitud es el punto: cansa. <span class="pill">2 segmentos</span></td></tr>
+      <tr><td class="nom">Ruta 8 · Cañón Rojo</td><td class="rej">20 × 24</td><td class="px">640 × 768</td>
+        <td class="sal">SO ← Páramo<br>NE → Vallenar</td>
+        <td class="notas">Diagonal descendente en altura pero ascendente en el mapa. El cañón corta en diagonal y el puente colgante lo cruza por el centro. <span class="pill">3 segmentos</span></td></tr>
+      <tr><td class="nom">Ruta 9 · Falda de la Sierra</td><td class="rej">12 × 26</td><td class="px">384 × 832</td>
+        <td class="sal">S ← Vallenar<br>N → Brisamar</td>
+        <td class="notas">Vertical, subiendo hacia el norte. El terreno cambia de seco a húmedo de abajo arriba; el vado del Guatapurí va a media altura. <span class="pill">2 segmentos</span></td></tr>
+      <tr><td class="nom">Ruta 10 · Travesía</td><td class="rej">34 × 12</td><td class="px">1088 × 384</td>
+        <td class="sal">E ← Brisamar<br>O → Sietecolores</td>
+        <td class="notas">Horizontal marítima, la más ancha. Franjas de color por profundidad de norte a sur; el cayo en el centro. <span class="pill">2 segmentos</span></td></tr>
+      <tr><td class="nom">Ruta 11 · Bosque Nublado</td><td class="rej">24 × 12</td><td class="px">768 × 384</td>
+        <td class="sal">O ← Brisamar<br>E → Camino Victoria</td>
+        <td class="notas">Corta y horizontal. Es antesala: su función es cambiar el ánimo, no cansar. <span class="pill">1 segmento</span></td></tr>
+      <tr><td class="nom">Camino Victoria I</td><td class="rej">20 × 20</td><td class="px">640 × 640</td>
+        <td class="sal">S ← Ruta 11<br>N → Piso II</td>
+        <td class="notas">Los cuatro pisos son cuadrados y se suben de abajo arriba: entrada en el borde sur, salida en el norte. Selva y quebradas.</td></tr>
+      <tr><td class="nom">Camino Victoria II</td><td class="rej">20 × 20</td><td class="px">640 × 640</td>
+        <td class="sal">S ← Piso I<br>N → Piso III</td>
+        <td class="notas">Bosque nublado. El único que se juega con niebla de guerra activa todo el tiempo.</td></tr>
+      <tr><td class="nom">Camino Victoria III</td><td class="rej">20 × 20</td><td class="px">640 × 640</td>
+        <td class="sal">S ← Piso II<br>N → Piso IV</td>
+        <td class="notas">Páramo. Refugios de piedra repartidos: son los únicos puntos de descanso largo.</td></tr>
+      <tr><td class="nom">Camino Victoria IV</td><td class="rej">20 × 20</td><td class="px">640 × 640</td>
+        <td class="sal">S ← Piso III<br>N → Liga</td>
+        <td class="notas">Nieve y hielo. La excavación de El Dorado se ve desde cualquier punto del mapa.</td></tr>
+    </tbody>
+  </table>
+
+  <h2 class="sec">Zonas legendarias</h2>
+  <p class="lead">Tres zonas de tres mapas cada una. Ninguna cruza una ruta: cuelgan de ella. Se entra desde un punto concreto y se sale por el mismo, así que el grupo decide entrar y esa decisión tiene peso. Las tres están cerradas hasta el Acto IV y cada una pide su llave.</p>
+  <table>
+    <thead><tr><th>Mapa</th><th>Rejilla</th><th>Píxeles</th><th>Acceso</th><th>Notas de composición</th></tr></thead>
+    <tbody>
+      <tr><td class="nom">Caverna del Cauca I</td><td class="rej">18 × 16</td><td class="px">576 × 512</td>
+        <td class="sal">N ← Ruta 5<br><span class="pill alt">Carta náutica</span></td>
+        <td class="notas">Boca sumergida. El río ocupa el tercio norte y la caverna se abre debajo. Salida al este hacia el segundo mapa.</td></tr>
+      <tr><td class="nom">Caverna del Cauca II</td><td class="rej">18 × 18</td><td class="px">576 × 576</td>
+        <td class="sal">O ← Mapa I<br>S → Mapa III</td>
+        <td class="notas">Galería partida por un brazo de río con dos puentes de roca. Sin fuente de luz la visión baja a una casilla.</td></tr>
+      <tr><td class="nom">Caverna del Cauca III</td><td class="rej">20 × 18</td><td class="px">640 × 576</td>
+        <td class="sal">N ← Mapa II</td>
+        <td class="notas">Cámara circular con lago quieto e isla de arena en el centro. Salida única: se entra sabiendo que hay que volver.</td></tr>
+      <tr><td class="nom">Ojo del Cañón I</td><td class="rej">16 × 20</td><td class="px">512 × 640</td>
+        <td class="sal">S ← Ruta 8<br><span class="pill alt">Muestra de la veta</span></td>
+        <td class="notas">Socavón vertical con vigas y vagonetas. Estrecho a propósito: no caben formaciones amplias.</td></tr>
+      <tr><td class="nom">Ojo del Cañón II</td><td class="rej">18 × 20</td><td class="px">576 × 640</td>
+        <td class="sal">S ← Mapa I<br>E → Mapa III</td>
+        <td class="notas">Tres vetas encendidas son la única luz del mapa. El calor cuesta un nivel de agotamiento cada dos horas.</td></tr>
+      <tr><td class="nom">Ojo del Cañón III</td><td class="rej">20 × 20</td><td class="px">640 × 640</td>
+        <td class="sal">O ← Mapa II</td>
+        <td class="notas">Cámara redonda con la formación central latiendo. La luz sube y baja: conviene variar la descripción cada turno.</td></tr>
+      <tr><td class="nom">Picos Gemelos I</td><td class="rej">20 × 18</td><td class="px">640 × 576</td>
+        <td class="sal">S ← Camino Victoria IV<br><span class="pill alt">Montaña en calma</span></td>
+        <td class="notas">Grieta entre dos paredes de hielo azul. Angosta: se pasa de uno en uno y hay que dejar la carga.</td></tr>
+      <tr><td class="nom">Picos Gemelos II</td><td class="rej">22 × 16</td><td class="px">704 × 512</td>
+        <td class="sal">S ← Mapa I<br>E → Mapa III</td>
+        <td class="notas">Balcón de hielo entre las dos cumbres. Más ancho que alto porque lo que importa es la vista, no el recorrido.</td></tr>
+      <tr><td class="nom">Picos Gemelos III</td><td class="rej">20 × 20</td><td class="px">640 × 640</td>
+        <td class="sal">O ← Mapa II</td>
+        <td class="notas">La cumbre. Anillo de roca alrededor de una lente de hielo circular. Sin viento, sin ruido, sin salida más que la de vuelta.</td></tr>
+    </tbody>
+  </table>
+
+  <h2 class="sec">Interiores</h2>
+  <p class="lead">Solo los que importan. Centros Pokémon y tiendas se resuelven narrando: entras, curas, sales. Un interior merece mapa cuando hay un acertijo, un combate o algo que se pueda registrar.</p>
+  <table>
+    <thead><tr><th>Interior</th><th>Rejilla</th><th>Píxeles</th><th>Dónde</th><th>Qué pasa dentro</th></tr></thead>
+    <tbody>
+      <tr><td class="nom">Laboratorio Ceiba</td><td class="rej">16 × 12</td><td class="px">512 × 384</td><td class="sal">Fundación</td>
+        <td class="notas">Entrega de iniciales. Mesa central con tres Poké Balls, estanterías, la puerta trasera al mangal. Escena de apertura de la campaña.</td></tr>
+      <tr><td class="nom">Gimnasio Tambora</td><td class="rej">18 × 14</td><td class="px">576 × 448</td><td class="sal">Cumbia</td>
+        <td class="notas">Tarima de percusión con placas de presión numeradas. El suelo es el acertijo, así que necesita rejilla clara y visible.</td></tr>
+      <tr><td class="nom">Torre Café Dorado</td><td class="rej">16 × 14</td><td class="px">512 × 448</td><td class="sal">Cumbia</td>
+        <td class="notas">Oficina legal de la empresa. Recepción, sala de juntas y un despacho cerrado. Escena social, no de combate.</td></tr>
+      <tr><td class="nom">Fuerte y túneles</td><td class="rej">22 × 18</td><td class="px">704 × 576</td><td class="sal">Muralla</td>
+        <td class="notas">Gimnasio de Roca. Bloques que se empujan en la planta alta y red de túneles debajo, en el mismo mapa, con dos alturas separadas por muros.</td></tr>
+      <tr><td class="nom">Bodega Mayor</td><td class="rej">20 × 16</td><td class="px">640 × 512</td><td class="sal">Bermejo</td>
+        <td class="notas">El objetivo del Acto II. Estanterías de costales formando pasillos, oficina de manifiestos arriba, jaulas al fondo. Se juega con sigilo.</td></tr>
+      <tr><td class="nom">Gimnasio Retoño</td><td class="rej">20 × 16</td><td class="px">640 × 512</td><td class="sal">Cañaveral</td>
+        <td class="notas">Laberinto de caña con compuertas de riego. Los pasillos cambian según el orden de apertura, así que conviene dibujar las tres configuraciones.</td></tr>
+      <tr><td class="nom">Gimnasio Riel</td><td class="rej">20 × 14</td><td class="px">640 × 448</td><td class="sal">Orquídea</td>
+        <td class="notas">Andenes móviles. Dibuja el mapa base y dos capas de plataformas desplazadas; se alternan cada dos turnos.</td></tr>
+      <tr><td class="nom">Museo del Oro</td><td class="rej">18 × 14</td><td class="px">576 × 448</td><td class="sal">Páramo</td>
+        <td class="notas">Vitrinas en anillo alrededor de la Balsa Dorada. Escenario del robo del Acto III; conviene marcar las líneas de visión de los guardias.</td></tr>
+      <tr><td class="nom">Gimnasio Escarcha</td><td class="rej">18 × 16</td><td class="px">576 × 512</td><td class="sal">Páramo</td>
+        <td class="notas">Piso de hielo con deslizamiento. Roca fija dispersa como topes; el acertijo es puro trazado de ruta.</td></tr>
+      <tr><td class="nom">Gimnasio Brasa</td><td class="rej">16 × 14</td><td class="px">512 × 448</td><td class="sal">Vallenar</td>
+        <td class="notas">Piquería. Dos tarimas enfrentadas y grada alrededor. Mapa pequeño porque el combate es de rondas, no de posición.</td></tr>
+      <tr><td class="nom">Gimnasio Brisa</td><td class="rej">18 × 20</td><td class="px">576 × 640</td><td class="sal">Brisamar</td>
+        <td class="notas">Vertical. Plataformas flotantes con vacío entre ellas y corrientes ascendentes marcadas. Más alto que ancho a propósito.</td></tr>
+      <tr><td class="nom">Gimnasio Marea</td><td class="rej">22 × 16</td><td class="px">704 × 512</td><td class="sal">Sietecolores</td>
+        <td class="notas">Túneles de coral. Dibuja dos versiones, marea alta y marea baja, y alterna cada tres turnos.</td></tr>
+      <tr><td class="nom">Liga Nubia</td><td class="rej">26 × 18</td><td class="px">832 × 576</td><td class="sal">Picos Gemelos</td>
+        <td class="notas">Vestíbulo, cuatro salas del Alto Mando en las esquinas y la cumbre abierta al centro. Cada sala merece su propio terreno descrito.</td></tr>
+      <tr><td class="nom">Caverna del Cauca</td><td class="rej">20 × 18</td><td class="px">640 × 576</td><td class="sal">Zona legendaria</td>
+        <td class="notas">Bajo el río, se abre con la carta náutica. Agua subterránea y salientes de roca.</td></tr>
+      <tr><td class="nom">Ojo del Cañón</td><td class="rej">18 × 20</td><td class="px">576 × 640</td><td class="sal">Zona legendaria</td>
+        <td class="notas">Al fondo del socavón de la Ruta 8. Vertical, cálido, con vetas brillantes en las paredes.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="intro" style="margin-top:36px">
+    <h2>ORDEN SUGERIDO DE CONSTRUCCIÓN</h2>
+    <ul>
+      <li><b>Primero las tres localidades del Acto I:</b> Cumbia, Muralla y Sabanal. Con eso y lo que ya tienes cubres las primeras cuatro o cinco sesiones.</li>
+      <li><b>Después las rutas 2, 3 y 4</b>, que las conectan. Fíjate en las salidas: son el único punto donde un error se nota.</li>
+      <li><b>Luego los interiores del Acto I:</b> Gimnasio Tambora y Fuerte de Muralla. Los demás pueden esperar meses.</li>
+      <li>El Camino Victoria y la Liga déjalos para el final. Faltan veinte niveles para que alguien los pise.</li>
+    </ul>
+  </div>
+
+</div></main>
+<div class="vueltiao"></div>
+<footer><div class="wrap">Planos de Nubia — documento de trabajo del director.</div></footer>
+</body>
+</html>

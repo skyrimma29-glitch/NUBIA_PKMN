@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Códice de Nubia — Pokémon 5E</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=Alegreya:ital,wght@0,400;0,500;0,700;1,400&family=Alegreya+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --tinta:#12283f;        /* azul noche caribe: texto y marcos */
+  --tinta-suave:#3d556e;
+  --mar:#0e7c8b;          /* verde-azul del mar de siete colores */
+  --arena:#f6e7c4;        /* papel / arena */
+  --arena-hueso:#fdf6e6;
+  --oro:#e0951c;          /* El Dorado */
+  --selva:#2e7d4f;
+  --fucsia:#c6386b;       /* carnaval / orquídea */
+  --sombra:rgba(18,40,63,.18);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0; background:var(--arena); color:var(--tinta);
+  font-family:'Alegreya',Georgia,serif; font-size:17px; line-height:1.62;
+}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+h1,h2,h3,h4,.pix{font-family:'Silkscreen','Courier New',monospace;font-weight:700;letter-spacing:.01em;line-height:1.25}
+
+/* ---------- banda vueltiao (zigzag) ---------- */
+.vueltiao{
+  height:14px;
+  background:
+    repeating-linear-gradient(135deg, var(--tinta) 0 8px, transparent 8px 16px),
+    repeating-linear-gradient(45deg, var(--tinta) 0 8px, var(--arena-hueso) 8px 16px);
+}
+
+/* ---------- encabezado ---------- */
+header{background:var(--tinta);color:var(--arena-hueso);padding:34px 0 26px}
+header .eyeb{font-family:'Alegreya Sans',sans-serif;font-size:14px;color:#8fc8d3;margin:0 0 6px}
+header h1{font-size:clamp(28px,5.4vw,52px);margin:0;color:var(--arena-hueso)}
+header h1 span{color:var(--oro)}
+header p{max-width:62ch;margin:12px 0 0;color:#cfe0e6;font-size:17px}
+
+/* ---------- navegación ---------- */
+nav{position:sticky;top:0;z-index:40;background:var(--arena-hueso);border-bottom:3px solid var(--tinta)}
+nav .wrap{display:flex;gap:4px;overflow-x:auto;padding:0 20px}
+nav button{
+  font-family:'Silkscreen',monospace;font-size:12px;background:none;border:0;
+  padding:14px 14px;color:var(--tinta-suave);cursor:pointer;white-space:nowrap;
+  border-bottom:4px solid transparent;
+}
+nav button:hover{color:var(--tinta)}
+nav button[aria-selected="true"]{color:var(--tinta);border-bottom-color:var(--fucsia)}
+nav button:focus-visible{outline:3px solid var(--mar);outline-offset:-3px}
+
+section.tab{display:none;padding:34px 0 64px}
+section.tab.on{display:block}
+
+h2.sec{font-size:22px;margin:0 0 4px}
+p.lead{margin:0 0 24px;color:var(--tinta-suave);max-width:70ch}
+
+/* ---------- mapa regional ---------- */
+.mapa-caja{background:var(--arena-hueso);border:3px solid var(--tinta);box-shadow:6px 6px 0 var(--sombra)}
+.mapa-caja svg{display:block;width:100%;height:auto}
+.nodo{cursor:pointer}
+.nodo circle,.nodo rect{transition:transform .12s}
+.nodo:hover .pin{stroke-width:5}
+.nodo text{font-family:'Silkscreen',monospace;font-size:13px;fill:var(--tinta);pointer-events:none}
+.nodo .sub{font-size:10px;fill:var(--tinta-suave)}
+.leyenda{display:flex;flex-wrap:wrap;gap:16px 26px;margin-top:16px;font-family:'Alegreya Sans',sans-serif;font-size:14px;color:var(--tinta-suave)}
+.leyenda i{display:inline-block;width:14px;height:14px;border:2px solid var(--tinta);margin-right:7px;vertical-align:-3px;font-style:normal}
+
+/* ---------- rutas ---------- */
+.rutas{margin-top:34px;display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:2px;background:var(--tinta);border:3px solid var(--tinta)}
+.ruta{background:var(--arena-hueso);padding:13px 15px}
+.ruta b{font-family:'Silkscreen',monospace;font-size:11px;display:block;color:var(--mar)}
+.ruta span{font-size:15px;line-height:1.45;display:block;margin-top:3px}
+
+/* ---------- selector de localidades ---------- */
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:26px}
+.chip{
+  font-family:'Silkscreen',monospace;font-size:11px;padding:9px 11px;cursor:pointer;
+  background:var(--arena-hueso);border:2px solid var(--tinta);color:var(--tinta);
+}
+.chip:hover{background:#fff}
+.chip[aria-pressed="true"]{background:var(--tinta);color:var(--arena-hueso)}
+.chip.pueblo{border-style:dashed}
+.chip:focus-visible{outline:3px solid var(--fucsia);outline-offset:2px}
+
+/* ---------- ficha de localidad ---------- */
+.ficha{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:34px;align-items:start}
+@media(max-width:900px){.ficha{grid-template-columns:1fr}}
+.ficha h3{font-size:24px;margin:0}
+.basado{font-family:'Alegreya Sans',sans-serif;font-size:14px;color:var(--tinta-suave);margin:2px 0 14px}
+.desc{margin:0 0 20px}
+
+/* ---------- rejilla de tiles ---------- */
+.tilewrap{border:3px solid var(--tinta);background:var(--tinta);box-shadow:6px 6px 0 var(--sombra);overflow-x:auto}
+.tiles{display:grid;gap:0;image-rendering:pixelated;min-width:440px}
+.t{aspect-ratio:1;position:relative}
+.t.npc{cursor:pointer}
+.t.npc::after{
+  content:attr(data-n);position:absolute;inset:14%;border-radius:50%;
+  background:var(--fucsia);color:#fff;border:2px solid var(--tinta);
+  font-family:'Silkscreen',monospace;font-size:9px;display:grid;place-items:center;
+}
+.t.npc:hover::after,.t.npc.sel::after{background:var(--oro);color:var(--tinta);transform:scale(1.18)}
+.t.lbl::after{
+  content:attr(data-l);position:absolute;inset:0;display:grid;place-items:center;
+  font-family:'Silkscreen',monospace;font-size:9px;color:#fff;text-shadow:0 1px 0 rgba(0,0,0,.5)
+}
+.leg{display:flex;flex-wrap:wrap;gap:8px 16px;margin-top:12px;font-family:'Alegreya Sans',sans-serif;font-size:13px;color:var(--tinta-suave)}
+.leg span i{display:inline-block;width:13px;height:13px;border:1px solid var(--tinta);margin-right:6px;vertical-align:-2px;font-style:normal}
+
+/* ---------- NPC ---------- */
+.npcs{display:grid;gap:2px;background:var(--tinta);border:3px solid var(--tinta)}
+.npc{background:var(--arena-hueso);padding:14px 16px}
+.npc.sel{background:#fff8e2}
+.npc .cab{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.npc .num{font-family:'Silkscreen',monospace;font-size:11px;background:var(--fucsia);color:#fff;padding:3px 7px}
+.npc .nom{font-family:'Silkscreen',monospace;font-size:13px}
+.npc .cls{font-family:'Alegreya Sans',sans-serif;font-size:13px;color:var(--mar)}
+.npc .act{font-family:'Alegreya Sans',sans-serif;font-size:14px;color:var(--tinta-suave);margin:6px 0 8px}
+.npc blockquote{margin:0;padding-left:13px;border-left:4px solid var(--oro);font-style:italic;font-size:16px}
+
+.bloque{margin-top:26px;border:3px solid var(--tinta);background:var(--arena-hueso);padding:18px 20px;box-shadow:6px 6px 0 var(--sombra)}
+.bloque h4{font-size:13px;margin:0 0 10px;color:var(--mar)}
+.bloque ul{margin:0;padding-left:19px}
+.bloque li{margin-bottom:8px}
+.bloque li:last-child{margin-bottom:0}
+.gimnasio{border-color:var(--fucsia)}
+.gimnasio h4{color:var(--fucsia)}
+
+/* ---------- tablas de clases / liga ---------- */
+.grid3{display:grid;grid-template-columns:repeat(auto-fill,minmax(275px,1fr));gap:2px;background:var(--tinta);border:3px solid var(--tinta)}
+.card{background:var(--arena-hueso);padding:15px 16px}
+.card.dorado{background:#1c1c1c;color:#f0e2c0}
+.card.dorado .cnom{color:var(--oro)}
+.card.dorado .cmeta{color:#b09a6a}
+.card.dorado blockquote{border-left-color:var(--oro)}
+.cnom{font-family:'Silkscreen',monospace;font-size:13px;display:block}
+.cmeta{font-family:'Alegreya Sans',sans-serif;font-size:13px;color:var(--mar);display:block;margin:4px 0 8px}
+.card p{margin:0 0 8px;font-size:16px}
+.card blockquote{margin:0;padding-left:12px;border-left:4px solid var(--mar);font-style:italic;font-size:15px}
+
+.lider{display:grid;grid-template-columns:86px 1fr;gap:16px;background:var(--arena-hueso);padding:17px 18px}
+.orden{font-family:'Silkscreen',monospace;font-size:11px;text-align:center;padding:12px 4px;color:#fff;line-height:1.5}
+.lider h4{margin:0;font-size:15px}
+.lider .sub2{font-family:'Alegreya Sans',sans-serif;font-size:13px;color:var(--tinta-suave);margin:3px 0 9px}
+.lider p{margin:0 0 8px;font-size:16px}
+.lider blockquote{margin:0;padding-left:12px;border-left:4px solid var(--oro);font-style:italic;font-size:15px}
+
+footer{background:var(--tinta);color:#a8c2ce;padding:26px 0;font-family:'Alegreya Sans',sans-serif;font-size:14px}
+footer b{color:var(--arena-hueso)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<style>
+/* animaciones compartidas de Nubia */
+@keyframes nb-surgir{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:none}}
+@keyframes nb-brotar{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:none}}
+main>.wrap>*,section.tab.on>.wrap>*{animation:nb-surgir .3s ease both}
+.card,.ruta,.item,.npc,.lider,.tir,.carta{animation:nb-surgir .24s ease both}
+.panel,.mapa-caja,.tilewrap,.bloque,.res{animation:nb-brotar .28s ease both}
+.bt,button,.chip,.dado,a.carta,nav button{transition:background .14s,color .14s,transform .09s,box-shadow .14s,border-color .14s}
+.bt:active,button:active,.chip:active,.dado:active{transform:translateY(1px)}
+a.carta:hover,.card:hover{transform:translateY(-3px)}
+a.carta,.card{transition:transform .16s,background .14s}
+.t,.tk{transition:transform .12s,filter .12s}
+.t.pt:hover,.t.npc:hover{filter:brightness(1.08)}
+tr,.punto,.npc{transition:background .14s}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <p class="eyeb">Guía del director · Pokémon 5E</p>
+    <h1>Región de <span>Nubia</span></h1>
+    <p>Ocho ciudades, tres pueblos y una montaña nevada que nace al borde del mar. Aquí está el mapa, el esquema de cada localidad, quién vive en ella y qué te dirá si te le acercas.</p>
+  </div>
+</header>
+<div class="vueltiao"></div>
+
+<nav>
+  <div class="wrap" role="tablist">
+    <button role="tab" aria-selected="true" data-tab="region">MAPA REGIONAL</button>
+    <button role="tab" aria-selected="false" data-tab="local">LOCALIDADES</button>
+    <button role="tab" aria-selected="false" data-tab="clases">32 CLASES</button>
+    <button role="tab" aria-selected="false" data-tab="liga">GIMNASIOS Y LIGA</button>
+    <button role="tab" aria-selected="false" data-tab="dorado">EL DORADO</button>
+  </div>
+</nav>
+
+<!-- ================= MAPA REGIONAL ================= -->
+<section class="tab on" id="tab-region">
+  <div class="wrap">
+    <h2 class="sec">La región</h2>
+    <p class="lead">Nubia se recorre en herradura: sales del pueblo natal hacia el mar, bajas por el río hasta el valle de la caña, subes a la cordillera y regresas al norte para escalar la Sierra. Haz clic en cualquier localidad para abrir su ficha.</p>
+    <div class="mapa-caja" id="mapa"></div>
+    <div class="leyenda">
+      <span><i style="background:#c6386b"></i>Ciudad con gimnasio</span>
+      <span><i style="background:#e0951c"></i>Pueblo</span>
+      <span><i style="background:#f6e7c4"></i>Liga Nubia</span>
+      <span><i style="background:#4aa3d9"></i>Mar y ríos</span>
+      <span><i style="background:#7a6a58"></i>Sierra Nevada</span>
+      <span><i style="background:#e0951c;transform:rotate(45deg)"></i>Zona legendaria</span>
+      <span><i style="background:#fdf6e6;border-color:#12283f"></i>Número de ruta</span>
+    </div>
+
+    <h2 class="sec" style="margin-top:44px">Rutas y aguas</h2>
+    <p class="lead">Doce rutas terrestres y marítimas. Las aguas te las dejo listadas aparte porque son las que vas a usar para decidir encuentros de tipo Agua.</p>
+    <div class="rutas" id="rutas"></div>
+  </div>
+</section>
+
+<!-- ================= LOCALIDADES ================= -->
+<section class="tab" id="tab-local">
+  <div class="wrap">
+    <h2 class="sec">Localidades</h2>
+    <p class="lead">Cada esquema mide 22 × 14 casillas, la escala de un pueblo de Kanto o Johto. En la mesa, una casilla equivale a 5 metros (1 cuadro de combate en 5E). Los números rosados son NPC: haz clic en uno para saltar a su ficha.</p>
+    <div class="chips" id="chips"></div>
+    <div id="ficha"></div>
+  </div>
+</section>
+
+<!-- ================= CLASES ================= -->
+<section class="tab" id="tab-clases">
+  <div class="wrap">
+    <h2 class="sec">Las 32 clases de entrenador</h2>
+    <p class="lead">Veintiocho clases civiles y cuatro del Equipo El Dorado. Todas pueden aparecer en cualquier ciudad: lo que cambia es el <em>reskin</em> local. La Bailadora de Cumbia baila salsa en Cañaveral y champeta en Cumbia; sigue siendo la misma clase con el mismo bloque de estadísticas. Usa la banda de nivel como referencia para escalar el encuentro.</p>
+    <div class="grid3" id="clases"></div>
+  </div>
+</section>
+
+<!-- ================= LIGA ================= -->
+<section class="tab" id="tab-liga">
+  <div class="wrap">
+    <h2 class="sec">Los ocho gimnasios</h2>
+    <p class="lead">Cada gimnasio tiene un desafío que no es solo combate: un acertijo de sala que se resuelve con habilidades de 5E antes de llegar al líder.</p>
+    <div class="grid3" id="lideres" style="grid-template-columns:1fr"></div>
+
+    <h2 class="sec" style="margin-top:48px">Camino Victoria y el Alto Mando</h2>
+    <p class="lead">El Camino Victoria es la subida a la Sierra Nevada de Nubia por sus cuatro pisos térmicos. La Liga está en la cima, entre los Picos Gemelos.</p>
+    <div class="grid3" id="pisos"></div>
+    <div class="grid3" id="alto" style="grid-template-columns:1fr;margin-top:24px"></div>
+  </div>
+</section>
+
+<!-- ================= EL DORADO ================= -->
+<section class="tab" id="tab-dorado">
+  <div class="wrap">
+    <h2 class="sec">Equipo El Dorado</h2>
+    <p class="lead">De día, Café Dorado S.A.: una empresa de minería y distribución de café con oficinas en las once localidades, patrocinadora del torneo juvenil y de la radio deportiva. De noche, la red que mueve Pokémon raros por el río en sacos de café para controlar la región. Nadie los odia. Todo el mundo les compra el tinto.</p>
+    <div class="grid3" id="dorado-jefes" style="grid-template-columns:1fr"></div>
+
+    <h2 class="sec" style="margin-top:44px">La campaña en cuatro actos</h2>
+    <p class="lead">Estructura pensada para llevar al grupo de nivel 1 a nivel 12 sin que la trama estorbe la ruta de medallas.</p>
+    <div class="grid3" id="actos"></div>
+  </div>
+</section>
+
+<div class="vueltiao"></div>
+<footer>
+  <div class="wrap">
+    <b>Códice de Nubia</b> — documento de trabajo del director. Contenido de fans, sin relación con Nintendo, Game Freak ni Wizards of the Coast.
+  </div>
+</footer>
+
+<script>
+/* ============================================================
+   DATOS — edita libremente. Los mapas son cadenas de texto.
+   Leyenda de casillas:
+   .  césped      ,  tierra       =  empedrado    ~  agua
+   s  arena       T  árbol        f  flores       #  muro
+   C  Centro Pokémon              M  Tienda       G  Gimnasio
+   H  Casa        L  Edificio clave              D  Sede El Dorado
+   P  Muelle      E  Salida a ruta               1-5 NPC
+   ============================================================ */
+
+const COLORES = {
+  '.':'#7ec46b', ',':'#d6ac74', '=':'#c6bfae', '~':'#3f9ed6', 's':'#efd9a2',
+  'T':'#2e7d4f', 'f':'#e86a9b', '#':'#8a7f72', 'C':'#e0524f', 'M':'#3b7fd1',
+  'G':'#7b5ba6', 'H':'#c1854a', 'L':'#e0951c', 'D':'#26262b', 'P':'#a9784a',
+  'E':'#f6e7c4'
+};
+const ETIQ = {'C':'PC','M':'TDA','G':'GYM','H':'','L':'★','D':'ED','P':'','E':'→'};
+
+const LOC = [
+{
+  id:'fundacion', nom:'Pueblo Fundación', tipo:'pueblo', base:'Fundación, Atlántico / Magdalena',
+  desc:'Un cruce de camino entre la ciénaga y los mangos, partido en dos por las vías oxidadas del viejo ferrocarril bananero. No hay gimnasio ni semáforo: hay un laboratorio, una tienda que vende de todo y un tren detenido desde hace treinta años que sirve de casa a media docena de Pokémon.',
+  mapa:['TTTTTTTTTT..TTTTTTTTTT',
+   'T....................T',
+   'T..HHH...LLL...HHH...T',
+   'T..HHH...LLL...HHH...T',
+   'T..H1H...L2L...H.H...T',
+   'E===================.T',
+   'T..,,,,,,,,,,,,,,,..,T',
+   'T..,CCC,,,,,,,MMM,..,T',
+   'T..,CCC,,,3,,,MMM,..,T',
+   'T..,C.C,,,,,,,M4M,..,T',
+   'T..,,,,,,,,,,,,,,,..,T',
+   'T.f...........5......T',
+   'T.fff...TTT.....TTT..T',
+   'TTTTTTTTTTTTTTTTTTTTTT'],
+  clave:['Laboratorio Ceiba (★): entrega de iniciales y de la Pokédex de Nubia.','El Vagón: un vagón de tren varado al sur, refugio de Pokémon pequeños.','Muelle de la ciénaga: salida a la Ruta 1 en canoa si el grupo no quiere caminar.'],
+  npcs:[
+    {n:1,nom:'Yuli Barraza',cls:'Colegiala',act:'Trece años, mochila más grande que ella. Quiere irse de viaje y sus papás no la dejan todavía.',dial:'¿Vas pa\' Ciudad Cumbia? Cuando llegues me mandas foto del gimnasio, ¿sí? Dicen que allá se pelea con tambor.'},
+    {n:2,nom:'Profesora Ceiba Mendoza',cls:'Investigadora regional',act:'Cincuentona, botas embarradas, jamás está en el laboratorio sentada. Directa y sin ceremonia.',dial:'Aquí no se estudia al Pokémon en jaula. Se estudia caminando. Toma tu compañero y camina.'},
+    {n:3,nom:'Mateo Ariza',cls:'Escarabajo de Ruta',act:'Ciclista adolescente que entrena subiendo la loma del pueblo diez veces al día. Competitivo pero noble.',dial:'Si subes la Sierra sin piernas te devuelves llorando. Yo llevo tres meses subiendo esa loma. Te reto a la Ruta 1.'},
+    {n:4,nom:'Don Chepe',cls:'Cacharrero',act:'Dueño de la tienda. Vende Poké Balls, pilas, cordones y confianza. Siempre da ñapa.',dial:'Llévate dos Poké Balls y te doy la tercera de ñapa, mijo. Pero eso sí: la ñapa no se pide, se gana.'},
+    {n:5,nom:'Doña Ana Polo',cls:'Vendedora de Raspao',act:'Puesto de raspao a la salida sur. Sabe todo lo que pasa en el pueblo porque todo el mundo pasa por ahí.',dial:'Raspao de tamarindo pa\'l calor y consejo gratis de ñapa: no camines la Ruta 1 al mediodía. Ni tú ni tu Pokémon.'}],
+  ganchos:['Los Pokémon del mangal están bajando fruta de más y alguien la está recogiendo en costales antes del amanecer. Los costales dicen "Café Dorado".','El vagón varado tiene la puerta forzada desde adentro. Algo se metió y no ha salido.']
+},
+{
+  id:'cumbia', nom:'Ciudad Cumbia', tipo:'ciudad', base:'Barranquilla', gimtipo:'Eléctrico',
+  desc:'La Puerta de Oro de Nubia: puerto, carnaval y calor. Cuando llueve, las calles se convierten en arroyos que arrastran motos, así que la ciudad se construyó hacia arriba, en balcones y pasarelas. El gimnasio es una tarima de carnaval y el generador de la ciudad late al ritmo de los tambores.',
+  mapa:['~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~',
+   '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~',
+   '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~',
+   'ssssssssssssssssssssssssss~~~~',
+   'T.....=........=....5.=..f~~~~',
+   'Tf===========2==========LLLL~~',
+   'T.======================LLLL~~',
+   'T..HHH=..HHH...=..HHH.=.LL===E',
+   'T..HHH=.fHHH...=..HHHT=.LLLPPT',
+   'Tf.HHH=..HHH...=..HHH.=....PPT',
+   'T.....=.1..f...=f..T..=.f4T..T',
+   'T.==========================.T',
+   'T.===============GGGGG==DDDD.T',
+   'T..CCC=..MMM...=.GGGGG=.DDDD.T',
+   'T..CCC=..MMM...=.GGGGG=.DDDD.T',
+   'Tf.CCC=..MMM.T.=TGGGGG=.DDDD.T',
+   'T.=================3========.T',
+   'T.==========================.T',
+   'T...=T=........=...T..=.f.f..T',
+   'TTTTETTTTTTTTTTTTTTTTTTTTTTTTT'],
+  clave:['Gimnasio Tambora: tarima de carnaval con placas de presión que responden a un patrón rítmico.','Malecón del Magdalena: paseo largo con entrenadores rotando cada día de juego.','Terminal de chivas: viaje rápido a cualquier ciudad ya visitada por 200 monedas.','Torre Café Dorado: oficina "legal" de la empresa, con vista al puerto.'],
+  npcs:[
+    {n:1,nom:'Sara Iriarte',cls:'Bailadora de Cumbia',act:'Ensaya en el balcón de su casa a las seis de la mañana. Amable, hiperactiva, habla con las manos.',dial:'Mi Pokémon no aprende movimientos: aprende pasos. Míralo. Uno, dos, tres… ¡y golpe!'},
+    {n:2,nom:'Tico Zambrano',cls:'Mototaxista',act:'Conoce cada hueco de la ciudad. Cobra barato y habla el triple de lo que cobra.',dial:'Te llevo a cualquier barrio por dos monedas. Si cae el arroyo son cuatro, y ahí sí te agarras duro.'},
+    {n:3,nom:'"Chelo" Ospino',cls:'Locutor Deportivo',act:'Transmite combates callejeros en vivo desde una cabina de lata. Dramático hasta para pedir agua.',dial:'¡En vivo desde el malecón! Dime tu nombre, novato, que si ganas te lo pongo en la radio y si pierdes también.'},
+    {n:4,nom:'Yamila Carrasquilla',cls:'Líder de Gimnasio · Eléctrico',act:'La Marimonda. Bailarina de comparsa y líder. Se ríe mientras te derrota.',dial:'En Nubia se pelea con ritmo, corazón. Si pierdes el compás, pierdes el combate.'},
+    {n:5,nom:'Ing. Ramiro Ospina',cls:'Alto Mando · Tierra (visitante)',act:'Ingeniero de canales, mide arroyos con un teodolito. Serio, paciente, mide antes de hablar.',dial:'La gente le tiene miedo al agua que baja. Yo le tengo respeto al suelo que se la lleva. Ese es mi trabajo.'}],
+  ganchos:['Un arroyo repentino deja atrapados a tres Pokémon y a un niño en un techo. Es una escena de rescate con tiradas de Atletismo, no de combate.','En el muelle 4 cargan cajas de "café" a medianoche. Ningún camión de café necesita respiraderos.']
+},
+{
+  id:'muralla', nom:'Ciudad Muralla', tipo:'ciudad', base:'Cartagena', gimtipo:'Roca',
+  desc:'Una ciudad amurallada de piedra coralina, con un fuerte en la punta y túneles debajo que nadie ha terminado de cartografiar. Vive del turismo y del mar. La piedra aquí no es decoración: es el material con el que la ciudad piensa.',
+  mapa:['########################E###',
+   '#~~~~~~ss#=================#',
+   '#~~~~~~ss#=HHH===HHH===H=H=#',
+   '#~~~~~~ss#=HHH==fHHH===H=H=#',
+   '#~~~~~~ss#=HHH===HHH=f=HHH=#',
+   '#~~~~~~ss#=====1=====2=====#',
+   '#~~~~~~ss#=CCC===MMM==LLLL=#',
+   '#~~~~~~ss#=CCC===MMMf=LLLL=#',
+   '#~~~~~~PP#=CCCf==MMM==LLLL=#',
+   '#~~~~~~PP#=================#',
+   '#~~~~~~ss#=========3=======#',
+   '#~~~~~~ss#=GGGGGG===DDDD===#',
+   '#~~~~~~ss#=GGGGGG===DDDD===#',
+   '#~~~~~~ss#=GGGGGG===DDDD===#',
+   '#~~~~~~ss#=GGGGG===========#',
+   '#~~~~~~ss#====4==========5=#',
+   '#~~~~~~ss#======f=======f==#',
+   '################E###########'],
+  clave:['Gimnasio Baluarte: dentro del fuerte. Bloques de piedra que se empujan para abrir el paso (acertijo tipo sokoban).','Túneles del fuerte: red subterránea con corrientes de aire que indican la salida. Sin nada sobrenatural: pura ingeniería vieja.','Plaza de las Palenqueras: mercado de bayas y objetos curativos, mejores precios que la tienda.'],
+  npcs:[
+    {n:1,nom:'Doña Teresa Cassiani',cls:'Palenquera Frutera',act:'Carga la ponchera en la cabeza y no se le cae ni corriendo. Franca, se ríe fuerte.',dial:'Mango biche con sal, niño. Y come antes de entrar al fuerte, que allá adentro no hay quien te venda nada.'},
+    {n:2,nom:'Sofi Rentería',cls:'Guía Turística',act:'Recita la historia del fuerte de memoria y odia que la interrumpan. Muy útil si la dejas terminar.',dial:'…y por eso el fuerte tiene tres murallas y no dos. ¿Que si hay túneles? Hay. ¿Que si te llevo? No.'},
+    {n:3,nom:'Kevin Padilla',cls:'Buzo de Arrecife',act:'Baja al arrecife sin equipo desde los diez años. Tranquilo, algo temerario.',dial:'El coral de allá afuera está blanco desde hace dos meses. Algo raspó el fondo. Yo sé cómo se ve un raspón de draga.'},
+    {n:4,nom:'Baltasar Corales',cls:'Líder de Gimnasio · Roca',act:'Cantero e historiador. Habla lento, pega duro. Respeta a quien piensa antes de golpear.',dial:'Esta muralla lleva cuatrocientos años parada porque cada piedra sabe cuál es su lugar. Averigua el tuyo.'},
+    {n:5,nom:'Aníbal Torres',cls:'Vigilante Nocturno',act:'Ronda la muralla de noche. Cansado, observador, no le gustan los líos… pero anota todo.',dial:'Yo no me meto en nada. Pero llevo tres semanas viendo la misma lancha sin luces entrar por el mismo hueco.'}],
+  ganchos:['El acertijo de bloques del fuerte tiene una piedra fuera de lugar: alguien lo resolvió antes, hace poco, y dejó marcas de cadena.','Kevin puede llevar al grupo al arrecife raspado si le ganan un combate. Ahí encuentran una draga abandonada con el logo de Café Dorado tapado con pintura.']
+},
+{
+  id:'sabanal', nom:'Pueblo Sabanal', tipo:'pueblo', base:'Sincelejo',
+  desc:'Sabana abierta, calor seco y ganado. Todo el pueblo gira alrededor del Festival de la Gaita y el Vueltiao, y del corral comunitario donde los Pokémon de carga descansan entre viajes. Es el último lugar con sombra antes del río.',
+  mapa:['TTTTTTTTTETTTTTTTTTT',
+   'T........,..T...T..T',
+   'TT.HHHf..,....HHHf.T',
+   'T..HHH...,.f..HHH..T',
+   'T..HHH.1.,....HHH..T',
+   'T..T.....,.f.3.....T',
+   'T.,,,,,,,,,,,,,,,,.T',
+   'Tf,,,,,,,,,,,,,,,5,E',
+   'T........,2........T',
+   'T..CCC...,.####MM..T',
+   'T..CCCf.f,.#DD#MM..T',
+   'T.fCCC...,.#DD#MMT.T',
+   'T...........4......T',
+   'TTTTTTTTTTTTTTTTTTTT'],
+  clave:['Corral comunitario: aquí se guardan los Pokémon de carga de toda la sabana. Puedes alquilar uno para cruzar la Ruta 4.','Casa del Vueltiao: taller de sombreros. Se puede aprender a leer los patrones tejidos, que funcionan como mapas.','Bodega de acopio de Café Dorado: pequeña, con más candados de los que necesita un depósito de grano.'],
+  npcs:[
+    {n:1,nom:'Rosalba Mercado',cls:'Tejedora de Vueltiao',act:'Teje sin mirar mientras habla. Paciente. Enseña si le tienes paciencia de vuelta.',dial:'Cada vuelta del sombrero es una figura y cada figura quiere decir algo. Esto que ves aquí es un río. Y este, un camino que no está en ningún mapa.'},
+    {n:2,nom:'Nico Támara',cls:'Arriero',act:'Mueve ganado y carga por la sabana. Callado, honesto, terco como su Pokémon.',dial:'Me faltan seis cabezas en dos semanas. Y no fue un depredador: los depredadores no cierran la tranquera al salir.'},
+    {n:3,nom:'Doña Mile Vergara',cls:'Cocinera de Sancocho',act:'Olla de sancocho permanente en la plaza. Alimenta a todo el que pase, quiera o no.',dial:'Siéntese ahí. No, no le estoy preguntando. Coma primero y después me cuenta a dónde va con esa cara.'},
+    {n:4,nom:'Katy Villalba',cls:'Barista Encubierta · El Dorado',act:'Recluta jóvenes con un stand de café gratis y contratos de "promotor". Simpatiquísima. Ese es el problema.',dial:'¿Cien monedas por repartir volantes de la empresa? Nada, un trabajito. Ah, y si ves un Pokémon raro por la sabana, me avisas y te doy comisión.'},
+    {n:5,nom:'Juan David "Cometa"',cls:'Cometero',act:'Vuela cometas en la loma con vientos de agosto. Nueve años, valiente, imprudente.',dial:'Ayer mi cometa se subió altísimo y vi la bodega por dentro. Hay jaulas. ¿Para qué guardan café en jaulas?'}],
+  ganchos:['El ganado que falta y la comisión que ofrece Katy son la misma historia contada desde dos lados.','Rosalba puede tejer, por encargo, un vueltiao con el camino secreto a la Sierra. Cobra en favores, no en monedas.']
+},
+{
+  id:'bermejo', nom:'Puerto Bermejo', tipo:'pueblo', base:'Barrancabermeja',
+  desc:'Puerto fluvial sobre el Magdalena. Barcazas, grúas, calor pegajoso y una economía que depende entera de lo que sube y baja por el río. Es el corazón logístico de Café Dorado y, por lo tanto, el lugar donde la campaña se pone seria.',
+  mapa:['TTTTTTTTTTTTTTTTTTTTTTTT',
+   'T..................h...T',
+   'T..HHH...HHH,.....#DDD#T',
+   'T..HHH...HHH,.....#DD5#T',
+   'T..HHH...HHH,h3...#####T',
+   'T.,,,,,,,,,,,,,,,,,,,,.T',
+   'T.,,,,,,,,,,,,,,,,,,,,hT',
+   'E,,,CC......,.hMMM.h...T',
+   'T..CCC......,..MMM..4h.T',
+   'T.,CCC,,,,,,,,,MMM,,,,.T',
+   'T.,,,,,,,,,,,,,,,,,,,,.T',
+   'sssssssssss2ssssssssssss',
+   '~~~~~~PPP~~~,~~PPP~~~~~~',
+   '~~~~~~P1P~~~,~~PPP~~~~~~',
+   '~~~~~~~~~~~~,~~~~~~~~~~~',
+   '~~~~~~~~~~~~E~~~~~~~~~~~'],
+  clave:['Bodega Mayor Café Dorado: tres pisos, oficina de manifiestos en el segundo. Es el objetivo del Acto I.','Muelle de barcazas: viaje fluvial a Cañaveral y a Cumbia. Sale a horas fijas.','Taller de chivas: reparación y personalización del vehículo del grupo, si les das uno.'],
+  npcs:[
+    {n:1,nom:'Wilmer Ochoa',cls:'Chalupero',act:'Lleva pasajeros río arriba en una chalupa que suena a que se va a partir. Nunca se ha partido.',dial:'¿Río arriba de noche? Le cobro doble. No por el peligro: por lo que voy a tener que olvidar mañana.'},
+    {n:2,nom:'Yeni Cadena',cls:'Pescadora de Ciénaga',act:'Sale a las cuatro de la mañana. Habla poco y dice mucho.',dial:'Antes había bocachico. Ahora hay sedimento. Lo que sea que estén lavando allá arriba, baja por aquí.'},
+    {n:3,nom:'Lina Restrepo',cls:'Reportera de la Liga',act:'Vino a cubrir el torneo juvenil y se quedó investigando otra cosa. Ambiciosa, valiente, imprudente.',dial:'Tengo tres manifiestos con el mismo peso y distinto contenido. Necesito a alguien que entre. No estoy diciendo tú. Pero podrías ser tú.'},
+    {n:4,nom:'Fabio Quiceno',cls:'Mecánico de Chiva',act:'Manos negras de grasa, radio a todo volumen. Generoso con las herramientas, tacaño con los elogios.',dial:'Ese motor no lo dañó el camino. Eso lo dañó alguien que cargó ocho toneladas donde caben cuatro.'},
+    {n:5,nom:'Don Nelson Cuadros',cls:'Capataz · El Dorado',act:'Jefe de bodega. Cordial, gordo, sonriente, y decide quién entra al muelle. No amenaza: informa.',dial:'Bienvenidos a Café Dorado, muchachos. La bodega es zona restringida por seguridad industrial. Ustedes entienden. ¿Un tintico?'}],
+  ganchos:['Los manifiestos de Lina no cuadran. Comparar tres papeles es una tirada de Investigación, no un combate: la escena premia leer.','La barcaza que zarpa a las 3 a.m. no aparece en ningún registro. Alguien tiene que estar arriba cuando zarpe.']
+},
+{
+  id:'canaveral', nom:'Ciudad Cañaveral', tipo:'ciudad', base:'Cali', gimtipo:'Planta',
+  desc:'El valle de la caña: verde hasta donde alcanza la vista, cortado por el río Pance. La ciudad baila de noche y siembra de día. El gimnasio es literalmente un cañaveral con senderos que cambian según qué surco se riegue.',
+  mapa:['hhhhhhhhhhhhEhhhhhhh~~~~~~',
+   'hhh......f..=....f..~~~~~~',
+   'hhh.HHH.....=HH.....~~~~~~',
+   'hhh.HHH.=...=HH..=..~~~~~~',
+   'hhh.HHH1=f..HHH.3=..~~~~~~',
+   'hhh====================..h',
+   'E======================hhh',
+   'hhh.CCC.=...MMMf.=.LLL.hhh',
+   'hhh.CCC.=...MMM..=.LLL.hhh',
+   'hhh.CCC.=...MMM..=.LLL.hhh',
+   'hhh..f..=f.2f....=.....hhh',
+   'hhh====================hhh',
+   'hhh==========4=======5=hhh',
+   'hhh.....=.GGGGGG.=.DDDDhhh',
+   'hhh.f...=.GGGGGG.=.DDDDhhh',
+   'hhh.....=.GGGGGG.=.DDDDhhh',
+   'hhh.....=.GGGGGG.=.....hhh',
+   'hhhhhhhhhhhhhhhhhhhhhhhhhh'],
+  clave:['Gimnasio Retoño: laberinto de caña. Las paredes crecen y se abren según el orden en que abras las compuertas de riego.','Río Pance: zona de pesca y de encuentros acuáticos de agua dulce.','Escuela de agronomía: aquí se identifican semillas y bayas raras; útil para rastrear de dónde salió una planta.'],
+  npcs:[
+    {n:1,nom:'Doña Nelly Grisales',cls:'Panadera',act:'Pandebono a toda hora. Maternal con los entrenadores jóvenes y dura con los groseros.',dial:'Pandebono calientico. Y no me le des pan a ese Pokémon con esa cara de hambre, mejor dale del bueno, toma.'},
+    {n:2,nom:'Camilo Zapata',cls:'Universitario',act:'Estudia agronomía, lleva una libreta con todo anotado. Nervioso, brillante, habla rápido.',dial:'Tengo una muestra de suelo de un lote que la empresa compró hace ocho meses. El pH no da. Ese lote no es para sembrar.'},
+    {n:3,nom:'Valeria Cañas',cls:'Líder de Gimnasio · Planta',act:'Ingeniera de riego y líder. Calculadora, elegante, se toma su tiempo.',dial:'El agua no corre por donde tú quieres. Corre por donde tú la dejas. Ábreme el surco correcto y hablamos.'},
+    {n:4,nom:'Andrés "Pies Locos"',cls:'Bailador de Salsa',act:'Enseña salsa en la esquina por propinas. Alegre, competitivo en la pista y en el combate.',dial:'Te apuesto: si aguantas ocho tiempos conmigo, te enseño el truco con el que le gané al gimnasio.'},
+    {n:5,nom:'Elena Marulanda',cls:'Guardaparques',act:'Cuida la reserva de la ladera. Cortante con los turistas, leal con quien ayuda.',dial:'Han quemado tres lotes en un mes y ninguno se quemó solo. Los Pokémon se están corriendo hacia el pueblo.'}],
+  ganchos:['El lote con pH imposible tiene una boca de mina tapada con caña sembrada encima.','Los incendios controlados empujan a los Pokémon hacia una zona donde alguien puso trampas. Seguir el humo es seguir el negocio.']
+},
+{
+  id:'orquidea', nom:'Ciudad Orquídea', tipo:'ciudad', base:'Medellín', gimtipo:'Acero',
+  desc:'La ciudad más vertical de Nubia: un valle estrecho con laderas cosidas por cables de teleférico y un metro elevado que la atraviesa entera. Aquí se funde el metal de las minas del sur y se cultivan las orquídeas que se venden en toda la región.',
+  mapa:['^^^^^^^^^^^^^^^^^^^^^^^^^^^^',
+   '^^^^.........#..........^^^^',
+   '^^^^..=HHH...#..HHH.=.f.^^^^',
+   '^^^^..=HHH..f#..HHH.=...^^^^',
+   '^^^^..=HHH.1.#..HHH.=...^^^^',
+   '^^^^.==================.^^^^',
+   '^^^^.=============3====.^^^^',
+   '^^^^..=.f....#......=.f.^^^^',
+   '^^^^..=CCC.f.#..MMMf=DDD^^^^',
+   '^^^^..=CCC...#..MMM.=DDD^^^^',
+   '^^^^..=CCC...#..MMM.=DDD^^^^',
+   '^^^^..=.....2#f.....=DDD^^^^',
+   '^^^^f==================.===E',
+   '^^^^.=================5.^^^^',
+   '^^^^f.=..f...#.GGGGG=...^^^^',
+   '^^^^..=HHH...#.GGGGG=LLL^^^^',
+   '^^^^..=HHHf..#.GGGGG=LLL^^^^',
+   '^^^^..=HHH...#.GGGGG=LLL^^^^',
+   '^^^^.==================.^^^^',
+   '^^^^.============4=====.^^^^',
+   '^^^^..f......#......=...^^^^',
+   '^^^^^^^^^^^^^^^^^^^^E^^^^^^^'],
+  clave:['Gimnasio Riel: andenes móviles. El combate ocurre sobre plataformas que se desplazan cada dos turnos.','Teleférico de la ladera: sube a los barrios altos y a la Ruta 7. Es también un punto de encuentro para Pokémon voladores.','Fundición Dorado: la planta metalúrgica de la empresa, con permisos impecables y demasiado material de entrada.'],
+  npcs:[
+    {n:1,nom:'Don Elkin Restrepo',cls:'Arriero',act:'Bajó de la montaña hace cuarenta años y sigue vestido igual. Cuenta historias largas con dato útil al final.',dial:'Antes de que hubiera metro, esas laderas se subían con mula. Todavía sé los caminos. Todos.'},
+    {n:2,nom:'Yuli Betancur',cls:'Mecánica de Chiva',act:'Repara vagones del metro. Malgeniada, competentísima, no soporta el trabajo mal hecho.',dial:'Alguien le metió mano al freno del cable dos. No fue desgaste. Fue una llave inglesa.'},
+    {n:3,nom:'Aníbal Rendón',cls:'Alto Mando · Lucha (visitante)',act:'Silletero: carga arreglos florales de sesenta kilos monte arriba. Enorme, amable, de risa fácil.',dial:'La fuerza no es levantar. Es levantar y seguir caminando. Cuando entiendas eso, nos vemos arriba en la Sierra.'},
+    {n:4,nom:'Ing. Marcela Ferro',cls:'Líder de Gimnasio · Acero',act:'Ingeniera jefe del metro y líder. Precisa, impaciente con la improvisación.',dial:'Mi ciudad funciona porque todo llega a tiempo. Tu equipo va a perder porque llega tarde a todo.'},
+    {n:5,nom:'Dra. Vega',cls:'Geóloga · El Dorado',act:'Ofrece becas de geología a estudiantes. Encantadora, mide a la gente mientras habla.',dial:'La empresa financia a jóvenes con talento. Yo solo pido a cambio que me traigan muestras de donde vayan. Todo muy legal.'}],
+  ganchos:['El sabotaje al cable dos ocurrió la misma noche que llegó un cargamento a la fundición. Alguien quería la ladera vacía de testigos.','Las "muestras" que pide la Dra. Vega dibujan, en un mapa, la ruta exacta hacia una veta en la Sierra.']
+},
+{
+  id:'paramo', nom:'Ciudad Páramo', tipo:'ciudad', base:'Bogotá', gimtipo:'Hielo',
+  desc:'Dos mil seiscientos metros de altura, llovizna permanente y frailejones en las lomas del borde. Es la capital administrativa: aquí están la Federación de Entrenadores, el archivo de licencias y el Museo del Oro de Nubia, que guarda la pieza que El Dorado lleva veinte años queriendo.',
+  mapa:['^^^^^^^^^^^^^^^^^^^^^^^E^^^^^^',
+   '^............h....h....=.....^',
+   '^......=.......=.......=.....^',
+   '^.....h=.......=.....h.=.....^',
+   '^.==========================.^',
+   '^.=======1==================.^',
+   '^..HHH.=..HHHh.=.LLLLL.=.LLLL^',
+   '^..HHH.=..HHH..=.LLLLL.=.LLLL^',
+   '^..HHH.=..HHH..=.LLLLL.=.LLLL^',
+   '^......=......3=.......=.....^',
+   'E==================2=======4.^',
+   '^.==========================.^',
+   '^..CCC.=..MMM..=.GGGGG.=.DDDD^',
+   '^..CCC.=..MMM..=.GGGGG.=.DDDD^',
+   '^..CCC.=..MMM..=.GGGGG.=.DDDD^',
+   '^.h....=.......=.GGGGG.=.DDDD^',
+   '^h==========================.^',
+   '^.=================5========.^',
+   '^......=.......=.....h.=.....^',
+   '^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^'],
+  clave:['Gimnasio Escarcha: piso de hielo con deslizamiento clásico. Hay que planear la ruta antes de dar el primer paso.','Museo del Oro de Nubia (★): custodia la Balsa Dorada, un mapa en miniatura de la Sierra hecho en oro.','Federación de Entrenadores: aquí se registran las medallas y se pide permiso oficial para subir el Camino Victoria.'],
+  npcs:[
+    {n:1,nom:'Julián Cifuentes',cls:'Estudiante Universitario',act:'Trabaja de guía en el museo para pagar la carrera. Tímido, enciclopédico.',dial:'La Balsa Dorada no es una joya. Es un plano. Cada punta representa un pico y ese de allá no está en ningún mapa moderno.'},
+    {n:2,nom:'Don Hugo Naranjo',cls:'Esmeraldero',act:'Curador y antiguo comerciante de piedras. Desconfiado, con una lupa siempre en el bolsillo.',dial:'Llevo cuarenta años distinguiendo oro de latón y gente de latón también. Ustedes todavía no sé qué son.'},
+    {n:3,nom:'Paula Ríos',cls:'Ornitóloga',act:'Cuenta aves en el páramo con binoculares. Meticulosa, se enoja con el ruido.',dial:'Los voladores del páramo cambiaron de ruta este mes. Vuelan rodeando un punto de la Sierra. Nada los hace rodear algo sin razón.'},
+    {n:4,nom:'Dra. Elvira Nieto',cls:'Alto Mando · Hielo (visitante)',act:'Glacióloga y miembro del Alto Mando. Habla bajo, mira fijo, no repite las cosas.',dial:'El glaciar de la Sierra perdió doce metros en cinco años. Sube, si quieres tu medalla. Pero sube sabiendo qué estás pisando.'},
+    {n:5,nom:'Sofía Escarcha',cls:'Líder de Gimnasio · Hielo',act:'Patinadora de velocidad retirada, líder del gimnasio. Fría de trato, cálida cuando pierdes bien.',dial:'Aquí nadie corre. Aquí se desliza. Y el que se desliza sin pensar termina contra la pared.'}],
+  ganchos:['Alguien pidió los planos de seguridad del museo con una carta membretada de la Federación. La firma no coincide.','Si el grupo tarda demasiado, la Balsa Dorada desaparece durante el torneo juvenil, con toda la ciudad mirando hacia otro lado.']
+},
+{
+  id:'vallenar', nom:'Ciudad Vallenar', tipo:'ciudad', base:'Valledupar', gimtipo:'Fuego',
+  desc:'Calor de cuarenta grados al pie de la Sierra, partido en dos por el río Guatapurí, que baja helado desde la nieve. Cada año se celebra el Festival del Acordeón, donde los combates se resuelven en piquerías: duelos musicales con Pokémon de tipo Fuego marcando el compás.',
+  mapa:['TTTTTTTTTTT~~~TTTTETTTTT',
+   'T...f......~~~....,....T',
+   'T.HHH,LLLL.~~~....,.HHHT',
+   'T.HHH,LLLL.~~~..f.,.HHHT',
+   'T.HHH,LLLL.~~~....,.HHHT',
+   'T....,...1.~~~..3.,ff..T',
+   'T.,,,,,,,,,,,,,,,,,,,,,T',
+   'T.,,,,,,,,,,,,,,,,,,,,,T',
+   'T.CCC,.....~~~....,.MMMT',
+   'T.CCC,..f..~2~.f..,.MMMT',
+   'T.CCC,f.f..~~~....,.MMMT',
+   'T.,,,,,,4,,,,,,,,,,,,,,T',
+   'T.,,,,DDDD,,,,,GGGGG,5,T',
+   'T....,DDDD.~~~.GGGGG...T',
+   'T....,DDDD.~~~.GGGGG...T',
+   'TTTTTETTTTT~~~TTTTTTTTTT'],
+  clave:['Gimnasio Brasa: piquería. El desafío mezcla combate con una prueba de Actuación o Interpretación por rondas.','Balneario del Guatapurí: agua helada en medio del calor; los Pokémon recuperan PS más rápido aquí (descanso corto mejorado).','Tarima del Festival: sede del torneo juvenil patrocinado por Café Dorado.'],
+  npcs:[
+    {n:1,nom:'Aurelio Maestre',cls:'Juglar Vallenato',act:'Compone versos sobre lo que ve. Si haces algo notable en la ciudad, mañana hay canción.',dial:'Yo no canto lo que me cuentan, canto lo que veo. Y anoche vi una camioneta subir al monte sin luces. Ya le hice el primer verso.'},
+    {n:2,nom:'Milena Daza',cls:'Vendedora de Raspao',act:'Vende junto al río. Rápida, burlona, generosa con los niños.',dial:'Raspao de corozo. Y no se metan al río después de las cinco, que baja el agua de la nieve y les da calambre hasta al Pokémon.'},
+    {n:3,nom:'Nayra Izquierdo',cls:'Guardaparques',act:'Vigila el acceso bajo de la Sierra. Seca, protectora del monte, no negocia permisos.',dial:'Arriba no se sube porque te dio la gana. Se sube con permiso, con agua y con respeto. Quien no lleve las tres cosas, se devuelve.'},
+    {n:4,nom:'Emiliano Acordé',cls:'Líder de Gimnasio · Fuego',act:'Acordeonero y líder. Teatral, generoso, incapaz de perder en silencio.',dial:'Aquí no se grita: se responde. Yo canto un verso, tú cantas el tuyo. El que se quede callado, pierde.'},
+    {n:5,nom:'"Chucho"',cls:'Peón · El Dorado',act:'Obrero raso del equipo. Nervioso, se le sale todo, no quería este trabajo.',dial:'Yo solo cargo bultos, ¿oyó? Lo que va adentro no es mi problema. …Aunque a veces el bulto se mueve.'}],
+  ganchos:['El premio del torneo juvenil es un Pokémon raro donado por la empresa. Nadie pregunta de dónde salió.','Nayra necesita ayuda para escoltar a un grupo de Pokémon que bajó de la Sierra huyendo de algo. Es la primera señal de lo que pasa arriba.']
+},
+{
+  id:'brisamar', nom:'Ciudad Brisamar', tipo:'ciudad', base:'Santa Marta', gimtipo:'Volador',
+  desc:'La bahía donde la Sierra se mete al mar. En diez kilómetros pasas de la playa a la nieve, y por eso aquí vive gente que sabe volar: parapentistas, kitesurfistas y una estación de teleférico que es la única puerta legal al Camino Victoria.',
+  mapa:['~~~~~~sssTTTTTTTTTTTTT^^^^',
+   '~~~~~~sss...........f.^^^^',
+   '~~~~~~sssHHH=..HHH.=..^^^^',
+   '~~~~~~sssHHH=..HHH.=f.^^^^',
+   '~~~~~~sssHHH=..HHH.=..^^^^',
+   '~~~~~~sss=====1=====LL^^^^',
+   '~~~~~~sssCCC===MMM==LL^^^^',
+   '~~~~~~sssCCC=..MMM.=LL===E',
+   '~~~~~~PPsCCC=f.MMM.=LL^^^^',
+   'E===~~PPs...=......=..^^^^',
+   '~~~~~~ss2...=.....f=.5^^^^',
+   '~~~~~~sss...=.....3=..^^^^',
+   '~~~~~~sss=============^^^^',
+   '~~~~~~sssGGGGG==DDDD==^^^^',
+   '~~~~~~sssGGG=G..DDDDf.^^^^',
+   '~~~~~~sssGGG=G..DDDD..^^^^',
+   '~~~~~~sssGGG=G.....=..^^^^',
+   '~~~~~~sssTT4ETTTTTTTTT^^^^'],
+  clave:['Gimnasio Brisa: gimnasio vertical. Se sube por corrientes ascendentes saltando entre plataformas; caerse cuesta turnos, no PS.','Estación del teleférico: acceso oficial al Camino Victoria. Exige las ocho medallas y un permiso de la Federación.','Reserva de la Cumbre: bosque nublado bajo, punto de anidación de voladores raros.'],
+  npcs:[
+    {n:1,nom:'Beto Granados',cls:'Guía Turístico',act:'Vende excursiones a la Sierra a gente que no debería subir. Encantador, un poco sinvergüenza.',dial:'¿Sin permiso? Uy, difícil. Difícil no es imposible, ¿me entiende? Pero de esto no hablamos aquí.'},
+    {n:2,nom:'Kelly Ariza',cls:'Buza de Arrecife',act:'Baja a la bahía todos los días. Directa, sin filtro.',dial:'La bahía está bien. El problema no es abajo. El problema es que ya no bajan aves a pescar. Se fueron todas monte arriba.'},
+    {n:3,nom:'Dr. Mauricio Salcedo',cls:'Ornitólogo',act:'Lleva ocho meses peleando contra un permiso de exploración. Agotado, terco, tiene razón.',dial:'Firmé cuarenta cartas. Cuarenta. Y el permiso de "exploración mineral no invasiva" salió aprobado en once días. Once.'},
+    {n:4,nom:'Kalea Vento',cls:'Líder de Gimnasio · Volador',act:'Parapentista, líder y rescatista de montaña. Impulsiva, generosa, la primera en subir cuando alguien se pierde.',dial:'Todo el mundo me pide que le enseñe a volar. Yo primero les enseño a caer. Empecemos por ahí.'},
+    {n:5,nom:'Óscar Mendieta',cls:'Vigilante Nocturno',act:'Opera el teleférico de noche. Aburrido, cumplidor, lleva un cuaderno de registros impecable.',dial:'Mi cuaderno dice quién sube y quién baja. Anoche subieron seis y bajaron cuatro. Yo solo anoto, ¿ah?'}],
+  ganchos:['El permiso de "exploración mineral no invasiva" del Dr. Salcedo es la llave legal de El Dorado hacia la Sierra. Se puede pelear en papel, no solo a golpes.','Faltan dos personas en el registro de Óscar. El grupo puede subir a buscarlas antes de tener las ocho medallas: es una excursión, no la Liga.']
+},
+{
+  id:'sietecolores', nom:'Isla Sietecolores', tipo:'ciudad', base:'San Andrés', gimtipo:'Agua',
+  desc:'Una isla de coral a doscientos kilómetros de la costa, rodeada por un mar que cambia de color siete veces según la profundidad. Cultura raizal, inglés criollo, calipso y una comunidad de navegantes que conoce corrientes que no salen en ninguna carta náutica.',
+  mapa:['~~~~~~~~~~~~~~~~~~~~~~',
+   '~~~~~~~~~~~~~~~~~~~~~~',
+   '~~ssssssssssssssssss~~',
+   '~~ssssssssssssssssss~~',
+   '~~ss.HHH......HHHfss~~',
+   '~~ss.HHH..,...HHH.ss~~',
+   '~~ss.HHH.1,..THHH.ss~~',
+   '~~ss.,,,,,,,,,,,,.ss~~',
+   '~~ss......,..T..T.ss~~',
+   '~~ss.CCCT.,...MMMTss~~',
+   '~~PP.CCC.T,T2.MMM.ss~~',
+   '~~PP.CCC..,...MMM.sssE',
+   '~~ssf...3.,....f..ss~~',
+   '~~ss.,,,,,,,,,,,,.ss~~',
+   '~~ss...T..,..4.f.fss~~',
+   '~~ss...GGGGG..DDD.ss~~',
+   '~~ss...GGGGG..DDD.ss~~',
+   '~~ss...GGGGG..DDD.ss~~',
+   '~~sssssssssssssss5ss~~',
+   '~~ssssssssssssssssss~~',
+   '~~~~~~~~~~~~~~~~~~~~~~',
+   '~~~~~~~~~~~~~~~~~~~~~~'],
+  clave:['Gimnasio Marea: túneles de coral que se inundan y se vacían con la marea. El combate se pelea contra el reloj de la marea.','Muelle del ferry: única conexión con Brisamar (Ruta 10 marítima), tres salidas al día.','Barrera de coral: siete zonas de profundidad, cada una con su propia tabla de encuentros acuáticos.'],
+  npcs:[
+    {n:1,nom:'Old Joe Whitaker',cls:'Pescador de Ciénaga',act:'Ochenta años, sale a pescar solo. Habla mezclando criollo y español. Paciencia infinita.',dial:'Di sea talk, boy. El mar habla. Cuando el agua cambia de color donde no debe, es porque alguien movió el fondo.'},
+    {n:2,nom:'Nadia Forbes',cls:'Buza de Arrecife',act:'Bióloga marina joven, monitorea el blanqueamiento del coral. Apasionada, cero paciencia con los turistas.',dial:'Tres kilómetros de barrera muerta en un año. Eso no lo hace el calor solo. Eso lo hace una draga.'},
+    {n:3,nom:'Marina Bowie',cls:'Alto Mando · Dragón (visitante)',act:'Navegante y miembro del Alto Mando. Serena, imponente, mide el mar como quien lee un libro.',dial:'Yo no llegué al Alto Mando ganando combates. Llegué cruzando este mar sin instrumentos treinta veces. Lo demás vino solo.'},
+    {n:4,nom:'Capitán Bran Livingston',cls:'Líder de Gimnasio · Agua',act:'Capitán de barco y líder. Ruidoso, hospitalario, brutal en combate.',dial:'Welcome, muchacho. Aquí no peleas contra mí: peleas contra la marea. Yo solo estoy parado al final.'},
+    {n:5,nom:'Mr. Fisher',cls:'Operador Turístico · El Dorado',act:'Vende "tours de avistamiento de Pokémon raros" a precios imposibles. Sonriente, evasivo con las rutas.',dial:'Tour exclusivo, amigo. Le garantizo avistamiento. ¿Que cómo lo garantizo? Ah, secretos del oficio.'}],
+  ganchos:['El tour de Mr. Fisher garantiza avistamientos porque los Pokémon están en jaulas sumergidas en la ruta.','Marina Bowie ofrece llevar al grupo por una corriente que ahorra dos días… si le demuestran que saben leer el mar. Es una prueba de Supervivencia, no un combate.']
+}
+];
+
+const RUTAS = [
+  ['Ruta 1','Fundación → Ciudad Cumbia. Camino de tierra entre mangales y la ciénaga. Nivel 1-3.'],
+  ['Ruta 2','Cumbia → Muralla. Costa abierta, dunas y viento. Nivel 3-5.'],
+  ['Ruta 3','Muralla → Sabanal. Sabana seca, cercas de alambre, sol sin sombra. Nivel 5-7.'],
+  ['Ruta 4','Sabanal → Puerto Bermejo. Se cruza a lomo de Pokémon de carga. Nivel 6-8.'],
+  ['Ruta 5','Bermejo → Cañaveral. Barcaza por el río Cauca, dos días de navegación. Nivel 8-10.'],
+  ['Ruta 6','Cañaveral → Orquídea. Subida por cafetales en ladera. Nivel 9-11.'],
+  ['Ruta 7','Orquídea → Páramo. Teleférico y luego páramo abierto con frailejones. Nivel 11-13.'],
+  ['Ruta 8','Páramo → Vallenar. Descenso por el Cañón Rojo, calor creciente. Nivel 12-14.'],
+  ['Ruta 9','Vallenar → Brisamar. Bordeando la falda de la Sierra. Nivel 13-15.'],
+  ['Ruta 10','Brisamar ⇄ Sietecolores. Travesía marítima de nueve horas. Nivel 14-16.'],
+  ['Ruta 11','Brisamar → base del Camino Victoria. Bosque nublado. Nivel 15-17.'],
+  ['Ruta 12','Camino Victoria. Cuatro pisos térmicos hasta los Picos Gemelos. Nivel 17-20.'],
+  ['Mar Caribe de Nubia','Aguas abiertas del norte. Rutas 2, 10 y toda la costa de Muralla a Brisamar.'],
+  ['Río Magdalena','Espina dorsal de la región. Desemboca en Bocas de Ceniza, junto a Ciudad Cumbia.'],
+  ['Río Cauca','Corredor fluvial de Bermejo a Cañaveral. Aguas turbias, pesca de fondo.'],
+  ['Ciénaga Grande','Humedal salobre junto a Pueblo Fundación. Zona de encuentros de nivel bajo.'],
+  ['Golfo de Morrosquillo','Bahía calmada entre Muralla y Sabanal. Aguas someras y cálidas.'],
+  ['Barrera de Sietecolores','Arrecife de siete profundidades. La zona acuática más rica de la región.']
+];
+
+const CLASES = [
+  ['Vendedor de Raspao','Plazas y malecones · Hielo, Agua · Nv 1-4','Puesto rodante de hielo raspado. Sabe los chismes de la cuadra antes que nadie.','Le doy de tamarindo y de ñapa le digo quién pasó por aquí hace media hora.'],
+  ['Palenquera Frutera','Mercados y playas · Planta, Hada · Nv 2-6','Carga la ponchera en la cabeza. Vende bayas mejores que las de la tienda.','Cómprame algo, mijo. Y si no, cómprate un combate, que también vendo.'],
+  ['Mototaxista','Todas las ciudades · Eléctrico, Siniestro · Nv 3-7','Transporte informal. Se sabe atajos que no existen en el mapa.','Súbase que yo lo dejo allá antes de que usted lo piense.'],
+  ['Chalupero','Ríos y ciénagas · Agua, Bicho · Nv 3-8','Lancha de motor pequeño. Cruza a quien pague, pregunte lo que pregunte.','El río tiene horas. Yo también. Y ninguna de las dos lo espera a usted.'],
+  ['Pescador de Ciénaga','Humedales y muelles · Agua, Veneno · Nv 2-9','Atarraya, silencio y madrugada. Ve todo lo que pasa en el agua.','Llevo cuarenta años sacando lo mismo del agua. Últimamente saco otra cosa.'],
+  ['Cafetero','Laderas y cafetales · Planta, Tierra · Nv 4-10','Cultiva en ladera. Desconfía de las cooperativas grandes desde hace un año.','Yo le vendo a la empresa porque no me queda de otra. Pero no me gusta lo que cargan de vuelta.'],
+  ['Arriero','Caminos de montaña · Tierra, Normal · Nv 5-11','Mueve carga con Pokémon de tiro. Conoce todos los caminos viejos.','La mula sabe el camino mejor que el ingeniero. Pregúntele a ella.'],
+  ['Cacharrero','Tiendas y esquinas · Normal, Acero · Nv 1-5','Vende de todo un poco. Es la tienda ambulante del pueblo.','Tengo pilas, cordones, Poké Balls y paciencia. La paciencia se acaba primero.'],
+  ['Juglar Vallenato','Plazas y festivales · Fuego, Normal · Nv 4-10','Compone lo que ve. Sus canciones son rumores con melodía.','Lo que yo canto hoy, mañana lo sabe la región entera. Escoja bien qué hace delante de mí.'],
+  ['Bailadora de Cumbia','Fiestas y tarimas · Fuego, Hada · Nv 3-9','Marca el ritmo del combate. En Cañaveral baila salsa; en la isla, calipso.','Uno no pelea contra el rival. Uno pelea contra el compás.'],
+  ['Tamborero','Carnavales y playas · Lucha, Normal · Nv 3-8','Toca tambora y alegre. Sus Pokémon atacan por percusión.','Cuando yo pare de tocar, tú ya perdiste. Y todavía no he empezado.'],
+  ['Colegiala','Escuelas de todas las ciudades · Normal, Hada · Nv 1-4','Primer viaje o ganas de tenerlo. Entusiasmo puro.','¡Yo también voy a ser entrenadora! Pero primero tengo que pasar matemáticas.'],
+  ['Universitario','Ciudades grandes · Psíquico, Bicho · Nv 5-11','Investiga algo muy específico y te lo va a contar completo.','Es que si me dejas explicarte la muestra de suelo lo vas a entender, en serio.'],
+  ['Guía Turístico','Cascos históricos y playas · Volador, Roca · Nv 4-9','Recita datos de memoria. Sabe más de lo que puede decir en el tour.','Eso no está en el recorrido oficial. Pero por una propina hacemos un recorrido no oficial.'],
+  ['Escarabajo de Ruta','Todas las rutas · Lucha, Eléctrico · Nv 4-12','Ciclista de montaña. Vive para las subidas. Te reta apenas te ve.','¿Vamos hasta la curva de allá arriba? Tranquilo, te espero. Un ratico.'],
+  ['Patinadora de Velocidad','Ciudades frías y pistas · Hielo, Eléctrico · Nv 6-12','Velocidad y trazado. Sus Pokémon abren siempre con movimientos de prioridad.','No es correr más rápido. Es no frenar nunca.'],
+  ['Futbolista de Barrio','Canchas y potreros · Lucha, Normal · Nv 2-8','Juega descalzo, pega durísimo y celebra cada punto.','Pelota o combate, a mí me da igual. Yo gano en las dos.'],
+  ['Cocinera de Sancocho','Plazas de pueblo · Fuego, Planta · Nv 3-9','Olla comunitaria. Cura estados alterados por un precio simbólico.','Coma primero, pelee después. Así es aquí y punto.'],
+  ['Panadero','Barrios de toda la región · Fuego, Normal · Nv 2-7','Horno encendido desde las cuatro. Regala pan a los Pokémon flacos.','El pan y el Pokémon: los dos se dañan si los dejas solos mucho tiempo.'],
+  ['Tejedora de Vueltiao','Sabana y mercados · Planta, Bicho · Nv 4-10','Teje patrones que codifican caminos y advertencias.','Esto no es adorno. Esto es un mapa y usted no lo sabe leer todavía.'],
+  ['Guardaparques','Reservas y faldas de montaña · Planta, Tierra · Nv 7-14','Custodia el monte. No negocia permisos ni con la Federación.','Aquí se entra con agua, permiso y respeto. Le faltan dos de las tres.'],
+  ['Ornitóloga','Páramos, bosques, costa · Volador, Bicho · Nv 6-13','Cuenta poblaciones de voladores. Detecta cambios de ruta migratoria.','Ese Pokémon no vuela por aquí en esta época. Y sin embargo ahí está. Eso me preocupa.'],
+  ['Buzo de Arrecife','Costas e islas · Agua, Roca · Nv 6-13','Baja sin equipo. Conoce el fondo mejor que la superficie.','Abajo hay cosas que llegaron ayer y no deberían estar. Yo se las muestro.'],
+  ['Mecánico de Chiva','Talleres y terminales · Acero, Fuego · Nv 5-11','Repara vehículos y máquinas. Lee una avería como quien lee una firma.','Esto no se dañó solo. Alguien lo dañó y lo dañó bien.'],
+  ['Locutor Deportivo','Cabinas y tarimas · Normal, Eléctrico · Nv 4-10','Narra combates en vivo. Exagera todo, incluido tu récord.','¡Y llega el retador! ¡Nadie lo conoce! ¡Nadie apuesta por él! ¡Yo tampoco!'],
+  ['Cometero','Lomas ventosas y playas · Volador, Eléctrico · Nv 2-8','Vuela cometas altísimo. Sin querer, es el mejor sistema de vigilancia aérea de la región.','Desde arriba se ve todo. Yo no ando espiando, ¿ah? Es que se ve.'],
+  ['Vigilante Nocturno','Muros, puertos, estaciones · Siniestro, Acero · Nv 5-12','Turno de noche, cuaderno de registros, cero ganas de problemas.','Yo no me meto. Yo anoto. Si usted quiere leer el cuaderno, es problema suyo.'],
+  ['Esmeraldero','Ciudades andinas y minas · Roca, Tierra · Nv 8-15','Comercia piedras. Distingue una veta legal de una ilegal con la lupa.','Esta piedra salió de un socavón sin permiso. Se lo digo yo, que llevo cuarenta años.'],
+  ['DORADO|Peón El Dorado','Bodegas y obras · Tierra, Roca · Nv 3-9','Obrero raso del equipo. Carga bultos, hace preguntas y se arrepiente.','Yo solo cargo lo que me dicen. Lo que va adentro no lo pregunto. Casi nunca.'],
+  ['DORADO|Barista Encubierta','Ferias, colegios, plazas · Fuego, Hada · Nv 5-11','Cara amable del equipo. Recluta con café gratis y contratos de "promotor".','¿Un tintico? Y de paso hablamos de una oportunidad laboral para alguien con tu talento.'],
+  ['DORADO|Capataz El Dorado','Muelles y minas · Acero, Siniestro · Nv 9-15','Jefe de operación. Decide quién entra, quién sale y qué se registra.','Zona restringida, muchachos. Por seguridad industrial. Ustedes entienden.'],
+  ['DORADO|Geóloga El Dorado','Laboratorios y campo · Roca, Veneno · Nv 12-18','Mando medio-alto. Financia becas para que otros le hagan la exploración.','La ciencia necesita patrocinio. El patrocinio necesita resultados. Todo muy legal, todo muy limpio.']
+];
+
+const LIDERES = [
+  {n:'1',ciu:'Ciudad Cumbia',tipo:'Eléctrico',col:'#e6b800',nom:'Yamila Carrasquilla, "La Marimonda"',med:'Medalla Tambora',
+   ret:'Tarima de carnaval con placas de presión. Hay que pisarlas siguiendo el patrón de una tambora (prueba de Interpretación o Perspicacia) antes de que la tarima se energice.',
+   dial:'En Nubia se pelea con ritmo, corazón. Si pierdes el compás, pierdes el combate.'},
+  {n:'2',ciu:'Ciudad Muralla',tipo:'Roca',col:'#a08055',nom:'Baltasar Corales',med:'Medalla Baluarte',
+   ret:'Dentro del fuerte: bloques de piedra coralina que se empujan para abrir el camino. Acertijo de empuje con un número limitado de movimientos.',
+   dial:'Esta muralla lleva cuatrocientos años parada porque cada piedra sabe cuál es su lugar. Averigua el tuyo.'},
+  {n:'3',ciu:'Ciudad Cañaveral',tipo:'Planta',col:'#3f9c4f',nom:'Valeria Cañas',med:'Medalla Retoño',
+   ret:'Laberinto de caña con compuertas de riego. Abrir las compuertas en el orden correcto reordena los pasillos; el orden equivocado los cierra.',
+   dial:'El agua no corre por donde tú quieres. Corre por donde tú la dejas.'},
+  {n:'4',ciu:'Ciudad Orquídea',tipo:'Acero',col:'#7f8fa0',nom:'Ing. Marcela Ferro',med:'Medalla Riel',
+   ret:'Andenes de metro móviles. Cada dos turnos las plataformas se desplazan y cambian el alcance de los ataques. Premia planear con antelación.',
+   dial:'Mi ciudad funciona porque todo llega a tiempo. Tu equipo va a perder porque llega tarde a todo.'},
+  {n:'5',ciu:'Ciudad Páramo',tipo:'Hielo',col:'#6fb8d6',nom:'Sofía Escarcha',med:'Medalla Escarcha',
+   ret:'Piso de hielo con deslizamiento: al moverte sigues hasta chocar. Hay que trazar la ruta entera antes del primer paso.',
+   dial:'Aquí nadie corre. Aquí se desliza. Y el que se desliza sin pensar termina contra la pared.'},
+  {n:'6',ciu:'Ciudad Vallenar',tipo:'Fuego',col:'#e0602c',nom:'Emiliano Acordé',med:'Medalla Brasa',
+   ret:'Piquería: tres rondas alternando combate y duelo musical. Cada ronda musical ganada da una ventaja mecánica en la ronda de combate siguiente.',
+   dial:'Aquí no se grita: se responde. El que se quede callado, pierde.'},
+  {n:'7',ciu:'Ciudad Brisamar',tipo:'Volador',col:'#8fb8e0',nom:'Kalea Vento',med:'Medalla Brisa',
+   ret:'Gimnasio vertical: plataformas conectadas por corrientes ascendentes. Caer no quita PS, quita turnos, y el líder no espera.',
+   dial:'Todo el mundo me pide que le enseñe a volar. Yo primero les enseño a caer.'},
+  {n:'8',ciu:'Isla Sietecolores',tipo:'Agua',col:'#2f8fc4',nom:'Capitán Bran Livingston',med:'Medalla Marea',
+   ret:'Túneles de coral que se inundan con la marea. Un reloj de marea marca cuántos turnos quedan antes de que la sala siguiente se cierre.',
+   dial:'Aquí no peleas contra mí: peleas contra la marea. Yo solo estoy parado al final.'}
+];
+
+const PISOS = [
+  ['Piso 1 · Selva húmeda','De los 0 a los 1.000 m. Calor, lianas y ríos que cruzan el sendero. Se avanza rápido pero se pierde el rumbo fácil.'],
+  ['Piso 2 · Bosque nublado','De 1.000 a 2.500 m. Niebla permanente, visibilidad de 15 m. Aquí el mapa deja de servir y empieza a servir el guía.'],
+  ['Piso 3 · Páramo','De 2.500 a 4.200 m. Frailejones, viento y mal de altura: penalizadores por agotamiento si no se descansa.'],
+  ['Piso 4 · Nieve perpetua','Sobre los 4.200 m. Glaciar y roca desnuda. Los Picos Gemelos y la sede de la Liga Nubia.']
+];
+
+const ALTO = [
+  {n:'I',ciu:'Ciudad Cumbia',tipo:'Tierra',col:'#c99a4a',nom:'Ing. Ramiro Ospina, "El Barranco"',
+   ret:'Ingeniero de canales. Su sala reproduce un arroyo urbano: el terreno se inunda y se drena por secciones cada turno.',
+   dial:'La gente le tiene miedo al agua que baja. Yo le tengo respeto al suelo que se la lleva.'},
+  {n:'II',ciu:'Isla Sietecolores',tipo:'Dragón',col:'#6b5bc4',nom:'Marina Bowie',
+   ret:'Navegante raizal. Su sala es la cubierta de un barco con oleaje: el suelo se inclina y obliga a tirar Acrobacias para mantener posición.',
+   dial:'Yo no llegué aquí ganando combates. Llegué cruzando ese mar sin instrumentos treinta veces.'},
+  {n:'III',ciu:'Ciudad Páramo',tipo:'Hielo',col:'#6fb8d6',nom:'Dra. Elvira Nieto',
+   ret:'Glacióloga. Su sala es una grieta de glaciar: hay que combatir sobre puentes de hielo que se agrietan con cada impacto de área.',
+   dial:'El glaciar perdió doce metros en cinco años. Sube, si quieres. Pero sube sabiendo qué estás pisando.'},
+  {n:'IV',ciu:'Ciudad Orquídea',tipo:'Lucha',col:'#d1553c',nom:'Aníbal Rendón, "El Silletero"',
+   ret:'Carga una silleta de sesenta kilos durante todo el combate y no la suelta. Si logras que la suelte, has ganado más de lo que crees.',
+   dial:'La fuerza no es levantar. Es levantar y seguir caminando.'},
+  {n:'★',ciu:'Picos Gemelos',tipo:'Campeona',col:'#e0951c',nom:'Nayibe Duarte, "La Guardiana de la Cumbre"',
+   ret:'No tiene tipo fijo: su equipo son seis Pokémon rescatados de la propia Sierra, uno por cada piso térmico más dos de la cumbre. Combate en la nieve, al aire libre, sin sala ni truco.',
+   dial:'Todos los que llegan aquí quieren la corona. Yo llevo diez años aquí porque nadie más quiso quedarse a cuidar la montaña.'}
+];
+
+const JEFES = [
+  {n:'★',ciu:'Sede: Ciudad Cumbia',tipo:'Presidente',col:'#e0951c',nom:'Don Aurelio Palmares',
+   ret:'Fundador y presidente de Café Dorado S.A. Setenta años, filántropo, patrocina el torneo juvenil y le pone su nombre a tres escuelas. Cree sinceramente que está ordenando una región desordenada. Nunca da una orden ilegal por escrito; nunca hace falta.',
+   dial:'Yo no traigo Pokémon. Yo traigo empleo. Que la gente después haga lo que haga con el empleo, ya no es asunto mío.'},
+  {n:'II',ciu:'Operaciones · Puerto Bermejo',tipo:'Directora',col:'#b09a6a',nom:'Dra. Vega',
+   ret:'Geóloga jefe y verdadera cabeza operativa. Diseñó la red de acopio disfrazada de cadena de café y la financia con becas universitarias que le hacen la exploración gratis. Fría, cortés, nunca levanta la voz.',
+   dial:'La ciencia necesita patrocinio y el patrocinio necesita resultados. Todo muy legal. Todo muy limpio.'},
+  {n:'III',ciu:'Logística · Todas las bodegas',tipo:'Capataz mayor',col:'#b09a6a',nom:'Don Nelson Cuadros',
+   ret:'El hombre que mueve las cajas. Conoce a cada peón por su nombre y a cada familia por sus deudas. No es cruel: es eficiente, y esa es la parte incómoda.',
+   dial:'Zona restringida, muchachos. Por seguridad industrial. ¿Un tintico mientras se devuelven?'}
+];
+
+const ACTOS = [
+  ['Acto I · El costal (Nv 1-4)','Todo empieza con un costal de café que se mueve solo en Pueblo Fundación. Rastrearlo lleva al puerto de Ciudad Cumbia y a la primera medalla. El grupo todavía no sabe que hay una empresa detrás: cree que persigue a un ladrón.'],
+  ['Acto II · Los manifiestos (Nv 5-9)','En Puerto Bermejo aparecen tres manifiestos con el mismo peso y distinto contenido. Aquí la campaña se resuelve leyendo papeles, no rompiendo puertas. Al final del acto la empresa tiene nombre y el grupo tiene un enemigo que sonríe.'],
+  ['Acto III · La Balsa Dorada (Nv 10-14)','El Museo del Oro de Ciudad Páramo guarda una pieza que es en realidad un plano de la Sierra. El Dorado la quiere para ubicar una veta. El robo ocurre durante el torneo juvenil, con toda la región mirando la tarima.'],
+  ['Acto IV · La cumbre (Nv 15-20)','Con el plano y el permiso firmado, El Dorado abre camino en la Sierra y los Pokémon bajan huyendo. Aquí la campaña se cierra en un orden fijo: <b>la Federación congela la octava medalla y el acceso a la Liga hasta que la excavación se detenga</b>. El grupo debe desmantelar la operación en la Sierra antes de poder retar a Isla Sietecolores y subir el Camino Victoria. Ganar la Liga deja de ser una carrera paralela: es la recompensa por haber parado la mina.'],['Zonas legendarias','Tres puntos del mapa quedan cerrados hasta el Acto IV y cada uno pide una llave distinta. <b>Caverna del Cauca</b>, bajo el río, se abre con la carta náutica de la Ruta 10. <b>Ojo del Cañón</b>, en la pared del socavón de la Ruta 8, exige la muestra de la veta. <b>Picos Gemelos</b>, entre las dos cumbres, solo aparece cuando la excavación está detenida y la montaña vuelve a quedar en calma. Ninguno da un combate obligatorio: son encuentros que el grupo puede perseguir o dejar pasar.']
+];
+
+/* ============================================================
+   RENDER
+   ============================================================ */
+const $=s=>document.querySelector(s), el=(t,c)=>{const e=document.createElement(t);if(c)e.className=c;return e};
+
+/* --- pestañas --- */
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('nav button').forEach(x=>x.setAttribute('aria-selected',x===b));
+  document.querySelectorAll('section.tab').forEach(s=>s.classList.toggle('on',s.id==='tab-'+b.dataset.tab));
+  window.scrollTo({top:0});
+});
+
+/* --- mapa regional (SVG) --- */
+const NODOS=[
+ {id:'sietecolores',x:110,y:130,t:'SIETECOLORES',s:'Agua · Isla'},
+ {id:'cumbia',     x:400,y:270,t:'CUMBIA',      s:'Eléctrico'},
+ {id:'fundacion',  x:540,y:270,t:'FUNDACIÓN',   s:'Pueblo natal'},
+ {id:'brisamar',   x:660,y:180,t:'BRISAMAR',    s:'Volador'},
+ {id:'muralla',    x:255,y:335,t:'MURALLA',     s:'Roca'},
+ {id:'vallenar',   x:700,y:400,t:'VALLENAR',    s:'Fuego'},
+ {id:'sabanal',    x:230,y:430,t:'SABANAL',     s:'Pueblo'},
+ {id:'bermejo',    x:430,y:500,t:'BERMEJO',     s:'Pueblo'},
+ {id:'orquidea',   x:180,y:560,t:'ORQUÍDEA',    s:'Acero'},
+ {id:'paramo',     x:500,y:640,t:'PÁRAMO',      s:'Hielo'},
+ {id:'canaveral',  x:330,y:690,t:'CAÑAVERAL',   s:'Planta'}
+];
+const CAMINOS=[
+ ['fundacion','cumbia','1'],['cumbia','muralla','2'],['muralla','sabanal','3'],
+ ['sabanal','bermejo','4'],['bermejo','canaveral','5'],['canaveral','orquidea','6'],
+ ['orquidea','paramo','7'],['paramo','vallenar','8'],['vallenar','brisamar','9'],
+ ['brisamar','sietecolores','10'],['brisamar','liga','11']
+];
+const LEGEND=[
+ {x:372,y:600,n:'CAVERNA DEL CAUCA'},
+ {x:604,y:520,n:'OJO DEL CAÑÓN'},
+ {x:790,y:150,n:'PICOS GEMELOS'}
+];
+function mapaSVG(){
+  const P=Object.fromEntries(NODOS.map(n=>[n.id,n]));
+  P.liga={x:800,y:200};
+  let s=`<svg viewBox="0 0 1000 780" role="img" aria-label="Mapa de la región de Nubia">
+  <rect width="1000" height="780" fill="#fdf6e6"/>
+  <path d="M0,0 H1000 V130 Q840,168 700,150 Q560,130 470,200 Q360,286 240,318 Q120,348 0,420 Z" fill="#3f9ed6" opacity=".92"/>
+  <path d="M0,420 Q120,348 240,318 Q360,286 470,200 Q560,130 700,150 Q840,168 1000,130" fill="none" stroke="#12283f" stroke-width="3"/>
+  <text x="42" y="52" font-family="Silkscreen,monospace" font-size="15" fill="#fdf6e6">MAR CARIBE DE NUBIA</text>
+
+  <path d="M620,210 L720,120 L820,190 L900,180 L870,360 L740,400 L640,320 Z" fill="#7a6a58"/>
+  <path d="M746,182 L784,138 L820,196 L776,214 Z" fill="#eef4f7"/>
+  <text x="892" y="270" text-anchor="middle" font-family="Silkscreen,monospace" font-size="13" fill="#12283f">SIERRA</text>
+  <text x="892" y="288" text-anchor="middle" font-family="Silkscreen,monospace" font-size="13" fill="#12283f">NEVADA</text>
+
+  <path d="M40,700 Q110,620 168,556 Q210,510 252,470" fill="none" stroke="#5e8a5e" stroke-width="30" opacity=".38" stroke-linecap="round"/>
+  <path d="M380,760 Q420,660 452,580 Q484,500 520,430" fill="none" stroke="#5e8a5e" stroke-width="30" opacity=".38" stroke-linecap="round"/>
+  <path d="M408,258 Q430,400 434,520 Q438,650 470,760" fill="none" stroke="#3f9ed6" stroke-width="11"/>
+  <path d="M330,700 Q372,610 410,540 Q424,512 430,500" fill="none" stroke="#3f9ed6" stroke-width="8"/>
+  <text x="474" y="742" font-family="Alegreya Sans,sans-serif" font-size="14" fill="#0e7c8b">Río Magdalena</text>
+  <text x="196" y="672" font-family="Alegreya Sans,sans-serif" font-size="14" fill="#0e7c8b">Río Cauca</text>
+
+  <g font-family="Silkscreen,monospace" font-size="11" fill="#12283f" opacity=".75">
+    <path d="M930,600 L930,660 M930,600 L922,614 M930,600 L938,614" stroke="#12283f" stroke-width="3" fill="none"/>
+    <text x="930" y="596" text-anchor="middle">N</text>
+  </g>`;
+
+  CAMINOS.forEach(([a,b,num])=>{
+    const A=P[a],B=P[b];
+    const mar=(b==='sietecolores'), liga=(b==='liga');
+    const col = liga?'#c6386b' : mar?'#0e7c8b' : '#12283f';
+    s+=`<line x1="${A.x}" y1="${A.y}" x2="${B.x}" y2="${B.y}" stroke="${col}" stroke-width="${liga?5:4}" stroke-dasharray="${mar?'4 9':'10 7'}" opacity=".8"/>`;
+    const mx=(A.x+B.x)/2, my=(A.y+B.y)/2;
+    s+=`<circle cx="${mx}" cy="${my}" r="12" fill="#fdf6e6" stroke="${col}" stroke-width="2.5"/>
+        <text x="${mx}" y="${my+4}" text-anchor="middle" font-family="Silkscreen,monospace" font-size="10" fill="${col}">${num}</text>`;
+  });
+
+  LEGEND.forEach(l=>{
+    s+=`<g opacity=".9"><polygon points="${l.x},${l.y-11} ${l.x+10},${l.y} ${l.x},${l.y+11} ${l.x-10},${l.y}"
+      fill="#e0951c" stroke="#12283f" stroke-width="2.5"/>
+      <text x="${l.x}" y="${l.y+26}" text-anchor="middle" font-family="Silkscreen,monospace" font-size="9" fill="#8a6410">${l.n}</text></g>`;
+  });
+
+  s+=`<g class="nodo" data-id="liga"><rect class="pin" x="784" y="184" width="32" height="32" fill="#f6e7c4" stroke="#c6386b" stroke-width="4"/>
+    <text x="800" y="174" text-anchor="middle">LIGA NUBIA</text>
+    <text class="sub" x="800" y="236" text-anchor="middle">Picos Gemelos</text></g>`;
+
+  NODOS.forEach(n=>{
+    const pueblo=n.s.includes('Pueblo');
+    s+=`<g class="nodo" data-id="${n.id}" tabindex="0" role="button" aria-label="${n.t}">
+      <circle class="pin" cx="${n.x}" cy="${n.y}" r="${pueblo?11:15}" fill="${pueblo?'#e0951c':'#c6386b'}" stroke="#12283f" stroke-width="3.5"/>
+      <text x="${n.x}" y="${n.y-22}" text-anchor="middle">${n.t}</text>
+      <text class="sub" x="${n.x}" y="${n.y+30}" text-anchor="middle">${n.s}</text>
+    </g>`;
+  });
+  return s+'</svg>';
+}
+$('#mapa').innerHTML=mapaSVG();
+$('#mapa').addEventListener('click',e=>{
+  const g=e.target.closest('.nodo'); if(!g||g.dataset.id==='liga')return;
+  irA(g.dataset.id);
+});
+$('#mapa').addEventListener('keydown',e=>{
+  if(e.key!=='Enter'&&e.key!==' ')return;
+  const g=e.target.closest('.nodo'); if(!g||g.dataset.id==='liga')return;
+  e.preventDefault(); irA(g.dataset.id);
+});
+function irA(id){
+  document.querySelector('nav button[data-tab="local"]').click();
+  pinta(id);
+}
+
+/* --- rutas --- */
+$('#rutas').innerHTML=RUTAS.map(([a,b])=>`<div class="ruta"><b>${a}</b><span>${b}</span></div>`).join('');
+
+/* --- chips de localidades --- */
+$('#chips').innerHTML=LOC.map(l=>
+  `<button class="chip ${l.tipo}" data-id="${l.id}" aria-pressed="false">${l.nom.toUpperCase()}</button>`).join('');
+$('#chips').addEventListener('click',e=>{const b=e.target.closest('.chip'); if(b) pinta(b.dataset.id)});
+
+/* --- ficha de localidad --- */
+function pinta(id){
+  const L=LOC.find(x=>x.id===id)||LOC[0];
+  document.querySelectorAll('.chip').forEach(c=>c.setAttribute('aria-pressed',c.dataset.id===L.id));
+  const W=Math.max(...L.mapa.map(r=>r.length));
+  const filas=L.mapa.map(r=>r.padEnd(W,'.'));
+
+  let tiles=`<div class="tiles" style="grid-template-columns:repeat(${W},1fr)">`;
+  filas.forEach(r=>[...r].forEach(ch=>{
+    if(/[1-9]/.test(ch)){
+      tiles+=`<div class="t npc" data-n="${ch}" style="background:${COLORES['=']}"></div>`;
+    }else{
+      const c=COLORES[ch]||'#7ec46b';
+      const lab=ETIQ[ch];
+      tiles+=`<div class="t ${lab?'lbl':''}" ${lab?`data-l="${lab}"`:''} style="background:${c}"></div>`;
+    }
+  }));
+  tiles+='</div>';
+
+  const usados=[...new Set(filas.join('').split(''))].filter(c=>COLORES[c]);
+  const nombresLeg={'.':'césped',',':'tierra','=':'empedrado','~':'agua','s':'arena','T':'árbol','f':'flores','#':'muro','C':'Centro Pokémon','M':'Tienda','G':'Gimnasio','H':'casa','L':'edificio clave','D':'sede El Dorado','P':'muelle','E':'salida a ruta'};
+
+  $('#ficha').innerHTML=`
+  <div class="ficha">
+    <div>
+      <h3>${L.nom}</h3>
+      <p class="basado">${L.tipo==='ciudad'?'Ciudad':'Pueblo'} · basada en ${L.base}${L.gimtipo?` · Gimnasio de tipo ${L.gimtipo}`:' · sin gimnasio'}</p>
+      <div class="tilewrap">${tiles}</div>
+      <div class="leg">${usados.map(c=>`<span><i style="background:${COLORES[c]}"></i>${nombresLeg[c]||c}</span>`).join('')}</div>
+      <div class="bloque">
+        <h4>ESTRUCTURAS CLAVE</h4>
+        <ul>${L.clave.map(k=>`<li>${k}</li>`).join('')}</ul>
+      </div>
+      <div class="bloque gimnasio">
+        <h4>GANCHOS PARA EL DIRECTOR</h4>
+        <ul>${L.ganchos.map(k=>`<li>${k}</li>`).join('')}</ul>
+      </div>
+    </div>
+    <div>
+      <p class="desc">${L.desc}</p>
+      <div class="npcs">${L.npcs.map(p=>`
+        <div class="npc" data-n="${p.n}">
+          <div class="cab"><span class="num">${p.n}</span><span class="nom">${p.nom}</span></div>
+          <div class="cls">${p.cls}</div>
+          <div class="act">${p.act}</div>
+          <blockquote>“${p.dial}”</blockquote>
+        </div>`).join('')}</div>
+    </div>
+  </div>`;
+
+  $('#ficha').querySelectorAll('.t.npc').forEach(t=>t.onclick=()=>{
+    const n=t.dataset.n;
+    $('#ficha').querySelectorAll('.t.npc').forEach(x=>x.classList.toggle('sel',x.dataset.n===n));
+    $('#ficha').querySelectorAll('.npc').forEach(x=>{
+      const s=x.dataset.n===n; x.classList.toggle('sel',s);
+      if(s)x.scrollIntoView({block:'center',behavior:'smooth'});
+    });
+  });
+}
+pinta('fundacion');
+
+/* --- clases --- */
+$('#clases').innerHTML=CLASES.map(([nom,meta,txt,dial])=>{
+  const ed=nom.startsWith('DORADO|');
+  const n=ed?nom.split('|')[1]:nom;
+  return `<div class="card ${ed?'dorado':''}">
+    <span class="cnom">${n}</span><span class="cmeta">${meta}</span>
+    <p>${txt}</p><blockquote>“${dial}”</blockquote></div>`;
+}).join('');
+
+/* --- líderes --- */
+$('#lideres').innerHTML=LIDERES.map(l=>`
+  <div class="lider">
+    <div class="orden" style="background:${l.col}">GIMNASIO<br>${l.n}<br>${l.tipo.toUpperCase()}</div>
+    <div>
+      <h4>${l.nom}</h4>
+      <p class="sub2">${l.ciu} · ${l.med}</p>
+      <p>${l.ret}</p>
+      <blockquote>“${l.dial}”</blockquote>
+    </div>
+  </div>`).join('');
+
+$('#pisos').innerHTML=PISOS.map(([a,b])=>`<div class="card"><span class="cnom">${a}</span><p style="margin-top:8px">${b}</p></div>`).join('');
+
+$('#alto').innerHTML=ALTO.map(l=>`
+  <div class="lider">
+    <div class="orden" style="background:${l.col}">${l.n}<br>${l.tipo.toUpperCase()}</div>
+    <div>
+      <h4>${l.nom}</h4>
+      <p class="sub2">Origen: ${l.ciu}</p>
+      <p>${l.ret}</p>
+      <blockquote>“${l.dial}”</blockquote>
+    </div>
+  </div>`).join('');
+
+$('#dorado-jefes').innerHTML=JEFES.map(l=>`
+  <div class="lider" style="background:#1c1c1c;color:#f0e2c0">
+    <div class="orden" style="background:${l.col};color:#1c1c1c">${l.n}<br>${l.tipo.toUpperCase()}</div>
+    <div>
+      <h4 style="color:#e0951c">${l.nom}</h4>
+      <p class="sub2" style="color:#b09a6a">${l.ciu}</p>
+      <p>${l.ret}</p>
+      <blockquote style="border-left-color:#e0951c">“${l.dial}”</blockquote>
+    </div>
+  </div>`).join('');
+
+$('#actos').innerHTML=ACTOS.map(([a,b])=>`<div class="card"><span class="cnom">${a}</span><p style="margin-top:8px">${b}</p></div>`).join('');
+</script>
+</body>
+</html>

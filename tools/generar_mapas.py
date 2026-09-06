@@ -1,0 +1,372 @@
+#!/usr/bin/env python3
+"""Genera los esquemas de casillas de Nubia. Salida: mapas.json"""
+import json, random
+
+# ---------------------------------------------------------------- lienzo
+class M:
+    def __init__(s, w, h, base='.'):
+        s.w, s.h = w, h
+        s.g = [[base]*w for _ in range(h)]
+        s.pts = []
+    def set(s, x, y, c):
+        if 0 <= x < s.w and 0 <= y < s.h: s.g[y][x] = c
+    def get(s, x, y):
+        return s.g[y][x] if 0 <= x < s.w and 0 <= y < s.h else None
+    def rect(s, c, x, y, w, h):
+        for j in range(y, y+h):
+            for i in range(x, x+w): s.set(i, j, c)
+    def borde(s, c, t=1):
+        for j in range(s.h):
+            for i in range(s.w):
+                if i < t or j < t or i >= s.w-t or j >= s.h-t: s.set(i, j, c)
+    def lin(s, c, o, fijo, a, b, gr=1):
+        for k in range(a, b+1):
+            for d in range(gr):
+                if o == 'h': s.set(k, fijo+d, c)
+                else:        s.set(fijo+d, k, c)
+    def sal(s, c, lado, pos, largo=3):
+        if lado == 'O':
+            s.set(0, pos, 'E'); s.lin(c, 'h', pos, 1, largo)
+        elif lado == 'E':
+            s.set(s.w-1, pos, 'E'); s.lin(c, 'h', pos, s.w-1-largo, s.w-2)
+        elif lado == 'N':
+            s.set(pos, 0, 'E'); s.lin(c, 'v', pos, 1, largo)
+        elif lado == 'S':
+            s.set(pos, s.h-1, 'E'); s.lin(c, 'v', pos, s.h-1-largo, s.h-2)
+    def disp(s, c, n, sobre, rnd):
+        libres = [(i, j) for j in range(s.h) for i in range(s.w) if s.g[j][i] in sobre]
+        rnd.shuffle(libres)
+        for i, j in libres[:n]: s.set(i, j, c)
+    def punto(s, x, y): s.pts.append((x, y))
+    def filas(s):
+        g = [r[:] for r in s.g]
+        for n, (x, y) in enumerate(s.pts, 1):
+            if 0 <= x < s.w and 0 <= y < s.h: g[y][x] = str(n)
+        return [''.join(r) for r in g]
+
+def construir(w, h, base, ops, semilla):
+    m = M(w, h, base); rnd = random.Random(semilla)
+    for op in ops:
+        k = op[0]
+        if   k == 'borde': m.borde(op[1], op[2] if len(op) > 2 else 1)
+        elif k == 'rect':  m.rect(*op[1:])
+        elif k == 'h':     m.lin(op[1], 'h', op[2], op[3], op[4], op[5] if len(op) > 5 else 1)
+        elif k == 'v':     m.lin(op[1], 'v', op[2], op[3], op[4], op[5] if len(op) > 5 else 1)
+        elif k == 'sal':   m.sal(op[1], op[2], op[3], op[4] if len(op) > 4 else 3)
+        elif k == 'disp':  m.disp(op[1], op[2], op[3], rnd)
+        elif k == 'pts':
+            for p in op[1]: m.punto(*p)
+    return m.filas()
+
+# ======================================================= LOCALIDADES
+# Fundación y Ruta 1 ya están construidas en Tiled: se conservan tal cual.
+FIJOS = {
+ 'Pueblo Fundación': ['TTTTTTTTTT..TTTTTTTTTT','T....................T','T..HHH...LLL...HHH...T',
+  'T..HHH...LLL...HHH...T','T..H1H...L2L...H.H...T','E===================.T','T..,,,,,,,,,,,,,,,..,T',
+  'T..,CCC,,,,,,,MMM,..,T','T..,CCC,,,3,,,MMM,..,T','T..,C.C,,,,,,,M4M,..,T','T..,,,,,,,,,,,,,,,..,T',
+  'T.f...........5......T','T.fff...TTT.....TTT..T','TTTTTTTTTTTTTTTTTTTTTT'],
+ 'Ruta 1 · Mangal': ['TTTTTTTTTT~~~~~~~~~~TTTTTTTTTT','E,,,,hhhhh,,,,,,,,,,hhh,,,,,,E',
+  ',,,,,h1hhh,,,,2,,,,,hhh,,,3,,,','..T...hhh...T....T..hhh.......','..T....!....T....T.....T...4..',
+  'hhh.........,,,,,,.....T......','hhhh........,,,,,,...hhh......','TThhh.......~~~~~~...hhh...TTT',
+  'TTTTTTTTTT~~~~~~~~~~TTTTTTTTTT'],
+}
+
+LOC = [
+ # Ciudad Cumbia 30x20 · salidas E (Ruta 1) y SO (Ruta 2)
+ ('Ciudad Cumbia', 30, 20, '.', [
+   ('borde','T',1), ('rect','~',0,0,30,3), ('rect','s',0,3,30,1), ('rect','~',26,0,4,8),
+   ('h','=',5,2,27,2), ('h','=',11,2,27,2), ('h','=',16,2,27,2),
+   ('v','=',6,4,18), ('v','=',15,4,18), ('v','=',22,4,18),
+   ('rect','H',3,7,3,3), ('rect','H',9,7,3,3), ('rect','H',18,7,3,3),
+   ('rect','C',3,13,3,3), ('rect','M',9,13,3,3),
+   ('rect','G',17,12,5,4), ('rect','D',24,12,4,4), ('rect','L',24,5,4,4),
+   ('rect','P',27,8,2,2),
+   ('sal','=','E',7), ('sal','=','S',4),
+   ('disp','f',10,'.'), ('disp','T',8,'.'),
+   ('pts',[(8,10),(13,5),(19,16),(25,10),(20,4)]) ], 11),
+
+ # Ciudad Muralla 28x18 · salidas NE (Ruta 2) y S (Ruta 3)
+ ('Ciudad Muralla', 28, 18, '=', [
+   ('rect','~',0,0,8,18), ('rect','s',7,0,3,18), ('rect','P',7,8,2,2),
+   ('borde','#',1), ('rect','#',9,0,1,18),
+   ('rect','=',10,1,17,16),
+   ('h','=',4,10,26), ('h','=',9,10,26), ('h','=',14,10,26),
+   ('rect','H',11,2,3,3), ('rect','H',17,2,3,3), ('rect','H',23,2,3,3),
+   ('rect','C',11,6,3,3), ('rect','M',17,6,3,3),
+   ('rect','G',11,11,6,4), ('rect','D',20,11,4,3), ('rect','L',22,6,4,3),
+   ('sal','=','N',24), ('sal','=','S',16),
+   ('disp','f',6,'='),
+   ('pts',[(15,5),(21,5),(19,10),(14,15),(25,15)]) ], 12),
+
+ # Pueblo Sabanal 20x14 · salidas N (Ruta 3) y E (Ruta 4)
+ ('Pueblo Sabanal', 20, 14, '.', [
+   ('borde','T',1),
+   ('h',',',6,2,17,2), ('v',',',9,2,11),
+   ('rect','H',3,2,3,3), ('rect','H',14,2,3,3),
+   ('rect','C',3,9,3,3), ('rect','M',14,9,3,3),
+   ('rect','#',11,9,4,3), ('rect','D',12,10,2,2),
+   ('sal',',','N',9), ('sal',',','E',7),
+   ('disp','f',8,'.'), ('disp','T',6,'.'),
+   ('pts',[(7,4),(10,8),(13,5),(12,12),(17,7)]) ], 13),
+
+ # Puerto Bermejo 24x16 · salidas O (Ruta 4) y S (Ruta 5)
+ ('Puerto Bermejo', 24, 16, '.', [
+   ('borde','T',1), ('rect','~',0,12,24,4), ('rect','s',0,11,24,1),
+   ('rect','P',6,12,3,2), ('rect','P',15,12,3,2),
+   ('h',',',5,2,21,2), ('h',',',9,2,21,2), ('v',',',12,2,10),
+   ('rect','H',3,2,3,3), ('rect','H',9,2,3,3), ('rect','H',19,2,3,3),
+   ('rect','C',3,7,3,3), ('rect','M',15,7,3,3),
+   ('rect','#',18,2,5,3), ('rect','D',19,2,3,2),
+   ('sal',',','O',7), ('sal',',','S',12),
+   ('disp','h',6,'.'),
+   ('pts',[(7,13),(11,11),(14,4),(20,8),(21,3)]) ], 14),
+
+ # Ciudad Cañaveral 26x18 · salidas N (Ruta 5) y NO (Ruta 6)
+ ('Ciudad Cañaveral', 26, 18, '.', [
+   ('borde','h',1), ('rect','~',20,0,6,5), ('rect','h',0,0,3,18), ('rect','h',23,6,3,12),
+   ('h','=',5,3,22,2), ('h','=',11,3,22,2), ('v','=',8,3,16), ('v','=',17,3,16),
+   ('rect','H',4,2,3,3), ('rect','H',12,2,3,3),
+   ('rect','C',4,7,3,3), ('rect','M',12,7,3,3), ('rect','L',19,7,3,3),
+   ('rect','G',10,13,6,4), ('rect','D',19,13,4,3),
+   ('sal','=','N',12), ('sal','=','O',6),
+   ('disp','f',10,'.'),
+   ('pts',[(7,4),(11,10),(16,4),(13,12),(21,12)]) ], 15),
+
+ # Ciudad Orquídea 28x22 · salidas SE (Ruta 6) y E (Ruta 7)
+ ('Ciudad Orquídea', 28, 22, '.', [
+   ('borde','^',1), ('rect','^',0,0,4,22), ('rect','^',24,0,4,22),
+   ('v','#',13,1,20), ('v','=',6,2,19), ('v','=',20,2,19),
+   ('h','=',5,5,22,2), ('h','=',12,5,22,2), ('h','=',18,5,22,2),
+   ('rect','H',7,2,3,3), ('rect','H',16,2,3,3), ('rect','H',7,15,3,3),
+   ('rect','C',7,8,3,3), ('rect','M',16,8,3,3),
+   ('rect','G',15,14,5,4), ('rect','D',21,8,3,4), ('rect','L',21,15,3,3),
+   ('sal','=','S',20), ('sal','=','E',12),
+   ('disp','f',12,'.'),
+   ('pts',[(11,4),(12,11),(18,6),(17,19),(22,13)]) ], 16),
+
+ # Ciudad Páramo 30x20 · salidas O (Ruta 7) y NE (Ruta 8)
+ ('Ciudad Páramo', 30, 20, '.', [
+   ('borde','^',1), ('disp','h',18,'.'),
+   ('h','=',4,2,27,2), ('h','=',10,2,27,2), ('h','=',16,2,27,2),
+   ('v','=',7,2,18), ('v','=',15,2,18), ('v','=',23,2,18),
+   ('rect','H',3,6,3,3), ('rect','H',10,6,3,3),
+   ('rect','L',17,6,5,3), ('rect','L',25,6,4,3),
+   ('rect','C',3,12,3,3), ('rect','M',10,12,3,3),
+   ('rect','G',17,12,5,4), ('rect','D',25,12,4,4),
+   ('sal','=','O',10), ('sal','=','N',23),
+   ('pts',[(9,5),(19,10),(14,9),(27,10),(19,17)]) ], 17),
+
+ # Ciudad Vallenar 24x16 · salidas SO (Ruta 8) y N (Ruta 9)
+ ('Ciudad Vallenar', 24, 16, '.', [
+   ('borde','T',1), ('rect','~',11,0,3,16), ('rect','b',11,7,3,1),
+   ('h',',',6,2,22,2), ('h',',',11,2,22,2), ('v',',',5,2,14), ('v',',',18,2,14),
+   ('rect','H',2,2,3,3), ('rect','H',20,2,3,3),
+   ('rect','C',2,8,3,3), ('rect','M',20,8,3,3),
+   ('rect','L',6,2,4,3), ('rect','G',15,12,5,3), ('rect','D',6,12,4,3),
+   ('sal',',','S',5), ('sal',',','N',18),
+   ('disp','f',8,'.'),
+   ('pts',[(9,5),(12,9),(16,5),(8,11),(21,12)]) ], 18),
+
+ # Ciudad Brisamar 26x18 · salidas S (Ruta 9), O (Ruta 10) y E (Ruta 11)
+ ('Ciudad Brisamar', 26, 18, '.', [
+   ('borde','T',1), ('rect','~',0,0,7,18), ('rect','s',6,0,3,18), ('rect','P',6,8,2,2),
+   ('rect','^',22,0,4,18),
+   ('h','=',5,9,21,2), ('h','=',12,9,21,2), ('v','=',12,2,16), ('v','=',19,2,16),
+   ('rect','H',9,2,3,3), ('rect','H',15,2,3,3),
+   ('rect','C',9,6,3,3), ('rect','M',15,6,3,3),
+   ('rect','G',9,13,5,4), ('rect','D',16,13,4,3), ('rect','L',20,5,2,4),
+   ('sal','=','S',12), ('sal','=','O',9), ('sal','=','E',7),
+   ('disp','f',6,'.'),
+   ('pts',[(14,5),(8,10),(18,11),(11,17),(21,10)]) ], 19),
+
+ # Isla Sietecolores 22x22 · salida E (Ruta 10)
+ ('Isla Sietecolores', 22, 22, '.', [
+   ('rect','~',0,0,22,22), ('rect','s',2,2,18,18), ('rect','.',4,4,14,14),
+   ('rect','P',2,10,2,2),
+   ('h',',',7,5,16), ('h',',',13,5,16), ('v',',',10,5,16),
+   ('rect','H',5,4,3,3), ('rect','H',14,4,3,3),
+   ('rect','C',5,9,3,3), ('rect','M',14,9,3,3),
+   ('rect','G',7,15,5,3), ('rect','D',14,15,3,3),
+   ('sal','s','E',11),
+   ('disp','T',8,'.'), ('disp','f',5,'.'),
+   ('pts',[(9,6),(12,10),(8,12),(13,14),(17,18)]) ], 20),
+]
+
+# ======================================================= RUTAS
+RUT = [
+ ('Ruta 2 · Dunas', 32, 12, 's', [
+   ('rect','~',0,0,32,3), ('rect','T',0,10,32,2), ('rect','s',0,9,32,1),
+   ('h',',',4,1,30,2), ('v',',',16,4,8),
+   ('sal',',','E',4), ('sal',',','O',7),
+   ('disp','h',22,'s'), ('disp','T',6,'s'),
+   ('pts',[(7,3),(14,7),(21,3),(27,7)]) ], 21),
+
+ ('Ruta 3 · Sabana', 12, 26, '.', [
+   ('borde','T',1),
+   ('v',',',5,1,24,2), ('h',',',8,2,9), ('h',',',17,2,9),
+   ('rect','#',2,11,3,3), ('rect','#',8,11,2,3),
+   ('sal',',','N',5), ('sal',',','S',6),
+   ('disp','h',26,'.'),
+   ('pts',[(3,5),(8,9),(3,16),(8,21)]) ], 22),
+
+ ('Ruta 4 · Monte Espinoso', 30, 10, '.', [
+   ('borde','T',1), ('rect','~',0,8,30,2), ('rect','^',24,1,3,3),
+   ('h',',',4,1,28,2), ('v',',',12,2,7),
+   ('rect','x',9,2,2,2), ('rect','x',19,6,2,2),
+   ('sal',',','O',4), ('sal',',','E',5),
+   ('disp','h',20,'.'),
+   ('pts',[(6,3),(13,7),(20,3),(26,6)]) ], 23),
+
+ ('Ruta 5 · Barcaza del Cauca', 14, 28, '~', [
+   ('rect','s',0,0,14,2), ('rect','s',0,26,14,2), ('rect','T',0,0,2,28), ('rect','T',12,0,2,28),
+   ('rect','s',5,12,5,5), ('rect','h',6,13,3,3), ('rect','P',5,2,2,2), ('rect','P',8,24,2,2),
+   ('sal','~','N',6), ('sal','~','S',7),
+   ('pts',[(4,6),(9,10),(7,15),(5,21)]) ], 24),
+
+ ('Ruta 6 · Cafetales y Túnel', 22, 20, '.', [
+   ('borde','T',1), ('rect','^',0,0,10,7), ('rect','o',3,2,4,3),
+   ('h',',',15,2,20,2), ('v',',',16,7,17), ('h',',',9,7,20,2), ('v',',',8,7,17),
+   ('sal',',','S',17), ('sal',',','N',5),
+   ('disp','h',22,'.'), ('disp','f',8,'.'),
+   ('pts',[(18,16),(12,10),(9,12),(5,6)]) ], 25),
+
+ ('Ruta 7 · Páramo', 36, 10, '.', [
+   ('borde','^',1), ('rect','^',15,3,4,4),
+   ('h',',',5,1,34,2), ('v',',',9,2,7), ('v',',',26,2,7),
+   ('sal',',','O',5), ('sal',',','E',5),
+   ('disp','h',30,'.'),
+   ('pts',[(7,2),(14,7),(22,2),(30,7)]) ], 26),
+
+ ('Ruta 8 · Cañón Rojo', 20, 24, '^', [
+   ('rect','~',0,14,20,3), ('rect','b',7,14,4,3),
+   ('v',',',8,17,22,3), ('v',',',9,1,13,3), ('h',',',6,3,16),
+   ('rect','h',2,19,3,3), ('rect','h',15,4,3,3),
+   ('sal',',','S',9), ('sal',',','N',10),
+   ('pts',[(5,21),(9,16),(12,9),(16,3)]) ], 27),
+
+ ('Ruta 9 · Falda de la Sierra', 12, 26, '^', [
+   ('rect','T',0,0,12,9), ('rect','.',1,1,10,8),
+   ('v',',',5,1,24,2), ('rect','~',4,12,4,3), ('rect','b',5,13,2,1),
+   ('sal',',','S',6), ('sal',',','N',5),
+   ('disp','h',20,'^'), ('disp','h',8,'.'),
+   ('pts',[(3,21),(8,17),(3,11),(8,4)]) ], 28),
+
+ ('Ruta 10 · Travesía', 34, 12, '~', [
+   ('rect','s',13,4,7,4), ('rect','T',15,5,3,2),
+   ('sal','~','E',6), ('sal','~','O',6),
+   ('pts',[(6,3),(11,8),(23,3),(28,8)]) ], 29),
+
+ ('Ruta 11 · Bosque Nublado', 24, 12, '.', [
+   ('borde','T',2), ('rect','T',9,4,3,4), ('rect','T',15,2,2,3),
+   ('h',',',6,1,22,2), ('v',',',12,2,9),
+   ('sal',',','O',6), ('sal',',','E',6),
+   ('disp','h',18,'.'),
+   ('pts',[(5,3),(10,9),(16,3),(20,9)]) ], 30),
+
+ ('CV I · Selva húmeda', 20, 20, '.', [
+   ('borde','T',1), ('rect','~',9,2,3,10), ('rect','b',9,8,3,1),
+   ('v',',',5,1,18,2), ('v',',',14,1,18,2), ('h',',',12,2,17),
+   ('sal',',','S',5), ('sal',',','N',14),
+   ('disp','h',24,'.'), ('disp','T',10,'.'),
+   ('pts',[(4,16),(11,13),(7,7),(15,4)]) ], 31),
+
+ ('CV II · Bosque nublado', 20, 20, ',', [
+   ('borde','T',1), ('rect','T',4,4,4,4), ('rect','T',12,4,4,4),
+   ('rect','T',4,12,4,4), ('rect','T',12,12,4,4),
+   ('h',',',10,1,18,2), ('v',',',9,1,18,2),
+   ('sal',',','S',9), ('sal',',','N',10),
+   ('disp','h',18,','),
+   ('pts',[(3,17),(10,10),(17,10),(16,3)]) ], 32),
+
+ ('CV III · Páramo', 20, 20, '^', [
+   ('rect',',',2,2,16,16), ('rect','^',7,7,6,6),
+   ('h',',',10,1,18,2), ('v',',',4,1,18,2), ('v',',',15,1,18,2),
+   ('rect','#',2,2,3,3), ('rect','#',15,15,3,3),
+   ('sal',',','S',4), ('sal',',','N',15),
+   ('disp','h',16,','),
+   ('pts',[(3,3),(16,16),(10,10),(16,5)]) ], 33),
+
+ ('Liga Nubia', 26, 18, '^', [
+   ('rect','#',1,1,24,16), ('rect','=',2,2,22,14),
+   ('rect','L',3,3,5,4), ('rect','L',18,3,5,4), ('rect','L',3,11,5,4), ('rect','L',18,11,5,4),
+   ('rect','n',10,5,6,8), ('rect','i',11,7,4,4),
+   ('sal','=','S',13),
+   ('pts',[(5,5),(20,5),(5,13),(20,13),(13,9)]) ], 35),
+ ('CV IV · Nieve perpetua', 20, 20, 'n', [
+   ('borde','^',1), ('rect','i',7,6,6,8), ('rect','^',3,3,3,3), ('rect','^',14,14,3,3),
+   ('v','n',4,1,18,2), ('v','n',15,1,18,2), ('h','n',10,1,18,2),
+   ('sal','n','S',4), ('sal','n','N',15),
+   ('pts',[(4,16),(10,10),(16,7),(15,3)]) ], 34),
+]
+
+# ======================================================= ZONAS LEGENDARIAS
+LEG = [
+ ('Caverna del Cauca I · Boca sumergida', 18, 16, '^', [
+   ('rect','~',0,0,18,5), ('rect','s',0,5,18,1),
+   ('rect',',',2,6,14,9), ('rect','^',6,9,3,3), ('rect','^',11,7,2,4),
+   ('rect','o',15,10,2,3),
+   ('sal',',','N',4), ('sal',',','E',11),
+   ('pts',[(4,8),(10,13),(14,7)]) ], 41),
+ ('Caverna del Cauca II · Galería del río', 18, 18, '^', [
+   ('rect',',',2,1,14,16), ('rect','~',7,1,4,16), ('rect','b',7,6,4,1), ('rect','b',7,12,4,1),
+   ('rect','^',3,8,3,3), ('rect','^',12,4,3,3),
+   ('sal',',','O',11), ('sal',',','S',13),
+   ('pts',[(4,3),(9,9),(14,14)]) ], 42),
+ ('Caverna del Cauca III · Cámara de la corriente', 20, 18, '^', [
+   ('rect',',',2,2,16,14), ('rect','~',6,5,8,8), ('rect','s',8,7,4,4),
+   ('rect','^',3,3,2,2), ('rect','^',15,13,2,2),
+   ('sal',',','N',10),
+   ('pts',[(10,9),(4,14),(16,4)]) ], 43),
+
+ ('Ojo del Cañón I · Socavón abandonado', 16, 20, '^', [
+   ('rect',',',2,1,12,18), ('rect','x',4,5,2,2), ('rect','x',9,11,2,2),
+   ('rect','^',6,7,4,4),
+   ('sal',',','S',7), ('sal',',','N',8),
+   ('pts',[(4,16),(11,8),(6,3)]) ], 44),
+ ('Ojo del Cañón II · Vetas ardientes', 18, 20, '^', [
+   ('rect',',',2,2,14,16), ('rect','L',4,6,2,2), ('rect','L',12,12,2,2), ('rect','L',9,4,2,2),
+   ('rect','^',7,8,4,5),
+   ('sal',',','S',9), ('sal',',','E',6),
+   ('pts',[(5,16),(13,9),(9,3)]) ], 45),
+ ('Ojo del Cañón III · El Ojo', 20, 20, '^', [
+   ('rect',',',3,3,14,14), ('rect','L',8,8,4,4), ('rect','x',5,5,2,2), ('rect','x',13,13,2,2),
+   ('sal',',','O',10),
+   ('pts',[(10,10),(5,15),(15,5)]) ], 46),
+
+ ('Picos Gemelos I · Grieta del glaciar', 20, 18, 'n', [
+   ('borde','^',1), ('rect','i',5,4,4,10), ('rect','i',12,2,4,12), ('rect','^',9,7,3,4),
+   ('sal','n','S',10), ('sal','n','N',9),
+   ('pts',[(7,14),(11,9),(14,4)]) ], 47),
+ ('Picos Gemelos II · Balcón de hielo', 22, 16, 'n', [
+   ('borde','^',1), ('rect','i',3,3,16,4), ('rect','i',3,10,16,3), ('rect','^',10,7,3,3),
+   ('sal','n','S',5), ('sal','n','E',8),
+   ('pts',[(6,12),(11,8),(17,4)]) ], 48),
+ ('Picos Gemelos III · La Cumbre Callada', 20, 20, '^', [
+   ('rect','n',3,3,14,14), ('rect','i',7,7,6,6), ('rect','^',5,5,2,2), ('rect','^',13,13,2,2),
+   ('sal','n','O',10),
+   ('pts',[(10,10),(6,15),(15,6)]) ], 49),
+]
+
+# ======================================================= salida
+out = {'localidades': {}, 'rutas': {}, 'legendarias': {}}
+for n, r in FIJOS.items():
+    (out['localidades'] if 'Pueblo' in n else out['rutas'])[n] = r
+for nom, w, h, base, ops, sem in LOC:
+    out['localidades'][nom] = construir(w, h, base, ops, sem)
+for nom, w, h, base, ops, sem in RUT:
+    out['rutas'][nom] = construir(w, h, base, ops, sem)
+for nom, w, h, base, ops, sem in LEG:
+    out['legendarias'][nom] = construir(w, h, base, ops, sem)
+
+json.dump(out, open('mapas.json', 'w', encoding='utf-8'), ensure_ascii=False, indent=0)
+
+tot = 0
+for g, ms in out.items():
+    print(f'\n== {g} ==')
+    for n, f in ms.items():
+        an = {len(x) for x in f}
+        ok = 'OK ' if len(an) == 1 else 'MAL'
+        pts = sorted({c for r in f for c in r if c.isdigit()})
+        print(f'  {ok} {n:44s} {list(an)[0]:>3} x {len(f):<3} puntos={"".join(pts)}')
+        tot += 1
+print(f'\n{tot} mapas generados')

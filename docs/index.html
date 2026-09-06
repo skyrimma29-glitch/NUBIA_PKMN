@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pokémon Nubia · 5E</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=Alegreya:wght@400;700&family=Alegreya+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --tinta:#12283f; --tinta2:#1b3a58; --tinta-suave:#3d556e; --mar:#0e7c8b;
+  --arena:#f6e7c4; --arena-hueso:#fdf6e6; --oro:#e0951c;
+  --selva:#2e7d4f; --fucsia:#c6386b;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--tinta);color:var(--arena-hueso);
+  font-family:'Alegreya',Georgia,serif;font-size:17px;line-height:1.6;
+  display:flex;flex-direction:column;min-height:100%;
+  background-image:radial-gradient(circle at 18% 10%, #1b3a58 0%, transparent 46%),
+                   radial-gradient(circle at 84% 80%, #17324e 0%, transparent 52%)}
+.wrap{max-width:1060px;margin:0 auto;padding:0 22px;width:100%}
+h1,h2,h3{font-family:'Silkscreen','Courier New',monospace;line-height:1.25}
+.vueltiao{height:12px;flex:0 0 auto;background:
+  repeating-linear-gradient(135deg,var(--oro) 0 7px,transparent 7px 14px),
+  repeating-linear-gradient(45deg,var(--oro) 0 7px,var(--tinta) 7px 14px)}
+
+@keyframes surgir{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes brotar{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:none}}
+@keyframes girar{to{transform:rotate(360deg)}}
+
+.hero{padding:52px 0 28px;text-align:center;flex:0 0 auto;animation:surgir .4s ease both}
+.hero .marca{font-family:'Silkscreen',monospace;font-size:11px;color:#8fc8d3;letter-spacing:.16em}
+.hero h1{font-size:clamp(34px,8.4vw,68px);margin:12px 0 0}
+.hero h1 span{color:var(--oro);display:block}
+.hero p{max-width:52ch;margin:16px auto 0;color:#cfe0e6;font-size:16px}
+main{flex:1 0 auto;padding:16px 0 56px}
+
+.sesion{background:var(--arena-hueso);color:var(--tinta);border:3px solid var(--oro);
+  box-shadow:0 14px 40px rgba(0,0,0,.42);padding:26px;max-width:460px;margin:0 auto;
+  text-align:center;animation:brotar .35s ease both}
+.sesion h2{font-size:14px;margin:0 0 8px;color:var(--mar)}
+.sesion p{margin:0 0 20px;font-size:16px;color:var(--tinta-suave)}
+.google{display:inline-flex;align-items:center;gap:11px;font-family:'Silkscreen',monospace;
+  font-size:12px;padding:14px 20px;border:3px solid var(--tinta);background:#fff;color:var(--tinta);
+  cursor:pointer;box-shadow:5px 5px 0 var(--tinta);transition:transform .1s,box-shadow .12s,background .14s}
+.google:hover{background:#fff8e8}
+.google:active{transform:translate(3px,3px);box-shadow:2px 2px 0 var(--tinta)}
+.google svg{width:20px;height:20px}
+
+.usuario{display:flex;align-items:center;gap:13px;justify-content:space-between;flex-wrap:wrap;
+  background:var(--tinta2);border:3px solid var(--oro);padding:12px 16px;margin-bottom:26px;
+  animation:surgir .3s ease both}
+.usuario .quien{display:flex;align-items:center;gap:11px}
+.usuario img{width:38px;height:38px;border:2px solid var(--oro);object-fit:cover}
+.usuario b{font-family:'Silkscreen',monospace;font-size:12px;color:var(--arena-hueso)}
+.usuario small{display:block;font-family:'Alegreya Sans',sans-serif;font-size:12px;color:#8fc8d3}
+
+button{font-family:'Silkscreen',monospace;cursor:pointer}
+.bt{font-size:10px;padding:10px 13px;border:2px solid var(--oro);background:transparent;color:var(--oro);
+  transition:background .14s,color .14s,transform .08s}
+.bt:hover{background:var(--oro);color:var(--tinta)}
+.bt:active{transform:translateY(1px)}
+.bt.solido{background:var(--fucsia);border-color:var(--fucsia);color:#fff}
+.bt.solido:hover{background:#d8437c;color:#fff}
+.bt:disabled{opacity:.45;cursor:not-allowed}
+input{font-family:'Silkscreen',monospace;font-size:14px;padding:11px 12px;border:3px solid var(--tinta);
+  background:#fff;color:var(--tinta);width:100%}
+input:focus-visible{outline:3px solid var(--fucsia);outline-offset:2px}
+code{background:#0d1f31;padding:2px 6px;color:#cfe0e6;font-size:13px}
+
+.acciones{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:30px}
+@media(max-width:700px){.acciones{grid-template-columns:1fr}}
+.accion{background:var(--arena-hueso);color:var(--tinta);border:3px solid var(--tinta);
+  box-shadow:7px 7px 0 rgba(0,0,0,.3);padding:20px;animation:surgir .34s ease both}
+.accion:nth-child(2){animation-delay:.07s}
+.accion h3{font-size:13px;margin:0 0 4px;color:var(--mar)}
+.accion p{margin:0 0 14px;font-size:15px;color:var(--tinta-suave)}
+.accion .fila{display:flex;gap:9px}
+.accion .fila input{flex:1}
+
+h2.sec{font-size:13px;color:#8fc8d3;margin:0 0 14px;letter-spacing:.06em}
+.mesas{display:grid;gap:13px}
+.mesa{background:var(--arena-hueso);color:var(--tinta);border:3px solid var(--tinta);
+  display:grid;grid-template-columns:auto 1fr auto;gap:16px;align-items:center;padding:15px 17px;
+  box-shadow:5px 5px 0 rgba(0,0,0,.28);animation:surgir .3s ease both;
+  transition:transform .16s,box-shadow .16s}
+.mesa:hover{transform:translateY(-3px);box-shadow:5px 9px 0 rgba(0,0,0,.32)}
+@media(max-width:640px){.mesa{grid-template-columns:1fr}}
+.codigo{font-family:'Silkscreen',monospace;font-size:20px;letter-spacing:.12em;
+  background:var(--tinta);color:var(--oro);padding:12px 14px;white-space:nowrap;text-align:center}
+.mesa h3{font-size:14px;margin:0}
+.mesa .meta{font-family:'Alegreya Sans',sans-serif;font-size:13px;color:var(--tinta-suave);margin-top:3px}
+.rol{display:inline-block;font-family:'Silkscreen',monospace;font-size:9px;padding:3px 6px;
+  background:var(--fucsia);color:#fff;margin-left:7px;vertical-align:2px}
+.rol.dm{background:var(--oro);color:var(--tinta)}
+.mesa .btns{display:flex;gap:8px;flex-wrap:wrap}
+
+.vacio{background:rgba(253,246,230,.06);border:3px dashed #4d7183;padding:28px 20px;text-align:center;
+  color:#a8c2ce;font-family:'Alegreya Sans',sans-serif;font-size:14px}
+.aviso{background:#3a1420;border:3px solid var(--fucsia);color:#ffd9e4;padding:14px 16px;
+  margin-bottom:22px;font-family:'Alegreya Sans',sans-serif;font-size:14px;animation:surgir .25s ease both}
+.aviso b{color:#fff}
+.cargando{display:inline-block;width:15px;height:15px;border:3px solid #4d7183;
+  border-top-color:var(--oro);border-radius:50%;animation:girar .7s linear infinite;vertical-align:-2px}
+
+.herr{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-top:16px}
+.herr a{display:block;text-decoration:none;background:var(--tinta2);border:2px solid #4d7183;
+  padding:14px;color:var(--arena-hueso);transition:border-color .14s,transform .14s,background .14s}
+.herr a:hover{border-color:var(--oro);transform:translateY(-2px);background:#204468}
+.herr b{font-family:'Silkscreen',monospace;font-size:11px;display:block;color:var(--oro);margin-bottom:3px}
+.herr span{font-family:'Alegreya Sans',sans-serif;font-size:13px;color:#cfe0e6}
+
+footer{flex:0 0 auto;padding:22px 0 30px;color:#7d9dad;text-align:center;
+  font-family:'Alegreya Sans',sans-serif;font-size:13px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="hero"><div class="wrap">
+  <p class="marca">POKÉMON · DUNGEONS &amp; DRAGONS 5E</p>
+  <h1>Región de<span>Nubia</span></h1>
+  <p>Ocho ciudades, tres pueblos y una montaña nevada que nace al borde del mar.</p>
+</div></div>
+<div class="vueltiao"></div>
+
+<main><div class="wrap" id="app">
+  <div class="vacio"><span class="cargando"></span> Conectando…</div>
+</div></main>
+
+<footer>Contenido de fans. Sin relación con Nintendo, Game Freak ni Wizards of the Coast.</footer>
+
+<script src="nubia-config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const CFG = window.NUBIA || {};
+const $ = s => document.querySelector(s);
+const esc = s => String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let sb = null, yo = null;
+const aviso = html => `<div class="aviso">${html}</div>`;
+
+async function arrancar(){
+  if(!CFG.SUPABASE_URL || !CFG.SUPABASE_KEY){
+    $('#app').innerHTML = aviso(
+      '<b>Falta la configuración.</b> Abre <code>nubia-config.js</code> y pega la URL y la clave anónima '
+      + 'de tu proyecto de Supabase. Sin eso no hay cuentas ni partidas guardadas.')
+      + `<div class="herr">
+           <a href="nubia-tablero.html"><b>ENTRAR SIN CUENTA</b><span>El tablero funciona igual, pero nada se guarda.</span></a>
+         </div>`;
+    return;
+  }
+  if(!window.supabase){
+    $('#app').innerHTML = aviso('<b>Sin conexión.</b> No cargó la librería de Supabase. Revisa tu internet y recarga.');
+    return;
+  }
+  sb = window.supabase.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_KEY);
+  sb.auth.onAuthStateChange((_e, s) => { yo = s?.user || null; pintar(); });
+  const { data:{ session } } = await sb.auth.getSession();
+  yo = session?.user || null;
+  pintar();
+}
+
+function pintar(){ yo ? vistaMesas() : vistaEntrar(); }
+
+function vistaEntrar(){
+  $('#app').innerHTML = `
+    <div class="sesion">
+      <h2>ENTRAR A LA MESA</h2>
+      <p>Necesitas una cuenta para que se guarden tu Pokédex, tus fichas y las partidas en las que juegas. Se usa tu cuenta de Google y no se guarda ninguna contraseña.</p>
+      <button class="google" id="entrar">
+        <svg viewBox="0 0 48 48" aria-hidden="true">
+          <path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.6l6.8-6.8C35.6 2.4 30.2 0 24 0 14.6 0 6.4 5.4 2.5 13.2l7.9 6.2C12.3 13.2 17.7 9.5 24 9.5z"/>
+          <path fill="#4285F4" d="M46.1 24.6c0-1.6-.1-3.1-.4-4.6H24v9.1h12.4c-.5 2.9-2.2 5.3-4.7 7l7.6 5.9c4.4-4.1 6.8-10.1 6.8-17.4z"/>
+          <path fill="#FBBC05" d="M10.4 28.6c-.5-1.4-.8-2.9-.8-4.6s.3-3.2.8-4.6l-7.9-6.2C.9 16.5 0 20.1 0 24s.9 7.5 2.5 10.8l7.9-6.2z"/>
+          <path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.6-5.9c-2.1 1.4-4.8 2.3-8.3 2.3-6.3 0-11.7-3.7-13.6-9.9l-7.9 6.2C6.4 42.6 14.6 48 24 48z"/>
+        </svg>
+        CONTINUAR CON GOOGLE
+      </button>
+    </div>`;
+  $('#entrar').onclick = async ()=>{
+    const { error } = await sb.auth.signInWithOAuth({
+      provider:'google',
+      options:{ redirectTo: location.origin + location.pathname }
+    });
+    if(error) $('#app').insertAdjacentHTML('afterbegin', aviso('<b>No se pudo abrir el acceso.</b> '+esc(error.message)));
+  };
+}
+
+function vistaMesas(){
+  const nombre = yo.user_metadata?.full_name || yo.email || 'Entrenador';
+  const avatar = yo.user_metadata?.avatar_url || '';
+  $('#app').innerHTML = `
+    <div class="usuario">
+      <div class="quien">
+        ${avatar?`<img src="${esc(avatar)}" alt="">`:''}
+        <div><b>${esc(nombre)}</b><small>${esc(yo.email||'')}</small></div>
+      </div>
+      <button class="bt" id="salir">CERRAR SESIÓN</button>
+    </div>
+
+    <div class="acciones">
+      <div class="accion">
+        <h3>CREAR PARTIDA</h3>
+        <p>Serás el director. Se genera un código de seis letras para repartir a tu mesa.</p>
+        <div class="fila">
+          <input id="nomPartida" maxlength="40" placeholder="La sombra de El Dorado">
+          <button class="bt solido" id="crear">CREAR</button>
+        </div>
+      </div>
+      <div class="accion">
+        <h3>UNIRSE CON CÓDIGO</h3>
+        <p>Escribe el código que te pasó tu director. Solo hace falta una vez.</p>
+        <div class="fila">
+          <input id="codigo" maxlength="6" placeholder="ABC234" style="text-transform:uppercase">
+          <button class="bt solido" id="unirse">ENTRAR</button>
+        </div>
+      </div>
+    </div>
+
+    <h2 class="sec">TUS MESAS</h2>
+    <div class="mesas" id="mesas"><div class="vacio"><span class="cargando"></span> Buscando…</div></div>
+    <div id="herrDM"></div>`;
+
+  $('#salir').onclick  = async ()=>{ await sb.auth.signOut(); yo=null; pintar(); };
+  $('#crear').onclick  = crearPartida;
+  $('#unirse').onclick = unirse;
+  $('#codigo').addEventListener('keydown', e=>{ if(e.key==='Enter') unirse(); });
+  $('#nomPartida').addEventListener('keydown', e=>{ if(e.key==='Enter') crearPartida(); });
+  $('#mesas').addEventListener('click', clicMesa);
+  listarMesas();
+}
+
+async function clicMesa(e){
+  const en = e.target.closest('[data-entrar]');
+  if(en){
+    location.href = 'nubia-tablero.html#sala=' + en.dataset.entrar + (en.dataset.dm==='1' ? '&dm=1' : '');
+    return;
+  }
+  const cp = e.target.closest('[data-copiar]');
+  if(cp){
+    try{ await navigator.clipboard.writeText(cp.dataset.copiar); cp.textContent='COPIADO'; }
+    catch{ cp.textContent = cp.dataset.copiar; }
+    setTimeout(()=>cp.textContent='COPIAR CÓDIGO', 2200);
+  }
+}
+
+async function listarMesas(){
+  const { data, error } = await sb.from('partidas')
+    .select('id,codigo,nombre,director,actualizado')
+    .order('actualizado', { ascending:false });
+
+  const c = $('#mesas');
+  if(error){
+    c.innerHTML = aviso('<b>No se pudieron cargar las mesas.</b> ' + esc(error.message)
+      + ' Puede que falte correr <code>esquema.sql</code> en el editor SQL de Supabase.');
+    return;
+  }
+  if(!data || !data.length){
+    c.innerHTML = '<div class="vacio">Todavía no tienes mesas. Crea una partida o únete con un código.</div>';
+    $('#herrDM').innerHTML = '';
+    return;
+  }
+  c.innerHTML = data.map(p=>{
+    const dm = p.director === yo.id;
+    const cuando = new Date(p.actualizado).toLocaleDateString('es-CO',{day:'numeric',month:'short'});
+    return `<div class="mesa">
+      <div class="codigo">${esc(p.codigo)}</div>
+      <div>
+        <h3>${esc(p.nombre)}<span class="rol ${dm?'dm':''}">${dm?'DIRECTOR':'JUGADOR'}</span></h3>
+        <div class="meta">Última sesión el ${cuando}</div>
+      </div>
+      <div class="btns">
+        ${dm?`<button class="bt" data-copiar="${esc(p.codigo)}">COPIAR CÓDIGO</button>`:''}
+        <button class="bt solido" data-entrar="${esc(p.codigo)}" data-dm="${dm?1:0}">ENTRAR</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  $('#herrDM').innerHTML = data.some(p=>p.director === yo.id) ? `
+    <h2 class="sec" style="margin-top:34px">HERRAMIENTAS DEL DIRECTOR</h2>
+    <div class="herr">
+      <a href="nubia-codex.html"><b>CÓDICE</b><span>Mundo, NPC, gimnasios y campaña</span></a>
+      <a href="nubia-rutas.html"><b>ATLAS DE RUTAS</b><span>Rutas, Camino Victoria y zonas legendarias</span></a>
+      <a href="nubia-planos.html"><b>PLANOS</b><span>Medidas y salidas de cada mapa</span></a>
+      <a href="nubia-encuentros.html"><b>ENCUENTROS</b><span>Tablas por zona</span></a>
+      <a href="nubia-dados.html"><b>MESA DE DADOS</b><span>Tirador aparte</span></a>
+    </div>` : '';
+}
+
+function codigoNuevo(){
+  const abc = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';   // sin I, O, 0 ni 1
+  return Array.from({length:6}, ()=>abc[Math.floor(Math.random()*abc.length)]).join('');
+}
+
+async function crearPartida(){
+  const nom = $('#nomPartida').value.trim() || 'Partida de Nubia';
+  const b = $('#crear'); b.disabled = true; b.textContent = 'CREANDO…';
+  let error = null;
+  for(let i=0; i<5; i++){
+    const r = await sb.from('partidas').insert({ codigo: codigoNuevo(), nombre: nom, director: yo.id });
+    error = r.error;
+    if(!error) break;
+    if(!String(error.message).toLowerCase().includes('duplicate')) break;
+  }
+  b.disabled = false; b.textContent = 'CREAR';
+  if(error){ $('#app').insertAdjacentHTML('afterbegin', aviso('<b>No se pudo crear.</b> '+esc(error.message))); return; }
+  $('#nomPartida').value = '';
+  listarMesas();
+}
+
+async function unirse(){
+  const cod = $('#codigo').value.trim().toUpperCase();
+  if(cod.length < 4) return;
+  const b = $('#unirse'); b.disabled = true; b.textContent = 'ENTRANDO…';
+  const { error } = await sb.rpc('unirse_partida', { p_codigo: cod });
+  b.disabled = false; b.textContent = 'ENTRAR';
+  if(error){ $('#app').insertAdjacentHTML('afterbegin', aviso('<b>No se pudo entrar.</b> '+esc(error.message))); return; }
+  $('#codigo').value = '';
+  listarMesas();
+}
+
+arrancar();
+</script>
+</body>
+</html>

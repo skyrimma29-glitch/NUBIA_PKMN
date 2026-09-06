@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas de Rutas — Nubia</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=Alegreya:ital,wght@0,400;0,700;1,400&family=Alegreya+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --tinta:#12283f; --tinta-suave:#3d556e; --mar:#0e7c8b;
+  --arena:#f6e7c4; --arena-hueso:#fdf6e6; --oro:#e0951c;
+  --selva:#2e7d4f; --fucsia:#c6386b; --sombra:rgba(18,40,63,.18);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--arena);color:var(--tinta);
+  font-family:'Alegreya',Georgia,serif;font-size:17px;line-height:1.62}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+h1,h2,h3,h4{font-family:'Silkscreen','Courier New',monospace;line-height:1.28}
+.vueltiao{height:14px;background:
+  repeating-linear-gradient(135deg,var(--tinta) 0 8px,transparent 8px 16px),
+  repeating-linear-gradient(45deg,var(--tinta) 0 8px,var(--arena-hueso) 8px 16px)}
+
+header{background:var(--tinta);color:var(--arena-hueso);padding:30px 0 24px}
+header .fila{display:flex;justify-content:space-between;align-items:baseline;gap:20px;flex-wrap:wrap}
+header h1{margin:0;font-size:clamp(24px,4.6vw,40px);color:var(--arena-hueso)}
+header h1 span{color:var(--oro)}
+header a{color:#8fc8d3;font-family:'Alegreya Sans',sans-serif;font-size:14px;text-decoration:none;border-bottom:1px solid #4d7183}
+header a:hover{color:var(--arena-hueso)}
+header p{max-width:64ch;margin:12px 0 0;color:#cfe0e6}
+
+nav{position:sticky;top:0;z-index:30;background:var(--arena-hueso);border-bottom:3px solid var(--tinta)}
+nav .wrap{display:flex;gap:5px;overflow-x:auto;padding:11px 20px}
+nav button{font-family:'Silkscreen',monospace;font-size:11px;padding:9px 11px;cursor:pointer;
+  background:var(--arena-hueso);border:2px solid var(--tinta);color:var(--tinta);white-space:nowrap}
+nav button[aria-pressed="true"]{background:var(--tinta);color:var(--arena-hueso)}
+nav button:hover{background:#fff}
+nav button:focus-visible{outline:3px solid var(--fucsia);outline-offset:2px}
+nav button.cv{border-color:var(--fucsia);color:var(--fucsia)}
+nav button[data-id^='lg']{border-color:var(--oro);color:#8a6410}
+nav button[data-id^='lg'][aria-pressed="true"]{background:var(--oro);color:var(--tinta)}
+nav button.cv[aria-pressed="true"]{background:var(--fucsia);color:#fff}
+
+main{padding:32px 0 70px}
+.intro{border:3px solid var(--tinta);background:var(--arena-hueso);padding:22px 24px;box-shadow:6px 6px 0 var(--sombra);margin-bottom:36px}
+.intro h2{font-size:16px;margin:0 0 12px;color:var(--mar)}
+.intro ol{margin:0;padding-left:20px}
+.intro li{margin-bottom:9px}
+.intro li:last-child{margin-bottom:0}
+.intro b{font-family:'Alegreya Sans',sans-serif;font-size:15px}
+
+.cab{display:flex;justify-content:space-between;align-items:baseline;gap:16px;flex-wrap:wrap;margin-bottom:4px}
+.cab h2{font-size:24px;margin:0}
+.nivel{font-family:'Silkscreen',monospace;font-size:11px;background:var(--tinta);color:var(--oro);padding:7px 10px}
+.tramo{font-family:'Alegreya Sans',sans-serif;font-size:14px;color:var(--tinta-suave);margin:0 0 18px}
+
+.dos{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:30px;align-items:start}
+@media(max-width:960px){.dos{grid-template-columns:1fr}}
+
+.tilewrap{border:3px solid var(--tinta);background:var(--tinta);box-shadow:6px 6px 0 var(--sombra);overflow-x:auto}
+.tiles{display:grid;gap:0;min-width:560px}
+.t{aspect-ratio:1;position:relative}
+.t.pt{cursor:pointer}
+.t.pt::after{content:attr(data-n);position:absolute;inset:10%;border-radius:50%;
+  background:var(--fucsia);color:#fff;border:2px solid var(--tinta);
+  font-family:'Silkscreen',monospace;font-size:9px;display:grid;place-items:center}
+.t.pt.obj::after{content:'!';background:var(--oro);color:var(--tinta);border-radius:0}
+.t.pt:hover::after,.t.pt.sel::after{transform:scale(1.2);background:var(--oro);color:var(--tinta)}
+.leg{display:flex;flex-wrap:wrap;gap:7px 15px;margin-top:11px;
+  font-family:'Alegreya Sans',sans-serif;font-size:13px;color:var(--tinta-suave)}
+.leg i{display:inline-block;width:13px;height:13px;border:1px solid var(--tinta);margin-right:6px;vertical-align:-2px;font-style:normal}
+
+.bloque{border:3px solid var(--tinta);background:var(--arena-hueso);padding:17px 19px;margin-bottom:20px;box-shadow:6px 6px 0 var(--sombra)}
+.bloque h4{font-size:12px;margin:0 0 10px;color:var(--mar)}
+.bloque.rosa{border-color:var(--fucsia)} .bloque.rosa h4{color:var(--fucsia)}
+.bloque p{margin:0 0 10px} .bloque p:last-child{margin:0}
+.bloque ol,.bloque ul{margin:0;padding-left:19px}
+.bloque li{margin-bottom:8px} .bloque li:last-child{margin-bottom:0}
+
+.puntos{display:grid;gap:2px;background:var(--tinta);border:3px solid var(--tinta);margin-bottom:20px}
+.punto{background:var(--arena-hueso);padding:12px 15px}
+.punto.sel{background:#fff8e2}
+.punto .fila2{display:flex;gap:9px;align-items:baseline;flex-wrap:wrap}
+.punto .n{font-family:'Silkscreen',monospace;font-size:10px;background:var(--fucsia);color:#fff;padding:3px 7px}
+.punto .n.obj{background:var(--oro);color:var(--tinta)}
+.punto .nom{font-family:'Silkscreen',monospace;font-size:12px}
+.punto .cl{font-family:'Alegreya Sans',sans-serif;font-size:13px;color:var(--mar)}
+.punto p{margin:5px 0 0;font-size:16px}
+
+footer{background:var(--tinta);color:#a8c2ce;padding:24px 0;font-family:'Alegreya Sans',sans-serif;font-size:14px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<style>
+/* animaciones compartidas de Nubia */
+@keyframes nb-surgir{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:none}}
+@keyframes nb-brotar{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:none}}
+main>.wrap>*,section.tab.on>.wrap>*{animation:nb-surgir .3s ease both}
+.card,.ruta,.item,.npc,.lider,.tir,.carta{animation:nb-surgir .24s ease both}
+.panel,.mapa-caja,.tilewrap,.bloque,.res{animation:nb-brotar .28s ease both}
+.bt,button,.chip,.dado,a.carta,nav button{transition:background .14s,color .14s,transform .09s,box-shadow .14s,border-color .14s}
+.bt:active,button:active,.chip:active,.dado:active{transform:translateY(1px)}
+a.carta:hover,.card:hover{transform:translateY(-3px)}
+a.carta,.card{transition:transform .16s,background .14s}
+.t,.tk{transition:transform .12s,filter .12s}
+.t.pt:hover,.t.npc:hover{filter:brightness(1.08)}
+tr,.punto,.npc{transition:background .14s}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="fila">
+      <h1>Atlas de <span>Rutas</span></h1>
+      <a href="nubia-director.html">← Volver al panel</a>
+    </div>
+    <p>Cómo debe verse cada ruta, en cuántos mapas se parte, dónde va la hierba alta y quién te espera en el camino. Termina en el Camino Victoria y la Liga Nubia.</p>
+  </div>
+</header>
+<div class="vueltiao"></div>
+
+<nav><div class="wrap" id="nav"></div></nav>
+
+<main>
+<div class="wrap">
+
+  <div class="intro">
+    <h2>REGLAS DE DISEÑO PARA TODAS LAS RUTAS</h2>
+    <ol>
+      <li><b>Un segmento equivale a un mapa.</b> Cada mapa mide 30 × 9 casillas: cabe en una pantalla y se recorre en una sesión corta. A escala de mesa, una casilla son 5 metros.</li>
+      <li><b>Parte la ruta en varios mapas cuando cambie el bioma o cuando haya un cuello de botella.</b> Un puente, la boca de una cueva, un embarcadero o un puesto de control son cortes naturales: ahí el grupo no puede devolverse sin decidirlo, y ese es justamente el momento de cambiar de mapa.</li>
+      <li><b>Sin hierba alta no hay encuentro aleatorio.</b> La hierba es la señal visual del riesgo. Si quieres una ruta tranquila, pon poca; si quieres tensión, haz que la única vía pase por dentro.</li>
+      <li><b>De dos a cuatro entrenadores por segmento</b>, con línea de visión marcada. Si el entrenador te ve, te reta; si lo rodeas por fuera de su línea, lo evitas. Eso convierte el mapa en una decisión, no en un pasillo.</li>
+      <li><b>Un objeto oculto por segmento</b>, marcado en amarillo. Se encuentra con una prueba de Percepción o Investigación, nunca por tropezarse con él.</li>
+      <li><b>Las rutas de agua se recorren distinto:</b> no se camina, se navega. Los encuentros salen del agua abierta, no de la hierba, y el grupo no puede retroceder a mitad de trayecto.</li>
+    </ol>
+  </div>
+
+  <div id="ficha"></div>
+</div>
+</main>
+
+<div class="vueltiao"></div>
+<footer><div class="wrap">Atlas de Rutas de Nubia — documento de trabajo del director.</div></footer>
+
+<script>
+/* ===========================================================
+   Leyenda de casillas:
+   . césped   , tierra    = empedrado   ~ agua      s arena
+   h hierba alta          T árbol       ^ roca      b puente
+   o boca de cueva        x obstáculo   n nieve     i hielo
+   # muro     P muelle    L sala        E salida
+   1-5 puntos numerados   ! objeto oculto
+   =========================================================== */
+const COLORES = {
+ '.':'#7ec46b', ',':'#d6ac74', '=':'#c6bfae', '~':'#3f9ed6', 's':'#efd9a2',
+ 'h':'#3f8f45', 'T':'#2e7d4f', '^':'#9a8f7f', 'b':'#b98a52', 'o':'#463a30',
+ 'x':'#6b4f33', 'n':'#eef4f7', 'i':'#bfe0ee', '#':'#8a7f72', 'P':'#a9784a',
+ 'L':'#7b5ba6', 'E':'#f6e7c4'
+};
+const NOMBRES = {'.':'césped',',':'tierra','=':'empedrado','~':'agua','s':'arena',
+ 'h':'hierba alta','T':'árbol','^':'roca','b':'puente','o':'boca de cueva','x':'obstáculo',
+ 'n':'nieve','i':'hielo','#':'muro','P':'muelle','L':'sala de combate','E':'salida'};
+const ETIQ = {'E':'→','o':'▲','L':'★'};
+
+const R = [
+{
+ id:'r1', tag:'R1', nom:'Ruta 1 · Mangal de la Ciénaga', tramo:'Pueblo Fundación → Ciudad Cumbia', nivel:'Nv 1-3', mapas:'1 mapa',
+ verse:'Un camino de tierra clarito partido por lengüetas de agua salobre. Verde brillante, mucho mango, mucho mosquito. Es la ruta más ancha y la más perdonadora de la región: la hierba está a los lados, nunca bloqueando el paso, para que un grupo de nivel 1 pueda decidir si quiere pelear.',
+ seg:'Un solo segmento. No hace falta partirlo: la ruta es corta y no cambia de bioma en ningún punto.',
+ mapa:['TTTTTTTTTT~~~~~~~~~~TTTTTTTTTT',
+   'E,,,,hhhhh,,,,,,,,,,hhh,,,,,,E',
+   ',,,,,h1hhh,,,,2,,,,,hhh,,,3,,,',
+   '..T...hhh...T....T..hhh.......',
+   '..T....!....T....T.....T...4..',
+   'hhh.........,,,,,,.....T......',
+   'hhhh........,,,,,,...hhh......',
+   'TThhh.......~~~~~~...hhh...TTT',
+   'TTTTTTTTTT~~~~~~~~~~TTTTTTTTTT'],
+ puntos:[
+  ['1','Mateo Ariza','Escarabajo de Ruta','Te reta apenas te ve. Es el combate de práctica: si el grupo lo pierde, no pasa nada grave.'],
+  ['2','Vado del mangle','Paso de agua','Cruzar moja el equipo. Prueba de Atletismo CD 8 o los objetos consumibles se echan a perder.'],
+  ['3','Doña Ana Polo','Vendedora de Raspao','Puesto rodante. Vende curación barata y suelta el rumor del costal que se mueve.'],
+  ['4','Yuli Barraza','Colegiala','Se escapó del pueblo para seguir al grupo. Devolverla es una decisión, no un combate.'],
+  ['!','Bayas caídas','Objeto oculto','Bajo el mango grande. Percepción CD 12.']]
+},
+{
+ id:'r2', tag:'R2', nom:'Ruta 2 · Dunas de Bocas de Ceniza', tramo:'Ciudad Cumbia → Ciudad Muralla', nivel:'Nv 3-5', mapas:'2 mapas',
+ verse:'Arena hasta el horizonte y el mar siempre a la derecha del jugador. Paleta clarísima, casi blanqueada por el sol: arena, espuma y matas de hierba costera reventando entre las dunas. El viento arrastra la arena y tapa el camino, así que la senda se pierde y reaparece.',
+ seg:'Segmento A — Dunas abiertas (el mapa de abajo). Segmento B — Acantilado bajo: la arena se acaba, aparece roca negra y el sendero se estrecha a dos casillas con el mar golpeando debajo. El corte entre ambos es el punto donde el camino sube al acantilado.',
+ mapa:['~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~',
+   '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~',
+   '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~',
+   'shsssss1sssshssshssss3ssssssssss',
+   's,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,E',
+   's,,,,,,,,,,,,,,,!,,,,,,,,,,,,,,T',
+   'shsshssssssshsss,ssshsssssssssss',
+   'E,,,ThssssssTs2T,ssshTsTsss4sshs',
+   'sssshsssshsshssh,ssshsssshssssss',
+   'hssshssssssssssssssssssssshshsss',
+   'TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT',
+   'TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT'],
+ puntos:[
+  ['1','Cometero en la duna','Entrenador','Vuela cometa desde lo alto. Te ve desde lejos y baja corriendo a retarte.'],
+  ['2','Buzo de Arrecife','Entrenador','Sale del agua a media conversación. Combate con Pokémon de tipo Agua y Roca.'],
+  ['3','Restos de draga','Punto de interés','Chatarra medio enterrada con pintura raspada. Debajo asoma el logotipo de Café Dorado.'],
+  ['4','Guía Turístico','Entrenador','Lleva un grupo perdido. Si le ganas, te dice cómo entrar al fuerte sin hacer fila.'],
+  ['!','Caparazón pulido','Objeto oculto','Entre las matas de la duna central. Investigación CD 13.']]
+},
+{
+ id:'r3', tag:'R3', nom:'Ruta 3 · Sabana de los Corrales', tramo:'Ciudad Muralla → Pueblo Sabanal', nivel:'Nv 5-7', mapas:'2 mapas',
+ verse:'Llano seco, amarillo pajizo, con cercas de alambre que cortan el mapa en potreros. La sombra es escasa y eso importa: fuera de la sombra el calor pega. Los corrales de piedra en el centro son la única estructura vertical en kilómetros y se ven desde todo el mapa.',
+ seg:'Segmento A — Potreros abiertos (abajo). Segmento B — Corrales del norte: mismo bioma pero laberinto de cercas, donde la ruta obliga a abrir y cerrar tranqueras en orden. Se parte en dos porque el segundo es un acertijo y el primero un tránsito.',
+ mapa:['TTTTTETTTTTT',
+   'T....,,....T',
+   'T....,,.hh.T',
+   'T...h,,....T',
+   'T...h,,....T',
+   'T..1.,,....T',
+   'T....,,....T',
+   'T.h..,,....T',
+   'T.,,,,,,,,hT',
+   'T..hh,,.2..T',
+   'T....,,....T',
+   'T.###,,.##.T',
+   'T.###,,h##.T',
+   'Th###,!.##.T',
+   'T....,,h...T',
+   'T..h.,,....T',
+   'T..3h,,....T',
+   'T.,,,,,,,,.T',
+   'T....,,...hT',
+   'Th...,,..h.T',
+   'T....,,....T',
+   'T....,,.4.hT',
+   'T....,,....T',
+   'Thh.h,,....T',
+   'T....,,..hhT',
+   'TTTTTTETTTTT'],
+ puntos:[
+  ['1','Arriero Nico Támara','Entrenador','Cuenta cabezas de ganado y le faltan seis. Te reta de mal humor y te cuenta el problema al perder.'],
+  ['2','Tranquera cerrada','Punto de interés','Alguien la cerró desde el lado de afuera. Rastro de ruedas anchas, no de pezuñas.'],
+  ['3','Tejedora ambulante','Entrenadora','Va a Sabanal con vueltiaos nuevos. Vende uno que codifica un atajo de la Ruta 4.'],
+  ['4','Cocinera de Sancocho','Entrenadora','Olla montada en pleno potrero. Cura estados alterados a cambio de un combate amistoso.'],
+  ['!','Cantimplora vieja','Objeto oculto','Dentro del corral de piedra. Percepción CD 12.']]
+},
+{
+ id:'r4', tag:'R4', nom:'Ruta 4 · Monte Espinoso', tramo:'Pueblo Sabanal → Puerto Bermejo', nivel:'Nv 6-8', mapas:'2 mapas',
+ verse:'Vegetación baja, gris verdosa, llena de espinas y troncos caídos que bloquean el paso. Es la primera ruta donde el terreno estorba de verdad: hay obstáculos que solo se apartan con un Pokémon de carga o con Fuerza. Al final el suelo se oscurece y se oye el río antes de verlo.',
+ seg:'Segmento A — Espinal cerrado (abajo). Segmento B — Bajada al Magdalena: descenso en terrazas hacia el puerto, con la barcaza ya visible al fondo. El corte va justo donde el terreno empieza a caer.',
+ mapa:['TTTTTTTTTTTTTTTTTTTTTTTTTTTTTT',
+   'Th.......h..h...........^^^..T',
+   'Th......hxx.,....h...h..^^^..T',
+   'T..hh.1..xx.,......h3h..^^^..T',
+   'E,,,,,,,,,,,,,,,,,,,,,,,,,,,,T',
+   'T,,,,,,,,,,,,,,!,,,,,,,,,,,,,E',
+   'T.hh....h...,...hh.xx.....4..T',
+   'T.........h.,2...h.xx......h.T',
+   '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~',
+   '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'],
+ puntos:[
+  ['1','Peón de El Dorado','Entrenador','Primer uniforme de la empresa que el grupo ve fuera de una ciudad. Nervioso, habla de más.'],
+  ['2','Guardaparques','Entrenadora','Está contando qué animales bajaron del monte esta semana. Son demasiados.'],
+  ['3','Troncos apilados','Punto de interés','No cayeron: los cortaron. Alguien está abriendo una trocha paralela al camino.'],
+  ['4','Escarabajo de Ruta','Entrenador','Sube el repecho por décima vez. Reta al grupo a llegar antes que él al río.'],
+  ['!','Cuerda de escalada','Objeto oculto','Enredada en el espinal del oeste. Investigación CD 14.']]
+},
+{
+ id:'r5', tag:'R5', nom:'Ruta 5 · Barcaza del Cauca', tramo:'Puerto Bermejo → Ciudad Cañaveral', nivel:'Nv 8-10', mapas:'3 mapas',
+ verse:'Ruta fluvial: dos días a bordo de una barcaza de carga. El mapa no es un camino sino una superficie de agua café con una isla en el centro. Todo el color viene del agua y de la vegetación de las orillas, que se ven lejanas y borrosas. El grupo no controla la velocidad ni el rumbo, y esa sensación de ir encerrado es el punto.',
+ seg:'Tres mapas: Cubierta de la barcaza (interior, un escenario de conversación y registro de bultos), Isla de en medio (abajo, la parada de la noche) y Desembarco en Cañaveral. Se parte en tres porque cada uno pide un tipo de juego distinto: social, exploración y llegada.',
+ mapa:['TTssssEsssssTT',
+   'TTssss~sssssTT',
+   'TT~~~P~~~~~~TT',
+   'TT~~~P~~~~~~TT',
+   'TT~~~~~~~~~~TT',
+   'TT~~~~~~~~~~TT',
+   'TT~~1~~~~~~~TT',
+   'TT~~~~~~~~~~TT',
+   'TT~~~~~~~~~~TT',
+   'TT~~~~~~~~~~TT',
+   'TT~~~~~~~2~~TT',
+   'TT~~~~~~~~~~TT',
+   'TT~~~s!sss~~TT',
+   'TT~~~shhhs~~TT',
+   'TT~~~shhhs~~TT',
+   'TT~~~sh3hs~~TT',
+   'TT~~~sssss~~TT',
+   'TT~~~~~~~~~~TT',
+   'TT~~~~~~~~~~TT',
+   'TT~~~~~~~~~~TT',
+   'TT~~~~~~~~~~TT',
+   'TT~~~4~~~~~~TT',
+   'TT~~~~~~~~~~TT',
+   'TT~~~~~~~~~~TT',
+   'TT~~~~~~PP~~TT',
+   'TT~~~~~~PP~~TT',
+   'TTsssss~ssssTT',
+   'TTsssssEssssTT'],
+ puntos:[
+  ['1','Wilmer Ochoa','Chalupero','Navega junto a la barcaza y ofrece llevar al grupo a la isla por su cuenta.'],
+  ['2','Bulto que se mueve','Punto de interés','En la cubierta de carga. Abrirlo delante de la tripulación tiene consecuencias.'],
+  ['3','Pescadora de Ciénaga','Entrenadora','Se queja del sedimento que baja. Sabe exactamente desde qué punto del río empezó.'],
+  ['4','Barcaza sin registro','Punto de interés','Cruza en dirección contraria a las tres de la mañana. Nadie a bordo saluda.'],
+  ['!','Manifiesto arrugado','Objeto oculto','En la isla, bajo una piedra. Investigación CD 15. Es la primera prueba escrita del Acto II.']]
+},
+{
+ id:'r6', tag:'R6', nom:'Ruta 6 · Cafetales y el Túnel de la Cordillera', tramo:'Ciudad Cañaveral → Ciudad Orquídea', nivel:'Nv 9-11', mapas:'3 mapas',
+ verse:'Subida en ladera: el camino zigzaguea entre hileras de café con sombrío, todo verde oscuro y ordenado en surcos rectos que contrastan con el desorden del monte de al lado. En la parte alta el verde se acaba de golpe y aparece la boca del túnel, negra y cuadrada, la única entrada visible en toda la pared de roca.',
+ seg:'Tres mapas: Cafetales bajos (abajo), Túnel de la Cordillera (interior oscuro, requiere fuente de luz) y Mirador de Orquídea. El túnel obliga a partir porque adentro cambian las reglas: sin luz, la visión se reduce a una casilla.',
+ mapa:['^^^^^E^^^^TTTTTTTTTTTT',
+   '^^^^^,^^^^......h....T',
+   '^^^oo,o^^^..h........T',
+   '^^^oo,o^^^......h....T',
+   '^^^oooo^^^......h....T',
+   '^^^^^^^^^^.......h...T',
+   '^^^^^4^^^^...........T',
+   'T.......,.h!....,.h.hT',
+   'Tfhf.h..,.......,....T',
+   'T......,,,,,,,,,,,,,,T',
+   'T......,,,,,2,,,,,,,,T',
+   'T.f...h.,.......,f.h.T',
+   'T.h.....,3....fh,....T',
+   'T.h...h.,....hf.,....T',
+   'T..h....,....h..,....T',
+   'T.,,,,,,,,,,,,,,,,,,,T',
+   'T.,,,,,,,,,,,,,,,,1,,T',
+   'T.....f.,.......,,...T',
+   'T..h...h.h.......,.f.T',
+   'TTTTTTTTTTTTTTTTTETTTT'],
+ puntos:[
+  ['1','Cafetero','Entrenador','Le vende a la empresa sin ganas. Habla de lo que cargan los camiones de vuelta.'],
+  ['2','Secadero abandonado','Punto de interés','Marquesina de secado sin usar hace meses, pero con huellas frescas de camión.'],
+  ['3','Boca del túnel','Punto de interés','Reja nueva, candado nuevo, y una llave que no está en manos de nadie del pueblo.'],
+  ['4','Universitario','Entrenador','Toma muestras de suelo para su tesis. Le falta un dato y el grupo lo tiene.'],
+  ['!','Linterna de minero','Objeto oculto','Colgada dentro del secadero. Percepción CD 13. La vas a necesitar en el túnel.']]
+},
+{
+ id:'r7', tag:'R7', nom:'Ruta 7 · Páramo de Frailejones', tramo:'Ciudad Orquídea → Ciudad Páramo', nivel:'Nv 11-13', mapas:'2 mapas',
+ verse:'Altiplano abierto, sin árboles, con frailejones plateados repartidos como estatuas. Paleta apagada: gris, verde ceniza y ocre húmedo. Llovizna constante que no moja pero cala. La niebla entra y sale, así que el mapa se ve completo unos turnos y luego solo tres casillas alrededor.',
+ seg:'Dos mapas: Estación alta del teleférico (llegada, mapa pequeño de transición) y Páramo abierto (abajo). El corte está en la salida de la cabina, que es también el último punto techado antes de la llovizna.',
+ mapa:['^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^',
+   '^h..h............h.h...h...h..h....^',
+   '^....h.1.,h.....h.....3...,.h.h.h.h^',
+   '^.h......,.....^^^^....h..,........^',
+   '^hh......,.h.h.^^^^.......,........^',
+   'E,,,,,,,,,,,,,,,,,!,,,,,,,,,,,,,,,,E',
+   '^,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,^',
+   '^........,....2h........h.,h..4....^',
+   '^h.....h....hhh........h..h........^',
+   '^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^'],
+ puntos:[
+  ['1','Ornitóloga Paula Ríos','Entrenadora','Cuenta aves. Nota que los voladores están rodeando un punto de la Sierra y no sabe por qué.'],
+  ['2','Patinadora de Velocidad','Entrenadora','Entrena en la laguna helada del borde. Abre siempre con movimientos de prioridad.'],
+  ['3','Frailejón marcado','Punto de interés','Alguien pintó un número en la base. Hay más números si el grupo busca: son coordenadas.'],
+  ['4','Guardaparques','Entrenador','Vigila el páramo. Pregunta quién autorizó las marcas y espera que el grupo lo sepa.'],
+  ['!','Manta térmica','Objeto oculto','Bajo una piedra del centro. Percepción CD 14. Reduce el agotamiento por frío.']]
+},
+{
+ id:'r8', tag:'R8', nom:'Ruta 8 · Cañón Rojo', tramo:'Ciudad Páramo → Ciudad Vallenar', nivel:'Nv 12-14', mapas:'3 mapas',
+ verse:'La ruta más vertical de la región. Paredes de roca roja y naranja que suben fuera del mapa, un río muy abajo y un puente colgante de tablas cruzando el vacío. El calor sube a medida que se baja: arriba se ve el aliento, abajo se suda. Es la única ruta donde el peligro no son los Pokémon sino la caída.',
+ seg:'Tres mapas: Borde alto (aproximación), Puente colgante (abajo, el corazón de la ruta) y Fondo del cañón. Se parte en tres porque el puente es un escenario cerrado con su propia tensión y no debe compartir mapa con nada más.',
+ mapa:['^^^^^^^^^^E^^^^^^^^^',
+   '^^^^^^^^^,,,^^^^^^^^',
+   '^^^^^^^^^,,,^^^^^^^^',
+   '^^^^^^^^^,,,^^^^4^^^',
+   '^^^^^^^^^,,,^^^hhh^^',
+   '^^^^^^^^^,,,^^^hhh^^',
+   '^^^,,,,,,,,,,,,hhh^^',
+   '^^^^^^^^^,,,^^^^^^^^',
+   '^^^^^^^^^,,,^^^^^^^^',
+   '^^^^^^^^^,,,3^^^^^^^',
+   '^^^^^^^^^,,,^^^^^^^^',
+   '^^^^^^^^^,,,^^^^^^^^',
+   '^^^^^^^^^,!,^^^^^^^^',
+   '^^^^^^^^^,,,^^^^^^^^',
+   '~~~~~~~bbbb~~~~~~~~~',
+   '~~~~~~~bbbb~~~~~~~~~',
+   '~~~~~~~bb2b~~~~~~~~~',
+   '^^^^^^^^,,,^^^^^^^^^',
+   '^^^^^^^^,,,^^^^^^^^^',
+   '^^hhh^^^,,,^^^^^^^^^',
+   '^^hhh^^^,,,^^^^^^^^^',
+   '^^hhh1^^,,,^^^^^^^^^',
+   '^^^^^^^^,,,^^^^^^^^^',
+   '^^^^^^^^^E^^^^^^^^^^'],
+ puntos:[
+  ['1','Esmeraldero Don Hugo','Entrenador','Baja del páramo con piedras. Distingue de un vistazo cuáles salieron de un socavón sin permiso.'],
+  ['2','Tabla partida','Punto de interés','Falta un tablón del puente. Cruzar exige Acrobacias CD 14 o rodear medio día.'],
+  ['3','Arriero','Entrenador','Cruza el cañón con carga. Conoce un paso más abajo que no está en ningún mapa.'],
+  ['4','Boca de socavón','Punto de interés','Excavación reciente en la pared del fondo. Sin letrero, sin permiso, sin nadie a la vista.'],
+  ['!','Piolet','Objeto oculto','Clavado en la grieta bajo el puente. Investigación CD 15.']]
+},
+{
+ id:'r9', tag:'R9', nom:'Ruta 9 · Falda de la Sierra', tramo:'Ciudad Vallenar → Ciudad Brisamar', nivel:'Nv 13-15', mapas:'2 mapas',
+ verse:'La transición más bonita de Nubia: empieza en roca seca y calor de cuarenta grados y termina en selva húmeda con el mar al fondo. El río Guatapurí baja helado por el centro del mapa partiéndolo en dos, y hay un solo puente. A la derecha del jugador, siempre, la Sierra creciendo.',
+ seg:'Dos mapas: Falda seca (abajo, con el vado del Guatapurí) y Descenso a la bahía, donde aparece el verde y se ve Brisamar abajo. El corte está en el puente.',
+ mapa:['TTTTTETTTTTT',
+   'T....,,.h..T',
+   'T....,,.h..T',
+   'T....,,....T',
+   'T....,,.4..T',
+   'T.hh.,,....T',
+   'T.hh.,,....T',
+   'T....,,..h.T',
+   'T....,,h...T',
+   '^^^^^,,^^^^^',
+   '^h^^^,,^^^^^',
+   '^^^3^,,^^h^^',
+   '^^^^~~~~h^^^',
+   'h^h^~bb~^^^^',
+   'h^^^~~~~^^^^',
+   '^^h^^,!^^^^^',
+   '^h^^^,,^h^^^',
+   'h^^^^,,h2hh^',
+   '^^^^^,,^^h^^',
+   '^^h^^,,^^^^^',
+   '^^^^^,,^^h^^',
+   '^^^1^,,^^^h^',
+   '^^^^^,,^^^^^',
+   '^^^^^,,^^^^^',
+   'h^h^^,,^^^^^',
+   '^^^^^^E^h^^^'],
+ puntos:[
+  ['1','Juglar Vallenato','Entrenador','Va componiendo mientras camina. Si el grupo hizo algo notable, ya le hizo canción.'],
+  ['2','Kalea Vento','Líder de gimnasio (fuera de sede)','Rescatando a alguien en la falda. No combate aquí: pide ayuda y evalúa al grupo.'],
+  ['3','Vado helado','Punto de interés','El agua baja de la nieve. Cruzar sin abrigo cuesta un nivel de agotamiento.'],
+  ['4','Grupo de Pokémon en fuga','Punto de interés','Bajan de la Sierra huyendo de algo. Es la primera señal directa del Acto IV.'],
+  ['!','Botiquín de montaña','Objeto oculto','Colgado en un árbol del descenso. Percepción CD 14.']]
+},
+{
+ id:'r10', tag:'R10', nom:'Ruta 10 · Travesía de Sietecolores', tramo:'Ciudad Brisamar ⇄ Isla Sietecolores', nivel:'Nv 14-16', mapas:'2 mapas',
+ verse:'Nueve horas de mar abierto. El mapa es casi todo agua y el color cambia por franjas de profundidad, del azul negro al turquesa: esa es toda la información visual que el jugador necesita, porque cada franja es una tabla de encuentros distinta. Un solo cayo de arena en el centro rompe el azul.',
+ seg:'Dos mapas: Mar abierto (abajo) y Barrera de coral, donde el agua se vuelve transparente y el fondo se ve entero. Se parte porque la barrera es zona de buceo y el mar abierto es zona de navegación.',
+ mapa:['~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~',
+   '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~',
+   '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~',
+   '~~~~~~1~~~~~~~~~~~~~~~~3~~~~~~~~~~',
+   '~~~~~~~~~~~~~sssssss~~~~~~~~~~~~~~',
+   '~~~~~~~~~~~~~ssTTTss~~~~~~~~~~~~~~',
+   'E~~~~~~~~~~~~ssTTT!s~~~~~~~~~~~~~E',
+   '~~~~~~~~~~~~~sssssss~~~~~~~~~~~~~~',
+   '~~~~~~~~~~~2~~~~~~~~~~~~~~~~4~~~~~',
+   '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~',
+   '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~',
+   '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'],
+ puntos:[
+  ['1','Old Joe Whitaker','Pescador','Pesca solo a media travesía. Lee el color del agua como quien lee un mapa.'],
+  ['2','Jaula sumergida','Punto de interés','Amarrada a una boya sin marcar. Es la fuente de los "avistamientos garantizados" de Mr. Fisher.'],
+  ['3','Buzo de Arrecife','Entrenador','Sube a la superficie a discutir con el grupo antes de retarlo.'],
+  ['4','Marina Bowie','Alto Mando · Dragón','Navega sin instrumentos. Ofrece una corriente que ahorra dos días si el grupo demuestra leer el mar.'],
+  ['!','Carta náutica vieja','Objeto oculto','Enterrada en el cayo. Investigación CD 15. Marca corrientes que no salen en las cartas modernas.']]
+},
+{
+ id:'r11', tag:'R11', nom:'Ruta 11 · Bosque Nublado', tramo:'Ciudad Brisamar → base del Camino Victoria', nivel:'Nv 15-17', mapas:'1 mapa',
+ verse:'Verde saturado, húmedo y cerrado: los árboles tapan el cielo y todo el mapa está en penumbra verde, con musgo cubriendo hasta las piedras. La visibilidad es de quince metros y no más. Es una ruta corta a propósito, porque su función es preparar el ánimo antes de la subida.',
+ seg:'Un solo mapa. Es la antesala del Camino Victoria y no conviene diluirla: el grupo entra, se pierde un poco, y sale a la estación del teleférico.',
+ mapa:['TTTTTTTTTTTTTTTTTTTTTTTT',
+   'TTTTTTTTTTTTTTTTTTTTTTTT',
+   'TT..h.......,..TT.h...TT',
+   'TT...1...hh.,h.T3.....TT',
+   'TTh.h....TTT,..TTh....TT',
+   'TT....hh.TTT,.........TT',
+   'E,,,,,,,,,,,!,,,,,,,,,,E',
+   'T,,,,,,,,,,,,,,,,,,,,,,T',
+   'TT.........h,.........TT',
+   'TT..hh.hhh2.,....h..4hTT',
+   'TTTTTTTTTTTTTTTTTTTTTTTT',
+   'TTTTTTTTTTTTTTTTTTTTTTTT'],
+ puntos:[
+  ['1','Dr. Mauricio Salcedo','Ornitólogo','Monitorea nidos. Trae la carpeta del permiso de exploración que perdió en el papeleo.'],
+  ['2','Óscar Mendieta','Vigilante nocturno','Baja de la estación. Su cuaderno dice que subieron seis y bajaron cuatro.'],
+  ['3','Nidos vacíos','Punto de interés','Toda una colonia abandonada al mismo tiempo. Naturaleza CD 15 revela que fue de golpe, no gradual.'],
+  ['4','Guía Turístico Beto','Entrenador','Ofrece subir sin permiso por un precio. Es una trampa, y no suya.'],
+  ['!','Permiso extraviado','Objeto oculto','Una copia del permiso de exploración, con la firma legible. Investigación CD 16.']]
+},
+{
+ id:'cv1', tag:'CV I', cv:true, nom:'Camino Victoria · Piso 1: Selva húmeda', tramo:'De 0 a 1.000 metros', nivel:'Nv 17', mapas:'1 mapa de 4',
+ verse:'La base de la Sierra: calor, lianas y quebradas cruzando el sendero cada pocos metros. Verde profundo y agua por todas partes. Todavía se oye el mar detrás. El grupo avanza rápido aquí y esa velocidad es una trampa: el camino se pone difícil justo cuando ya se confiaron.',
+ seg:'Primero de los cuatro mapas del Camino Victoria. Cada piso térmico es un mapa completo y el paso de uno a otro no tiene vuelta atrás: bajar exige rehacer la subida entera.',
+ mapa:['TTTTTTTTTTTTTTETTTTT',
+   'Th.h.,,.......,,...T',
+   'T....,,h.~~~.h,,...T',
+   'T.hhT,,..~~~h.,,...T',
+   'T..h.,,h.~~~..,4...T',
+   'T....,,..~~~..,,...T',
+   'T....,,..~~~..,,T..T',
+   'Thh.h,,3.~~~.h,,...T',
+   'TT...,,..bbb..,,h..T',
+   'TT...,,..~~~.h,,h.TT',
+   'T....,,.!~~~.h,,.h.T',
+   'T....,,.h~~~T.,,...T',
+   'T.,,,,,,,,,,,,,,,,.T',
+   'T....,,....2.T,,.h.T',
+   'T....,,h......,,...T',
+   'TT...,,....h..,,...T',
+   'T...1,,.......,,...T',
+   'T.T.T,,..h....,,...T',
+   'T....,,h......,,...T',
+   'TTTTTETTTTTTTTTTTTTT'],
+ puntos:[
+  ['1','Aspirante a la Liga','Entrenador','Va subiendo también. Si el grupo lo derrota, lo vuelve a encontrar en el piso 3.'],
+  ['2','Quebrada crecida','Punto de interés','El puente de tablas está sumergido. Atletismo CD 15 o buscar el paso alto.'],
+  ['3','Campamento de excavación','Punto de interés','Carpas, cascos, una estaca con un número. Nadie adentro. Es el primer aviso.'],
+  ['4','Aprendiz de Gimnasio','Entrenador','Enviado por Kalea a revisar el sendero. Reta al grupo para medir si están listos.'],
+  ['!','Ración de montaña','Objeto oculto','Bajo la ceiba grande. Percepción CD 15.']]
+},
+{
+ id:'cv2', tag:'CV II', cv:true, nom:'Camino Victoria · Piso 2: Bosque nublado', tramo:'De 1.000 a 2.500 metros', nivel:'Nv 18', mapas:'2 mapas de 4',
+ verse:'Niebla permanente. El mapa se dibuja igual pero el jugador solo ve tres casillas alrededor de su ficha: el resto se revela y se vuelve a tapar al alejarse. Todo en gris verdoso, con troncos cubiertos de musgo que aparecen de la nada. Aquí el mapa deja de servir y empieza a servir el guía.',
+ seg:'Segundo de los cuatro. Este piso es el único donde recomiendo usar niebla de guerra activa en la mesa virtual: sin ella pierde todo el efecto.',
+ mapa:['TTTTTTTTTTETTTTTTTTT',
+   'T,,,,,,,,,,,,,h,,,,T',
+   'T,,,,,,,,,,,,,h,,h,T',
+   'T,,,,,,,,,,,,,,,4,,T',
+   'T,,,TTTT,,,,TTTT,,,T',
+   'T,h,TTTT,,,,TTTTh,,T',
+   'T,,,TTTT,,!,TTTT,,,T',
+   'T,,,TTTT,,,,TTTT,,hT',
+   'T,h,,,,,,,,,,,,h,,,T',
+   'T,,,h,,,,,,,,,,,,h,T',
+   'T,,,,,,,,,2,,,,,,3,T',
+   'T,,,,,,,,,h,,h,,,,,T',
+   'T,,,TTTT,,,,TTTT,,,T',
+   'T,,,TTTTh,,,TTTT,,,T',
+   'T,,,TTTT,,,,TTTT,,,T',
+   'T,,,TTTT,,,,TTTT,,,T',
+   'T,,,,,,hh,,,,,h,,,,T',
+   'T,,1,,hh,,,,,,,,,,,T',
+   'T,,,,,,,,,,,,,,,,,,T',
+   'TTTTTTTTTETTTTTTTTTT'],
+ puntos:[
+  ['1','Bifurcación sin señal','Punto de interés','Dos caminos idénticos. Supervivencia CD 16 o se pierde media jornada.'],
+  ['2','Aspirante derrotada','Entrenadora','Se devuelve. Le cuenta al grupo lo que vio arriba, y es peor de lo que esperaban.'],
+  ['3','Marcas de sierra','Punto de interés','Árboles marcados con pintura naranja cada cincuenta metros. Alguien trazó una ruta.'],
+  ['4','Guardaparques Nayra','Entrenadora','Subió sola a verificar las marcas. Necesita testigos y el grupo son los únicos.'],
+  ['!','Brújula del guía','Objeto oculto','En el tronco hueco del centro. Investigación CD 16. Cancela el penalizador de niebla.']]
+},
+{
+ id:'cv3', tag:'CV III', cv:true, nom:'Camino Victoria · Piso 3: Páramo', tramo:'De 2.500 a 4.200 metros', nivel:'Nv 19', mapas:'3 mapas de 4',
+ verse:'Se acaban los árboles. Roca desnuda, frailejones dispersos y viento constante que se dibuja como líneas de arrastre en el suelo. Paleta fría y abierta: por primera vez en toda la subida se ve el paisaje completo, incluido el mar allá abajo. El mal de altura empieza aquí.',
+ seg:'Tercero de los cuatro. Regla del piso: cada dos horas de juego sin descanso largo, un nivel de agotamiento. Los refugios de piedra del mapa son los únicos puntos donde se puede descansar.',
+ mapa:['^^^^^^^^^^^^^^^E^^^^',
+   '^^^^,,^^^^^^^^^,,^^^',
+   '^^###,,,,,,,,,,,,,^^',
+   '^^#1#,,,,,,,,,,,,,^^',
+   '^^###,,h,,,,,,,,,,^^',
+   '^^,h,h,,,,,,,,,,4h^^',
+   '^^,,,,,,,,!h,,,,,h^^',
+   '^^,,,,,^^^^^^,,,,,^^',
+   '^^,h,,,^^^^^^,,,,,^^',
+   '^^,,,,,^^^^^^,,,,,^^',
+   '^,,,,,,,,,3,,,,h,,,^',
+   '^,,,,,,,,,,,,,,,,,,^',
+   '^^h,,,,^^^^^^,,,,h^^',
+   '^^,,,,,h,,,,,,,,,,^^',
+   '^^,,,h,,,,,,,,,,,,^^',
+   '^^,,,,h,,,hh,,,###^^',
+   '^^,,,,,,,,,,,,,#2#^^',
+   '^^,,,,,,,,,,,,,###^^',
+   '^^^^,,^^^^^^^^^,,^^^',
+   '^^^^E^^^^^^^^^^^^^^^'],
+ puntos:[
+  ['1','Refugio de piedra','Punto de interés','Cuatro paredes y un techo. Permite descanso largo y quita un nivel de agotamiento.'],
+  ['2','Aspirante del piso 1','Entrenador','El mismo de abajo, ahora en serio. Segundo combate, equipo completo, sin contenerse.'],
+  ['3','Maquinaria abandonada','Punto de interés','Un compresor a esta altura. Nadie lo subió a mano: hubo helicóptero.'],
+  ['4','Peón de El Dorado','Entrenador','Perdido y con frío. Colabora si el grupo lo baja al refugio en vez de interrogarlo.'],
+  ['!','Tanque de oxígeno','Objeto oculto','Junto a la maquinaria. Percepción CD 16. Anula el agotamiento del piso 4.']]
+},
+{
+ id:'cv4', tag:'CV IV', cv:true, nom:'Camino Victoria · Piso 4: Nieve perpetua', tramo:'Sobre los 4.200 metros', nivel:'Nv 20', mapas:'4 mapas de 4',
+ verse:'Blanco y roca negra, nada más. La nieve compacta se camina normal; las placas de hielo azul deslizan y no dejan frenar hasta chocar. El viento borra las huellas en dos turnos, así que el grupo no puede confiar en el rastro que dejó. Al fondo, los dos picos gemelos y el edificio de la Liga entre ellos.',
+ seg:'Último de los cuatro. La excavación de El Dorado está en este piso, a la vista, y el grupo tiene que elegir entre atenderla ahora o subir directo a la Liga. Las dos opciones son válidas y las dos cuestan algo.',
+ mapa:['^^^^^^^^^^^^^^^E^^^^',
+   '^nnnnnnnnnnnnnnnnnn^',
+   '^nnnnnnnnnnnnnnnnnn^',
+   '^nn^nnnnnnnnnnn4nnn^',
+   '^nn^nnnnnnnnnnnnnnn^',
+   '^nn^nnnnnnnnnnnnnnn^',
+   '^nnnnnniii!iinnnnnn^',
+   '^nnnnnniiiiiinnn3nn^',
+   '^nnnnnniiiiiinnnnnn^',
+   '^nnnnnniiiiiinnnnnn^',
+   '^nnnnnnnnn2nnnnnnnn^',
+   '^nnnnnnnnnnnnnnnnnn^',
+   '^nnnnnniiiiiinnnnnn^',
+   '^nnnnnniiiiiinnnnnn^',
+   '^nnnnnnnnnnnnn^nnnn^',
+   '^nnnnnnnnnnnnn^nnnn^',
+   '^nnn1nnnnnnnnn^nnnn^',
+   '^nnnnnnnnnnnnnnnnnn^',
+   '^nnnnnnnnnnnnnnnnnn^',
+   '^^^^E^^^^^^^^^^^^^^^'],
+ puntos:[
+  ['1','Frente de excavación','Punto de interés','Maquinaria montada sobre el glaciar, en marcha. Se ve y se oye desde todo el mapa.'],
+  ['2','Dra. Vega','Directora · El Dorado','Supervisando en persona. No huye ni amenaza: explica, y su explicación casi convence.'],
+  ['3','Placa de hielo','Punto de interés','Deslizamiento clásico: se avanza hasta chocar. Hay que trazar la ruta antes del primer paso.'],
+  ['4','Puerta de la Liga','Punto de interés','Entrada al edificio. Exige las ocho medallas. No exige que la excavación esté detenida.'],
+  ['!','Muestra de la veta','Objeto oculto','En el frente de excavación. Investigación CD 17. Es la prueba que cierra la campaña.']]
+},
+{
+ id:'liga', tag:'LIGA', cv:true, nom:'Liga Nubia · Picos Gemelos', tramo:'Cima de la Sierra Nevada de Nubia', nivel:'Nv 20', mapas:'1 mapa (interior)',
+ verse:'Interior de piedra y vidrio encajado entre los dos picos, con ventanales que dan al glaciar por un lado y al mar por el otro: desde el vestíbulo se ve el Caribe a cincuenta kilómetros y cuatro mil metros más abajo. Cuatro salas laterales, una por miembro del Alto Mando, y al centro la cumbre abierta donde espera la Campeona.',
+ seg:'Un solo mapa, pero cada sala del Alto Mando merece su propia descripción de terreno en la mesa. La cumbre de la Campeona es al aire libre, sobre la nieve, sin sala ni truco.',
+ mapa:['^^^^^^^^^^^^^^^^^^^^^^^^^^',
+   '^########################^',
+   '^#======================#^',
+   '^#=LLLLL==========LLLLL=#^',
+   '^#=LLLLL==========LLLLL=#^',
+   '^#=LL1LL==nnnnnn==LL2LL=#^',
+   '^#=LLLLL==nnnnnn==LLLLL=#^',
+   '^#========niiiin========#^',
+   '^#========niiiin========#^',
+   '^#========nii5in========#^',
+   '^#========niiiin========#^',
+   '^#=LLLLL==nnnnnn==LLLLL=#^',
+   '^#=LLLLL==nnnnnn==LLLLL=#^',
+   '^#=LL3LL==========LL4LL=#^',
+   '^#=LLLLL==========LLLLL=#^',
+   '^#======================#^',
+   '^############=###########^',
+   '^^^^^^^^^^^^^E^^^^^^^^^^^^'],
+ puntos:[
+  ['1','Ramiro Ospina · Tierra','Alto Mando I','Sala de canales: el suelo se inunda y se drena por secciones cada turno.'],
+  ['2','Marina Bowie · Dragón','Alto Mando II','Cubierta con oleaje: el piso se inclina y obliga a Acrobacias para mantener posición.'],
+  ['3','Elvira Nieto · Hielo','Alto Mando III','Grieta de glaciar: se combate sobre puentes de hielo que se agrietan con cada área.'],
+  ['4','Aníbal Rendón · Lucha','Alto Mando IV','Combate cargando una silleta de sesenta kilos. Que la suelte es ganar algo más que el combate.'],
+  ['5','Nayibe Duarte','Campeona','Cumbre abierta entre los dos picos. Seis Pokémon rescatados de la propia Sierra, uno por piso térmico.']]
+},
+{
+ id:'lg1', tag:'LEG 1', cv:true, nom:'Caverna del Cauca I · Boca sumergida', tramo:'Bajo el lecho del río Cauca, Ruta 5', nivel:'Nv 12-15', mapas:'1 de 3',
+ verse:'La entrada solo aparece cuando baja el nivel del río. Roca húmeda y negra, agua turbia arriba, y una boca de piedra que respira aire frío. Todo el mapa está por debajo de la línea de flotación: se oye el río sobre la cabeza.',
+ seg:'Primero de los tres mapas de la zona. Se llega desde la Ruta 5 y solo con la carta náutica de la Ruta 10 en la mochila; sin ella el grupo pasa de largo sin ver nada.',
+ mapa:['~~~~E~~~~~~~~~~~~~',
+       '~~~~,~~~~~~~~~~~~~',
+       '~~~~,~~~~~~~~~~~~~',
+       '~~~~,~~~~~~~~~~~~~',
+       '~~~~~~~~~~~~~~~~~~',
+       'ssssssssssssssssss',
+       '^^,,,,,,,,,,,,,,^^',
+       '^^,,,,,,,,,^^,3,^^',
+       '^^,,1,,,,,,^^,,,^^',
+       '^^,,,,^^^,,^^,,,^^',
+       '^^,,,,^^^,,^^,,oo^',
+       '^^,,,,^^^,,,,,,,,E',
+       '^^,,,,,,,,,,,,,oo^',
+       '^^,,,,,,,,2,,,,,^^',
+       '^^,,,,,,,,,,,,,,^^',
+       '^^^^^^^^^^^^^^^^^^'],
+ puntos:[
+  ['1','Marca de crecida','Punto de interés','Rayas en la pared: el río ha subido veinte veces y siempre hasta la misma altura. Alguien las talló.'],
+  ['2','Poza de sedimento','Punto de interés','Atletismo CD 14 para cruzar sin hundirse. Al fondo hay algo metálico.'],
+  ['3','Boca del túnel','Punto de interés','Corriente de aire helada saliendo de la piedra. Es la puerta al segundo mapa.'],
+  ['!','Farol de barquero','Objeto oculto','Colgado en un saliente. Percepción CD 15.']]
+},
+{
+ id:'lg2', tag:'LEG 2', cv:true, nom:'Caverna del Cauca II · Galería del río', tramo:'Interior de la caverna', nivel:'Nv 13-16', mapas:'2 de 3',
+ verse:'Una galería larga partida en dos por un brazo del río subterráneo, con dos puentes de roca natural. Sin luz propia no se ve nada: la linterna de minero de la Ruta 6 sirve aquí.',
+ seg:'Segundo mapa. Conecta la boca con la cámara final y no toca ninguna ruta: entras y sales por el mismo sitio.',
+ mapa:['^^^^^^^^^^^^^^^^^^',
+       '^^,,,,,~~~~,,,,,^^',
+       '^^,,,,,~~~~,,,,,^^',
+       '^^,,1,,~~~~,,,,,^^',
+       '^^,,,,,~~~~,^^^,^^',
+       '^^,,,,,~~~~,^^^,^^',
+       '^^,,,,,bbbb,^^^,^^',
+       '^^,,,,,~~~~,,,,,^^',
+       '^^,^^^,~~~~,,,,,^^',
+       '^^,^^^,~~2~,,,,,^^',
+       '^^,^^^,~~~~,,,,,^^',
+       'E,,,,,,~~~~,,,,,^^',
+       '^^,,,,,bbbb,,,,,^^',
+       '^^,,,,,~~~~,,,,,^^',
+       '^^,,,,,~~~~,,,3,^^',
+       '^^,,,,,~~~~,,,,,^^',
+       '^^,,,,,~~~~,,,,,^^',
+       '^^^^^^^^^^^^^E^^^^'],
+ puntos:[
+  ['1','Puente alto','Punto de interés','Sólido pero estrecho. Cruzar con carga pide Acrobacias CD 13.'],
+  ['2','Remolino','Punto de interés','El agua gira sin razón aparente. Algo se mueve debajo.'],
+  ['3','Nicho tallado','Punto de interés','Hornacina vacía en la pared. Cabía algo del tamaño de un huevo.'],
+  ['!','Cuerda vieja','Objeto oculto','Amarrada bajo el segundo puente. Investigación CD 15.']]
+},
+{
+ id:'lg3', tag:'LEG 3', cv:true, nom:'Caverna del Cauca III · Cámara de la corriente', tramo:'Fondo de la caverna', nivel:'Nv 14-17', mapas:'3 de 3',
+ verse:'Una cámara circular con un lago perfectamente quieto en el centro y una isla de arena blanca en medio. La bóveda está tan alta que se pierde en la oscuridad. Ni una gota cae. Es el lugar más silencioso de Nubia.',
+ seg:'Tercer y último mapa. Solo tiene una salida, la de vuelta: quien entra aquí decide si se queda a lo que pase.',
+ mapa:['^^^^^^^^^^E^^^^^^^^^',
+       '^^^^^^^^^^,^^^^^^^^^',
+       '^^,,,,,,,,,,,,,,,,^^',
+       '^^,^^,,,,,,,,,,,,,^^',
+       '^^,^^,,,,,,,,,,,3,^^',
+       '^^,,,,~~~~~~~~,,,,^^',
+       '^^,,,,~~~~~~~~,,,,^^',
+       '^^,,,,~~ssss~~,,,,^^',
+       '^^,,,,~~ssss~~,,,,^^',
+       '^^,,,,~~ss1s~~,,,,^^',
+       '^^,,,,~~ssss~~,,,,^^',
+       '^^,,,,~~~~~~~~,,,,^^',
+       '^^,,,,~~~~~~~~,,,,^^',
+       '^^,,,,,,,,,,,,,^^,^^',
+       '^^,,2,,,,,,,,,,^^,^^',
+       '^^,,,,,,,,,,,,,,,,^^',
+       '^^^^^^^^^^^^^^^^^^^^',
+       '^^^^^^^^^^^^^^^^^^^^'],
+ puntos:[
+  ['1','La isla','Punto de interés','Arena blanca sin una sola huella. Aquí ocurre el encuentro.'],
+  ['2','Cornisa oeste','Punto de interés','Mirador natural sobre el lago. Buen sitio para el que no quiera bajar.'],
+  ['3','Grieta este','Punto de interés','Por aquí entra el agua, y por aquí se va. Nadie sabe hacia dónde.'],
+  ['!','Escama antigua','Objeto oculto','Medio enterrada en la arena. Percepción CD 16.']]
+},
+{
+ id:'lg4', tag:'LEG 4', cv:true, nom:'Ojo del Cañón I · Socavón abandonado', tramo:'Pared del Cañón Rojo, Ruta 8', nivel:'Nv 13-16', mapas:'1 de 3',
+ verse:'Un túnel de excavación que alguien abrió y abandonó a medias, con vigas de madera podrida y vagonetas volcadas. Roca roja y naranja, calor creciente a medida que se baja. Huele a mineral.',
+ seg:'Primero de los tres. Se entra desde la Ruta 8 y hace falta la muestra de la veta para saber cuál de las tres bocas del cañón es la buena.',
+ mapa:['^^^^^^^^E^^^^^^^',
+       '^^,,,,,,,,,,,,^^',
+       '^^,,,,,,,,,,,,^^',
+       '^^,,,,3,,,,,,,^^',
+       '^^,,,,,,,,,,,,^^',
+       '^^,,xx,,,,,,,,^^',
+       '^^,,xx,,,,,,,,^^',
+       '^^,,,,^^^^,,,,^^',
+       '^^,,,,^^^^,2,,^^',
+       '^^,,,,^^^^,,,,^^',
+       '^^,,,,^^^^,,,,^^',
+       '^^,,,,,,,xx,,,^^',
+       '^^,,,,,,,xx,,,^^',
+       '^^,,,,,,,,,,,,^^',
+       '^^,,,,,,,,,,,,^^',
+       '^^,,,,,,,,,,,,^^',
+       '^^,,1,,,,,,,,,^^',
+       '^^,,,,,,,,,,,,^^',
+       '^^,,,,,,,,,,,,^^',
+       '^^^^^^^E^^^^^^^^'],
+ puntos:[
+  ['1','Vagoneta volcada','Punto de interés','Carga desparramada. Entre las piedras hay una que no es piedra.'],
+  ['2','Viga cedida','Punto de interés','El techo aguanta de milagro. Un ataque de área aquí lo derrumba.'],
+  ['3','Bifurcación','Punto de interés','Dos túneles. Uno baja, el otro sube. Solo uno lleva a las vetas.'],
+  ['!','Plano de excavación','Objeto oculto','Clavado en una viga. Investigación CD 15.']]
+},
+{
+ id:'lg5', tag:'LEG 5', cv:true, nom:'Ojo del Cañón II · Vetas ardientes', tramo:'Profundidad del socavón', nivel:'Nv 14-17', mapas:'2 de 3',
+ verse:'Tres vetas de mineral encendido cruzan la roca como brasas incrustadas, y son la única luz del mapa. El calor sube: cada dos horas sin descanso, un nivel de agotamiento.',
+ seg:'Segundo mapa. Cerrado, sin conexión con ninguna ruta. Se sale por donde se entró o hacia el tercero.',
+ mapa:['^^^^^^^^^^^^^^^^^^',
+       '^^^^^^^^^^^^^^^^^^',
+       '^^,,,,,,,,,,,,,,^^',
+       '^^,,,,,,,3,,,,,,^^',
+       '^^,,,,,,,LL,,,,,^^',
+       '^^,,,,,,,LL,,,,,^^',
+       '^^,,LL,,,,,,,,,,,E',
+       '^^,,LL,,,,,,,,,,^^',
+       '^^,,,,,^^^^,,,,,^^',
+       '^^,,,,,^^^^,,2,,^^',
+       '^^,,,,,^^^^,,,,,^^',
+       '^^,,,,,^^^^,,,,,^^',
+       '^^,,,,,^^^^,LL,,^^',
+       '^^,,,,,,,,,,LL,,^^',
+       '^^,,,,,,,,,,,,,,^^',
+       '^^,,,,,,,,,,,,,,^^',
+       '^^,,,1,,,,,,,,,,^^',
+       '^^,,,,,,,,,,,,,,^^',
+       '^^^^^^^^^,^^^^^^^^',
+       '^^^^^^^^^E^^^^^^^^'],
+ puntos:[
+  ['1','Veta baja','Punto de interés','Se puede extraer una muestra. También se puede provocar un desprendimiento.'],
+  ['2','Veta alta','Punto de interés','Fuera de alcance sin escalar. Acrobacias CD 15.'],
+  ['3','Columna central','Punto de interés','Sostiene la galería. Todo el mundo entiende que no hay que tocarla.'],
+  ['!','Guantes de fundidor','Objeto oculto','En una repisa junto a la veta baja. Percepción CD 15.']]
+},
+{
+ id:'lg6', tag:'LEG 6', cv:true, nom:'Ojo del Cañón III · El Ojo', tramo:'Corazón de la veta', nivel:'Nv 15-18', mapas:'3 de 3',
+ verse:'Una cámara redonda con una formación de mineral incandescente en el centro, del tamaño de una casa, que late despacio. La luz sube y baja como una respiración. El suelo está tibio.',
+ seg:'Tercero y último. Salida única hacia atrás. Es el sitio que El Dorado lleva veinte años buscando, y llegan tarde.',
+ mapa:['^^^^^^^^^^^^^^^^^^^^',
+       '^^^^^^^^^^^^^^^^^^^^',
+       '^^^^^^^^^^^^^^^^^^^^',
+       '^^^,,,,,,,,,,,,,,^^^',
+       '^^^,,,,,,,,,,,,,,^^^',
+       '^^^,,xx,,,,,,,,3,^^^',
+       '^^^,,xx,,,,,,,,,,^^^',
+       '^^^,,,,,,,,,,,,,,^^^',
+       '^^^,,,,,LLLL,,,,,^^^',
+       '^^^,,,,,LLLL,,,,,^^^',
+       'E,,,,,,,LL1L,,,,,^^^',
+       '^^^,,,,,LLLL,,,,,^^^',
+       '^^^,,,,,,,,,,,,,,^^^',
+       '^^^,,,,,,,,,,xx,,^^^',
+       '^^^,,,,,,,,,,xx,,^^^',
+       '^^^,,2,,,,,,,,,,,^^^',
+       '^^^,,,,,,,,,,,,,,^^^',
+       '^^^^^^^^^^^^^^^^^^^^',
+       '^^^^^^^^^^^^^^^^^^^^',
+       '^^^^^^^^^^^^^^^^^^^^'],
+ puntos:[
+  ['1','El Ojo','Punto de interés','La formación central. Aquí ocurre el encuentro.'],
+  ['2','Estacas de sondeo','Punto de interés','Alguien midió esta cámara hace meses y se fue sin tocar nada. Tuvo miedo.'],
+  ['3','Salida de aire','Punto de interés','Una grieta que sube hasta la superficie. Se oye el viento del cañón.'],
+  ['!','Núcleo de sondeo','Objeto oculto','Cilindro de roca extraído y olvidado. Investigación CD 16.']]
+},
+{
+ id:'lg7', tag:'LEG 7', cv:true, nom:'Picos Gemelos I · Grieta del glaciar', tramo:'Glaciar de la Sierra, sobre el Piso IV', nivel:'Nv 17-19', mapas:'1 de 3',
+ verse:'Dos paredes de hielo azul separadas por una grieta angosta por la que apenas pasa una persona. El sol entra desde arriba y lo tiñe todo de azul. El silencio es absoluto salvo por el crujido del hielo.',
+ seg:'Primero de los tres. Se accede desde el Piso IV del Camino Victoria, y solo cuando la excavación está detenida y la montaña vuelve a quedar quieta.',
+ mapa:['^^^^^^^^^E^^^^^^^^^^',
+       '^nnnnnnnnnnnnnnnnnn^',
+       '^nnnnnnnnnnniiiinnn^',
+       '^nnnnnnnnnnniiiinnn^',
+       '^nnnniiiinnnii3innn^',
+       '^nnnniiiinnniiiinnn^',
+       '^nnnniiiinnniiiinnn^',
+       '^nnnniiii^^^iiiinnn^',
+       '^nnnniiii^^^iiiinnn^',
+       '^nnnniiii^^2iiiinnn^',
+       '^nnnniiii^^^iiiinnn^',
+       '^nnnniiiinnniiiinnn^',
+       '^nnnniiiinnniiiinnn^',
+       '^nnnniiiinnniiiinnn^',
+       '^nnnnnn1nnnnnnnnnnn^',
+       '^nnnnnnnnnnnnnnnnnn^',
+       '^nnnnnnnnnnnnnnnnnn^',
+       '^^^^^^^^^^E^^^^^^^^^'],
+ puntos:[
+  ['1','Paso estrecho','Punto de interés','Hay que dejar la carga pesada. Atletismo CD 14 o dar la vuelta.'],
+  ['2','Puente de nieve','Punto de interés','Cubre una grieta profunda. Aguanta a uno cada vez.'],
+  ['3','Salida alta','Punto de interés','La grieta se abre a un balcón sobre el mar. Es el segundo mapa.'],
+  ['!','Piolet antiguo','Objeto oculto','Congelado en la pared desde hace décadas. Percepción CD 16.']]
+},
+{
+ id:'lg8', tag:'LEG 8', cv:true, nom:'Picos Gemelos II · Balcón de hielo', tramo:'Entre los dos picos', nivel:'Nv 18-20', mapas:'2 de 3',
+ verse:'Una plataforma de hielo colgada entre las dos cumbres, con el Caribe cuatro mil metros más abajo y la región entera visible en un solo vistazo: la Sierra, el río, la sabana, el mar. Es el mirador más alto de Nubia.',
+ seg:'Segundo mapa. No conecta con rutas: solo con el primero y el tercero. Aquí conviene parar la partida un momento y dejar que miren.',
+ mapa:['^^^^^^^^^^^^^^^^^^^^^^',
+       '^nnnnnnnnnnnnnnnnnnnn^',
+       '^nnnnnnnnnnnnnnnnnnnn^',
+       '^nniiiiiiiiiiiiiiiinn^',
+       '^nniiiiiiiiiiiiii3inn^',
+       '^nniiiiiiiiiiiiiiiinn^',
+       '^nniiiiiiiiiiiiiiiinn^',
+       '^nnnnnnnnn^^^nnnnnnnn^',
+       '^nnnnnnnnn^2^nnnnnnnnE',
+       '^nnnnnnnnn^^^nnnnnnnn^',
+       '^nniiiiiiiiiiiiiiiinn^',
+       '^nniiiiiiiiiiiiiiiinn^',
+       '^nniin1iiiiiiiiiiiinn^',
+       '^nnnnnnnnnnnnnnnnnnnn^',
+       '^nnnnnnnnnnnnnnnnnnnn^',
+       '^^^^^E^^^^^^^^^^^^^^^^'],
+ puntos:[
+  ['1','El borde','Punto de interés','Desde aquí se ven las once localidades. Vale la pena describirlas una por una.'],
+  ['2','Placa fina','Punto de interés','El hielo suena distinto. Percepción pasiva 14 lo nota antes de pisarlo.'],
+  ['3','Paso al pico este','Punto de interés','Una cornisa que lleva a la cumbre. El tercer mapa.'],
+  ['!','Bandera de una expedición','Objeto oculto','Enterrada en la nieve. Investigación CD 16. Tiene nombres.']]
+},
+{
+ id:'lg9', tag:'LEG 9', cv:true, nom:'Picos Gemelos III · La Cumbre Callada', tramo:'Cima del pico este', nivel:'Nv 19-20', mapas:'3 de 3',
+ verse:'La cima. Un anillo de roca desnuda alrededor de una lente de hielo perfectamente circular que no debería estar ahí. No hay viento. No hay ruido. La nieve no cae: se queda suspendida.',
+ seg:'Tercero y último. Una sola entrada. Es el punto más alto de la campaña, por encima incluso de la Liga, y el único sitio de Nubia donde el grupo llega sin que nadie los haya mandado.',
+ mapa:['^^^^^^^^^^^^^^^^^^^^',
+       '^^^^^^^^^^^^^^^^^^^^',
+       '^^^^^^^^^^^^^^^^^^^^',
+       '^^^nnnnnnnnnnnnnn^^^',
+       '^^^nnnnnnnnnnnnnn^^^',
+       '^^^nn^^nnnnnnnnnn^^^',
+       '^^^nn^^nnnnnnnn3n^^^',
+       '^^^nnnniiiiiinnnn^^^',
+       '^^^nnnniiiiiinnnn^^^',
+       '^^^nnnniiiiiinnnn^^^',
+       'Ennnnnniii1iinnnn^^^',
+       '^^^nnnniiiiiinnnn^^^',
+       '^^^nnnniiiiiinnnn^^^',
+       '^^^nnnnnnnnnn^^nn^^^',
+       '^^^nnnnnnnnnn^^nn^^^',
+       '^^^nnn2nnnnnnnnnn^^^',
+       '^^^nnnnnnnnnnnnnn^^^',
+       '^^^^^^^^^^^^^^^^^^^^',
+       '^^^^^^^^^^^^^^^^^^^^',
+       '^^^^^^^^^^^^^^^^^^^^'],
+ puntos:[
+  ['1','La lente','Punto de interés','El círculo de hielo del centro. Aquí ocurre el encuentro.'],
+  ['2','Anillo de piedras','Punto de interés','Doce piedras colocadas por alguien, hace mucho, mirando hacia afuera.'],
+  ['3','Vista al oeste','Punto de interés','Desde aquí se ve la Isla Sietecolores como una mancha de color en el mar.'],
+  ['!','Diario de montaña','Objeto oculto','Bajo una piedra del anillo. Percepción CD 17. La última entrada está sin terminar.']]
+}
+];
+
+const $ = s => document.querySelector(s);
+
+$('#nav').innerHTML = R.map(r=>
+  `<button data-id="${r.id}" class="${r.cv?'cv':''}" aria-pressed="false">${r.tag}</button>`).join('');
+$('#nav').addEventListener('click', e=>{
+  const b = e.target.closest('button'); if(b) pintar(b.dataset.id);
+});
+
+function pintar(id){
+  const r = R.find(x=>x.id===id) || R[0];
+  document.querySelectorAll('#nav button').forEach(b=>b.setAttribute('aria-pressed', b.dataset.id===r.id));
+
+  const W = Math.max(...r.mapa.map(f=>f.length));
+  const filas = r.mapa.map(f=>f.padEnd(W, f[f.length-1] || '.'));
+
+  let tiles = `<div class="tiles" style="grid-template-columns:repeat(${W},1fr)">`;
+  filas.forEach(f => [...f].forEach(ch=>{
+    if(/[1-9]/.test(ch)) tiles += `<div class="t pt" data-n="${ch}" style="background:${COLORES[',']}"></div>`;
+    else if(ch === '!')  tiles += `<div class="t pt obj" data-n="!" style="background:${COLORES[',']}"></div>`;
+    else {
+      const c = COLORES[ch] || '#7ec46b';
+      const et = ETIQ[ch];
+      tiles += `<div class="t" style="background:${c}${et?`;color:#fff;font:9px Silkscreen,monospace;display:grid;place-items:center`:''}">${et||''}</div>`;
+    }
+  }));
+  tiles += '</div>';
+
+  const usados = [...new Set(filas.join('').split(''))].filter(c=>COLORES[c]);
+
+  $('#ficha').innerHTML = `
+  <div class="cab"><h2>${r.nom}</h2><span class="nivel">${r.nivel} · ${r.mapas}</span></div>
+  <p class="tramo">${r.tramo}</p>
+  <div class="dos">
+    <div>
+      <div class="tilewrap">${tiles}</div>
+      <div class="leg">${usados.map(c=>`<span><i style="background:${COLORES[c]}"></i>${NOMBRES[c]||c}</span>`).join('')}</div>
+      <div class="bloque" style="margin-top:22px">
+        <h4>CÓMO DEBE VERSE</h4>
+        <p>${r.verse}</p>
+      </div>
+      <div class="bloque rosa">
+        <h4>EN CUÁNTOS MAPAS SE PARTE</h4>
+        <p>${r.seg}</p>
+      </div>
+    </div>
+    <div>
+      <div class="puntos">${r.puntos.map(([n,nom,cl,txt])=>`
+        <div class="punto" data-n="${n}">
+          <div class="fila2"><span class="n ${n==='!'?'obj':''}">${n}</span><span class="nom">${nom}</span></div>
+          <div class="cl">${cl}</div>
+          <p>${txt}</p>
+        </div>`).join('')}</div>
+    </div>
+  </div>`;
+
+  $('#ficha').querySelectorAll('.t.pt').forEach(t => t.onclick = ()=>{
+    const n = t.dataset.n;
+    $('#ficha').querySelectorAll('.t.pt').forEach(x=>x.classList.toggle('sel', x.dataset.n===n));
+    $('#ficha').querySelectorAll('.punto').forEach(x=>{
+      const s = x.dataset.n===n;
+      x.classList.toggle('sel', s);
+      if(s) x.scrollIntoView({block:'center', behavior:'smooth'});
+    });
+  });
+}
+pintar('r1');
+</script>
+</body>
+</html>

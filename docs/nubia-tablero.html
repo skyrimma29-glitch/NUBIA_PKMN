@@ -1,0 +1,2417 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tablero — Nubia</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=Alegreya:wght@400;700&family=Alegreya+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --tinta:#12283f; --tinta-suave:#3d556e; --mar:#0e7c8b;
+  --arena:#f6e7c4; --arena-hueso:#fdf6e6; --oro:#e0951c;
+  --selva:#2e7d4f; --fucsia:#c6386b; --sombra:rgba(18,40,63,.18);
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--arena);color:var(--tinta);
+  font-family:'Alegreya',Georgia,serif;font-size:16px;line-height:1.55;
+  display:flex;flex-direction:column;min-height:100%}
+.wrap{max-width:1820px;margin:0 auto;padding:0 18px;width:100%}
+h1,h2,h3{font-family:'Silkscreen','Courier New',monospace;line-height:1.3}
+.vueltiao{height:12px;flex:0 0 auto;background:
+  repeating-linear-gradient(135deg,var(--tinta) 0 7px,transparent 7px 14px),
+  repeating-linear-gradient(45deg,var(--tinta) 0 7px,var(--arena-hueso) 7px 14px)}
+
+header{background:var(--tinta);color:var(--arena-hueso);padding:16px 0;flex:0 0 auto}
+header .f{display:flex;justify-content:space-between;align-items:baseline;gap:18px;flex-wrap:wrap}
+header h1{margin:0;font-size:clamp(18px,2.6vw,25px);color:var(--arena-hueso)}
+header h1 span{color:var(--oro)}
+header a{color:#8fc8d3;font-family:'Alegreya Sans',sans-serif;font-size:14px;text-decoration:none;border-bottom:1px solid #4d7183}
+header a:hover{color:var(--arena-hueso)}
+
+input,select,textarea{font-family:'Alegreya Sans',sans-serif;font-size:14px;padding:7px 8px;
+  border:2px solid var(--tinta);background:#fff;color:var(--tinta);max-width:100%}
+input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--mar);outline-offset:1px}
+button{font-family:'Silkscreen',monospace;cursor:pointer}
+.bt{font-size:10px;padding:8px 10px;border:2px solid var(--tinta);background:var(--arena-hueso);color:var(--tinta)}
+.bt:hover{background:#fff}
+.bt.on{background:var(--tinta);color:var(--arena-hueso)}
+.bt.rosa{background:var(--fucsia);color:#fff}
+.bt.rosa:hover{background:#d8437c}
+.bt:disabled{background:#cec7b8;color:#807869;cursor:not-allowed}
+.bt:focus-visible{outline:3px solid var(--fucsia);outline-offset:2px}
+
+.sala{background:var(--arena-hueso);border-bottom:3px solid var(--tinta);flex:0 0 auto}
+.sala .wrap{display:flex;gap:12px;align-items:end;flex-wrap:wrap;padding-top:11px;padding-bottom:11px}
+.campo{display:flex;flex-direction:column;gap:3px}
+.campo>span{font-family:'Silkscreen',monospace;font-size:9px;color:var(--tinta-suave)}
+.campo input,.campo select{width:150px}
+.estado{font-family:'Alegreya Sans',sans-serif;font-size:13px;padding:7px 11px;border:2px dashed var(--tinta-suave);color:var(--tinta-suave)}
+.estado.viva{border-style:solid;border-color:var(--selva);color:var(--selva);background:#eaf6ee}
+.estado.mala{border-color:var(--fucsia);color:var(--fucsia)}
+#rol{font-family:'Silkscreen',monospace;font-size:10px;border-style:solid}
+#rol.dm{background:var(--tinta);color:var(--oro);border-color:var(--tinta)}
+
+main{flex:1 0 auto;padding:18px 0 44px}
+.tres{display:grid;grid-template-columns:238px minmax(0,1fr) 296px;gap:18px;align-items:start}
+@media(max-width:1280px){.tres{grid-template-columns:230px minmax(0,1fr)}}
+@media(max-width:860px){.tres{grid-template-columns:1fr}}
+
+.panel{background:var(--arena-hueso);border:3px solid var(--tinta);padding:13px;box-shadow:5px 5px 0 var(--sombra);margin-bottom:15px}
+.panel h2{font-size:11px;margin:0 0 10px;color:var(--mar)}
+.panel .fila{display:flex;gap:6px;flex-wrap:wrap;align-items:end;margin-bottom:8px}
+.panel .fila:last-child{margin-bottom:0}
+.panel label{display:block;font-family:'Silkscreen',monospace;font-size:9px;color:var(--tinta-suave);margin:0 0 3px}
+.panel input,.panel select,.panel textarea{width:100%}
+.nota{font-family:'Alegreya Sans',sans-serif;font-size:12px;color:var(--tinta-suave);margin:8px 0 0}
+.solodm{display:none} body.dm .solodm{display:block}
+
+/* ------------- animaciones ------------- */
+@keyframes surgir{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+@keyframes latido{0%{transform:scale(.4);opacity:.9}70%{transform:scale(1.5);opacity:.35}100%{transform:scale(1.9);opacity:0}}
+@keyframes brotar{from{opacity:0;transform:scale(.86)}to{opacity:1;transform:none}}
+.tir{animation:surgir .22s ease both}
+.item{animation:surgir .18s ease both}
+.tk{transition:left .17s ease,top .17s ease,transform .12s,box-shadow .12s}
+.tk.arrastrando{transition:transform .12s,box-shadow .12s}
+.bt,.dado,.chip{transition:background .12s,color .12s,transform .08s,box-shadow .12s}
+.bt:active,.dado:active{transform:translateY(1px)}
+.acc .cnt2{animation:brotar .18s ease both}
+dialog[open]{animation:brotar .16s ease both}
+.formu{transition:color .15s}
+
+/* ------------- capas de marcadores ------------- */
+#capaAreas{position:absolute;inset:0;pointer-events:none}
+#capaAreas svg{width:100%;height:100%;display:block;overflow:visible}
+#capaAreas.activa{pointer-events:auto;cursor:crosshair}
+#capaPings{position:absolute;inset:0;pointer-events:none;z-index:40}
+.ping{position:absolute;transform:translate(-50%,-50%)}
+.ping i{position:absolute;inset:-18px;border:3px solid var(--fucsia);border-radius:50%;
+  animation:latido 1.5s ease-out infinite;display:block}
+.ping i:nth-child(2){animation-delay:.5s}
+.ping b{position:absolute;left:50%;top:-26px;transform:translateX(-50%);white-space:nowrap;
+  font-family:'Silkscreen',monospace;font-size:8px;background:var(--fucsia);color:#fff;padding:3px 5px}
+#capaMed{position:absolute;inset:0;pointer-events:none;z-index:12}
+.medida{position:absolute;transform:translate(-50%,-340%);white-space:nowrap;
+  font-family:'Silkscreen',monospace;font-size:10px;background:var(--tinta);color:var(--oro);
+  padding:4px 6px;border:2px solid var(--oro);line-height:1;box-shadow:0 3px 0 rgba(0,0,0,.28)}
+.medida::after{content:'';position:absolute;left:50%;bottom:-7px;transform:translateX(-50%);
+  border:5px solid transparent;border-top-color:var(--oro)}
+#capaAreas.borrando{cursor:cell}
+#capaAreas.borrando svg g{pointer-events:all}
+
+/* ------------- turnos ------------- */
+.turnos{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:9px}
+.ronda{font-family:'Silkscreen',monospace;font-size:10px;background:var(--tinta);
+  color:var(--oro);padding:7px 9px}
+.item.activo{background:#fff3d0;box-shadow:inset 5px 0 0 var(--oro)}
+.item.activo .nom::before{content:'\25B6 ';color:var(--oro)}
+.subtabs{display:flex;gap:4px;margin-bottom:8px}
+.subtabs button{flex:1;font-size:9px;padding:7px 4px;border:2px solid var(--tinta);
+  background:var(--arena-hueso);color:var(--tinta-suave)}
+.subtabs button[aria-pressed="true"]{background:var(--tinta);color:var(--arena-hueso)}
+.herr{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
+.herr button{font-size:9px;padding:9px 4px;border:2px solid var(--tinta);
+  background:var(--arena-hueso);color:var(--tinta)}
+.herr button.on{background:var(--fucsia);color:#fff}
+
+/* ------------- condiciones ------------- */
+.tk .cnd{position:absolute;top:-8px;left:-7px;display:flex;gap:1px;z-index:3}
+.tk .cnd i{width:8px;height:8px;border:2px solid var(--tinta);display:block}
+.cbox{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:10px}
+.cbox label{display:flex;align-items:center;gap:6px;font-family:'Alegreya Sans',sans-serif;
+  font-size:12px;color:var(--tinta);background:#fff;border:2px solid var(--tinta);padding:5px 7px;cursor:pointer;margin:0}
+.cbox label:hover{background:#fff6df}
+.cbox input{width:auto;margin:0}
+.cbox b{width:10px;height:10px;border:1px solid var(--tinta);display:block;flex:0 0 auto}
+.dlgtiros{display:flex;gap:6px;flex-wrap:wrap;background:#fff;border:2px solid var(--tinta);padding:8px;margin-bottom:10px}
+.dlgtiros button{font-size:9px;padding:8px 9px;border:2px solid var(--tinta);background:var(--arena-hueso);color:var(--tinta)}
+.dlgtiros button:hover{background:#fff6df}
+
+/* ------------- notas del registro ------------- */
+.nota-log{background:#eef3f6;padding:8px 11px;font-family:'Alegreya Sans',sans-serif;
+  font-size:13px;color:var(--tinta);border-left:4px solid var(--mar);animation:surgir .22s ease both}
+.nota-log b{font-family:'Silkscreen',monospace;font-size:10px}
+
+/* ------------- captura ------------- */
+.capres{border:2px solid var(--tinta);background:#fff;padding:11px;margin-top:9px;text-align:center}
+.capres .cd{font-family:'Silkscreen',monospace;font-size:11px;color:var(--tinta-suave)}
+.capres .ver{font-family:'Silkscreen',monospace;font-size:17px;margin-top:6px}
+.capres .ver.si{color:var(--selva)} .capres .ver.no{color:var(--fucsia)}
+
+/* ------------- modo enfoque ------------- */
+body.enfoque .tres{grid-template-columns:1fr}
+body.enfoque .tres>div:first-child,body.enfoque .tres>div:last-child{display:none}
+body.enfoque .mesa{display:none}
+body.enfoque #marco{max-width:none!important}
+body.enfoque header,body.enfoque .sala,body.enfoque footer{display:none}
+body.enfoque main{padding-top:10px}
+
+/* ------------- objeto recibido ------------- */
+#capaObjeto{position:fixed;inset:0;z-index:90;display:none;place-items:center;pointer-events:none}
+#capaObjeto.ver{display:grid}
+.sello{background:var(--arena-hueso);border:5px solid var(--tinta);box-shadow:0 14px 40px rgba(0,0,0,.45);
+  padding:26px 38px;text-align:center;animation:sellar .42s cubic-bezier(.2,1.5,.4,1) both}
+.sello svg{width:96px;height:96px;display:block;margin:0 auto 12px}
+.sello .txt{font-family:'Silkscreen',monospace;font-size:15px;color:var(--tinta)}
+.sello .obj{font-family:'Silkscreen',monospace;font-size:20px;color:var(--oro);
+  background:var(--tinta);padding:8px 14px;display:inline-block;margin-top:9px}
+.sello.salir{animation:desellar .4s ease both}
+@keyframes sellar{0%{opacity:0;transform:scale(2.4) rotate(-9deg)}60%{opacity:1;transform:scale(.94) rotate(2deg)}100%{transform:none;opacity:1}}
+@keyframes desellar{to{opacity:0;transform:scale(.86) translateY(-14px)}}
+
+/* ------------- mapa emergente ------------- */
+#capaMapaN{position:fixed;inset:0;z-index:80;display:none;background:rgba(11,22,34,.35);
+  place-items:center;backdrop-filter:blur(1px)}
+#capaMapaN.ver{display:grid;animation:brotar .25s ease both}
+.mapaN{background:var(--arena-hueso);border:5px solid var(--tinta);box-shadow:0 16px 46px rgba(0,0,0,.5);
+  width:min(92vw,880px);max-height:92vh;overflow:auto}
+.mapaN .cab{background:var(--tinta);color:var(--arena-hueso);padding:12px 16px;display:flex;
+  justify-content:space-between;align-items:center;gap:12px}
+.mapaN .cab b{font-family:'Silkscreen',monospace;font-size:13px}
+.mapaN .cab span{font-family:'Alegreya Sans',sans-serif;font-size:13px;color:#8fc8d3}
+.mapaN svg{display:block;width:100%;height:auto}
+.faro{animation:faro 1.15s ease-in-out infinite}
+@keyframes faro{0%,100%{r:11;opacity:1}50%{r:26;opacity:.25}}
+.faroTxt{font-family:'Silkscreen',monospace;font-size:13px;fill:#12283f}
+
+/* ------------- pokédex ------------- */
+.contador{display:flex;align-items:baseline;gap:8px;background:var(--tinta);color:var(--oro);
+  padding:9px 12px;font-family:'Silkscreen',monospace;margin-bottom:10px}
+.contador b{font-size:19px} .contador span{font-size:10px;color:#8fc8d3}
+.barrap{height:9px;background:#d8d2c4;border:2px solid var(--tinta);margin-bottom:11px}
+.barrap i{display:block;height:100%;background:var(--oro);transition:width .5s ease}
+.regs{max-height:190px;overflow:auto;display:grid;gap:2px;background:var(--tinta);border:2px solid var(--tinta)}
+.reg{background:var(--arena-hueso);padding:6px 9px;display:flex;justify-content:space-between;
+  font-family:'Alegreya Sans',sans-serif;font-size:12px}
+.reg b{font-family:'Silkscreen',monospace;font-size:9px}
+#dexDlg{max-width:400px}
+.dexcab{background:var(--e0524f,#e0524f);background:#e0524f;color:#fff;padding:12px 15px;
+  font-family:'Silkscreen',monospace;font-size:12px;display:flex;justify-content:space-between;align-items:center}
+.dexcab i{width:13px;height:13px;background:#8fd6e8;border:2px solid #12283f;border-radius:50%;display:block}
+.dexcuerpo{padding:16px;text-align:center}
+.dexcuerpo img{width:150px;height:150px;object-fit:contain;margin:0 auto 6px;display:block;
+  animation:brotar .3s ease both}
+.dexnom{font-family:'Silkscreen',monospace;font-size:19px}
+.dexgen{font-family:'Alegreya Sans',sans-serif;font-size:13px;color:var(--mar);margin-top:3px}
+.dextipos{display:flex;gap:6px;justify-content:center;margin:9px 0}
+.dextipos span{font-family:'Silkscreen',monospace;font-size:9px;padding:4px 8px;
+  background:var(--tinta);color:var(--arena-hueso)}
+.dextxt{font-size:16px;line-height:1.55;text-align:left;background:#fff;border:2px solid var(--tinta);
+  padding:11px;margin-top:10px}
+.dexmeta{background:#fff3d0;border:3px solid var(--oro);padding:11px;margin-top:11px;
+  font-family:'Alegreya Sans',sans-serif;font-size:13px;animation:brotar .3s ease both}
+.dexmeta b{font-family:'Silkscreen',monospace;font-size:10px;display:block;color:#8a6410;margin-bottom:3px}
+#escanear.on{background:var(--fucsia);color:#fff;border-color:var(--fucsia)}
+
+/* ------------- acordeones ------------- */
+.acc{background:var(--arena-hueso);border:3px solid var(--tinta);box-shadow:5px 5px 0 var(--sombra);margin-bottom:13px}
+.acc>summary{list-style:none;cursor:pointer;font-family:'Silkscreen',monospace;font-size:11px;
+  color:var(--mar);padding:11px 13px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.acc>summary::-webkit-details-marker{display:none}
+.acc>summary::after{content:'\25BC';font-size:8px;color:var(--tinta-suave);transition:transform .16s}
+.acc[open]>summary::after{transform:rotate(180deg)}
+.acc[open]>summary{border-bottom:2px solid #e2d5b4}
+.acc>summary:hover{background:#fff}
+.acc>summary:focus-visible{outline:3px solid var(--fucsia);outline-offset:-3px}
+.acc .cnt2{padding:13px}
+.acc .fila{display:flex;gap:6px;flex-wrap:wrap;align-items:end;margin-bottom:8px}
+.acc .fila:last-child{margin-bottom:0}
+.acc label{display:block;font-family:'Silkscreen',monospace;font-size:9px;color:var(--tinta-suave);margin:0 0 3px}
+.acc input,.acc select,.acc textarea{width:100%}
+.solojug{display:block} body.dm .solojug{display:none}
+.aviso{border:3px dashed var(--fucsia);background:#fdeaf1;padding:11px 13px;margin-bottom:13px;
+  font-family:'Alegreya Sans',sans-serif;font-size:13px;color:var(--tinta)}
+.c.ts{image-rendering:pixelated;background-repeat:no-repeat}
+
+/* ------------- tablero ------------- */
+.centro{display:flex;flex-direction:column;align-items:center}
+.tbarra{display:flex;gap:8px;align-items:center;flex-wrap:wrap;width:100%;
+  justify-content:space-between;margin-bottom:9px}
+.tbarra .izq,.tbarra .der{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.tbarra .nom{font-family:'Silkscreen',monospace;font-size:12px}
+#marco{width:100%;max-width:1080px;transition:max-width .18s}
+#tablero{position:relative;border:3px solid var(--tinta);background:var(--tinta);
+  box-shadow:7px 7px 0 var(--sombra);touch-action:none;user-select:none;overflow:hidden}
+#capaMapa{display:grid;width:100%}
+#capaMapa .c{aspect-ratio:1}
+#fondoImg{position:absolute;inset:0;background-size:100% 100%;background-repeat:no-repeat;display:none;image-rendering:pixelated;image-rendering:crisp-edges}
+#capaNiebla{position:absolute;inset:0;display:grid}
+#capaNiebla .n.oculta{background:#0a1420}
+#capaNiebla.dm .n.oculta{background:rgba(10,20,32,.7);outline:1px solid rgba(255,255,255,.05);outline-offset:-1px}
+#capaNiebla.pintando{cursor:crosshair}
+#capaTokens{position:absolute;inset:0;pointer-events:none}
+.tk{position:absolute;pointer-events:auto;cursor:grab;display:grid;place-items:center;
+  border-radius:50%;border:3px solid var(--tinta);overflow:visible;
+  font-family:'Silkscreen',monospace;font-size:11px;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.65);
+  box-shadow:0 2px 0 rgba(0,0,0,.35);background-clip:padding-box}
+.tk .rd{position:absolute;inset:0;border-radius:50%;overflow:hidden;display:grid;place-items:center}
+.tk img{width:112%;height:112%;object-fit:contain}
+.tk.arrastrando{cursor:grabbing;z-index:30;box-shadow:0 9px 15px rgba(0,0,0,.42);transform:scale(1.09)}
+.tk.mio{border-color:var(--oro)}
+.tk.sel{outline:3px solid var(--fucsia);outline-offset:2px}
+.tk .nm{position:absolute;bottom:-16px;left:50%;transform:translateX(-50%);white-space:nowrap;
+  font-size:8px;background:var(--tinta);color:var(--arena-hueso);padding:2px 4px;text-shadow:none;z-index:2}
+.tk .lv{position:absolute;top:-8px;right:-6px;font-size:8px;background:var(--fucsia);color:#fff;
+  padding:2px 4px;border:2px solid var(--tinta);text-shadow:none;z-index:2}
+.pieinfo{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;width:100%;
+  font-family:'Alegreya Sans',sans-serif;font-size:13px;color:var(--tinta-suave);margin-top:8px}
+
+/* ------------- mesa de dados integrada ------------- */
+.mesa{width:100%;margin-top:18px;border:3px solid var(--tinta);background:var(--arena-hueso);
+  box-shadow:6px 6px 0 var(--sombra);display:grid;grid-template-columns:minmax(0,1fr) 330px}
+@media(max-width:900px){.mesa{grid-template-columns:1fr}}
+.mesa .lado{padding:14px 16px}
+.mesa .lado+.lado{border-left:3px solid var(--tinta)}
+@media(max-width:900px){.mesa .lado+.lado{border-left:0;border-top:3px solid var(--tinta)}}
+.mesa h2{font-size:11px;margin:0 0 11px;color:var(--mar)}
+.dchips{display:flex;flex-wrap:wrap;gap:6px}
+.dado{position:relative;border:2px solid var(--tinta);background:#fff;padding:9px 11px;
+  font-family:'Silkscreen',monospace;font-size:12px;color:var(--tinta)}
+.dado:hover{background:#fff6df}
+.dado.activo{background:#fff6df;box-shadow:2px 2px 0 var(--sombra)}
+.dado .cnt{position:absolute;top:-9px;right:-9px;min-width:20px;height:20px;background:var(--fucsia);
+  color:#fff;border:2px solid var(--tinta);border-radius:50%;font-size:9px;display:none;place-items:center}
+.dado.activo .cnt{display:grid}
+.dfila{display:flex;gap:9px;align-items:end;flex-wrap:wrap;margin-top:12px}
+.mod{display:flex;align-items:center;border:2px solid var(--tinta);background:#fff}
+.mod button{border:0;background:none;font-size:14px;padding:6px 10px;color:var(--tinta)}
+.mod input{width:54px;border:0;text-align:center;font-family:'Silkscreen',monospace;font-size:13px;padding:7px 0}
+.vent{display:flex;border:2px solid var(--tinta)}
+.vent button{border:0;background:var(--arena-hueso);font-size:9px;padding:8px 9px;color:var(--tinta-suave)}
+.vent button[aria-pressed="true"]{background:var(--tinta);color:var(--arena-hueso)}
+#eti{flex:1;min-width:150px}
+.formu{margin-top:11px;font-family:'Silkscreen',monospace;font-size:15px;background:var(--tinta);
+  color:var(--oro);padding:11px;text-align:center}
+.datajos{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px}
+.datajos button{font-size:9px;padding:7px 8px;border:2px dashed var(--tinta-suave);background:none;color:var(--tinta-suave)}
+.datajos button:hover{border-style:solid;border-color:var(--tinta);color:var(--tinta);background:#fff}
+#log{max-height:300px;overflow-y:auto;display:grid;gap:2px;background:var(--tinta);border:2px solid var(--tinta)}
+.tir{background:var(--arena-hueso);padding:9px 11px}
+.tir.mia{background:#fff6df}
+.tir .t1{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.tir .q{font-family:'Silkscreen',monospace;font-size:10px}
+.tir .tot{font-family:'Silkscreen',monospace;font-size:20px}
+.tir .tot.cr{color:var(--selva)} .tir .tot.pf{color:var(--fucsia)}
+.tir .e{font-family:'Alegreya Sans',sans-serif;font-size:12px;color:var(--mar)}
+.caras{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}
+.cara{font-family:'Silkscreen',monospace;font-size:9px;min-width:22px;text-align:center;
+  padding:3px;border:2px solid var(--tinta-suave);background:#fff}
+.cara.max{border-color:var(--selva);background:#e6f5ea;color:var(--selva)}
+.cara.min{border-color:var(--fucsia);background:#fdeaf1;color:var(--fucsia)}
+.cara.desc{opacity:.32;text-decoration:line-through}
+.fmu{font-family:'Alegreya Sans',sans-serif;font-size:11px;color:var(--tinta-suave);margin-top:4px}
+
+/* ------------- listas ------------- */
+.lista{display:grid;gap:2px;background:var(--tinta);border:3px solid var(--tinta)}
+.item{background:var(--arena-hueso);padding:9px 11px}
+.item.mia{background:#fff6df}
+.item.poke{background:#eef3f6}
+.item .top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.item .nom{font-family:'Silkscreen',monospace;font-size:11px}
+.item .ini{font-family:'Silkscreen',monospace;font-size:14px;color:var(--fucsia)}
+.item .sub{font-family:'Alegreya Sans',sans-serif;font-size:12px;color:var(--tinta-suave)}
+.item a{color:var(--mar);font-family:'Alegreya Sans',sans-serif;font-size:12px}
+.pv{height:9px;background:#d8d2c4;border:2px solid var(--tinta);margin-top:5px}
+.pv i{display:block;height:100%;background:var(--selva)}
+.pv i.medio{background:var(--oro)} .pv i.bajo{background:var(--fucsia)}
+.pvtxt{font-family:'Silkscreen',monospace;font-size:9px;margin-top:3px;color:var(--tinta-suave)}
+.mini{display:flex;gap:4px;margin-top:6px;flex-wrap:wrap}
+.mini button{font-size:9px;padding:4px 6px;border:2px solid var(--tinta-suave);background:#fff;color:var(--tinta)}
+.vacio{background:var(--arena-hueso);padding:16px 12px;text-align:center;
+  font-family:'Alegreya Sans',sans-serif;font-size:13px;color:var(--tinta-suave)}
+
+/* ------------- diálogo ------------- */
+dialog{border:3px solid var(--tinta);background:var(--arena-hueso);padding:0;
+  box-shadow:8px 8px 0 rgba(0,0,0,.3);max-width:380px;width:92%}
+dialog::backdrop{background:rgba(10,20,32,.55)}
+dialog .cab{background:var(--tinta);color:var(--arena-hueso);padding:11px 15px;
+  font-family:'Silkscreen',monospace;font-size:12px}
+dialog .cnt{padding:15px}
+dialog .fila{display:flex;gap:8px;flex-wrap:wrap;align-items:end;margin-bottom:10px}
+dialog label{display:block;font-family:'Silkscreen',monospace;font-size:9px;color:var(--tinta-suave);margin:0 0 3px}
+dialog input,dialog select{width:100%}
+.previa{display:flex;gap:11px;align-items:center;background:#fff;border:2px solid var(--tinta);padding:8px;margin-bottom:10px}
+.previa img{width:56px;height:56px;object-fit:contain}
+.previa div{font-family:'Alegreya Sans',sans-serif;font-size:12px;color:var(--tinta-suave)}
+.previa b{font-family:'Silkscreen',monospace;font-size:11px;color:var(--tinta);display:block}
+
+footer{flex:0 0 auto;background:var(--tinta);color:#a8c2ce;padding:18px 0;
+  font-family:'Alegreya Sans',sans-serif;font-size:13px}
+footer code{background:#1c3a56;padding:2px 5px;color:#cfe0e6}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+
+<header><div class="wrap f">
+  <h1>Tablero de <span>Nubia</span></h1>
+  <a href="index.html">← Volver al menú</a>
+</div></header>
+<div class="vueltiao"></div>
+
+<div class="sala"><div class="wrap">
+  <label class="campo"><span>SALA</span><input id="sala" maxlength="12" placeholder="NUBIA1" style="font-family:Silkscreen,monospace"></label>
+  <label class="campo"><span>TU NOMBRE</span><input id="nombre" maxlength="18" placeholder="Entrenador"></label>
+  <div class="estado" id="rol">Jugador</div>
+  <div class="estado" id="estado">Modo local</div>
+  <button class="bt" id="copiar">COPIAR INVITACIÓN</button>
+</div></div>
+
+<main><div class="wrap tres">
+
+  <!-- ================= IZQUIERDA ================= -->
+  <div>
+    <div class="aviso solojug">Estás como <b>jugador</b>. Las herramientas de mapa, niebla y Pokémon aparecen al pulsar <b>SOY EL DIRECTOR</b> arriba.</div>
+
+    <details class="acc" open><summary>FICHAS EN EL TABLERO</summary><div class="cnt2">
+      <label for="tkNom">NOMBRE</label>
+      <input id="tkNom" maxlength="16" placeholder="Chispa">
+      <div class="fila" style="margin-top:8px">
+        <input id="tkColor" type="color" value="#c6386b" style="width:48px;height:34px;padding:2px">
+        <input id="tkArch" type="file" accept="image/*" style="flex:1;min-width:0;padding:4px">
+      </div>
+      <div class="fila"><button class="bt rosa" id="crearTk">CREAR FICHA</button></div>
+      <div class="fila">
+        <button class="bt" id="editarSel">EDITAR SELECCIÓN</button>
+        <button class="bt" id="borrarSel">BORRAR</button>
+      </div>
+      <p class="nota">Toca una ficha del tablero para abrir su editor: ahí asignas dueño, nivel, PS y la borras. Arrastrar la mueve sin abrir nada.</p>
+    </div></details>
+
+    <details class="acc solodm"><summary>AÑADIR POKÉMON</summary><div class="cnt2">
+      <label for="pkNom">ESPECIE (NOMBRE EN INGLÉS)</label>
+      <input id="pkNom" list="listaPk" placeholder="pikachu" autocomplete="off">
+      <datalist id="listaPk"></datalist>
+      <div class="fila" style="margin-top:8px">
+        <div style="flex:1"><label for="pkNivel">NIVEL</label><input id="pkNivel" type="number" min="1" max="20" value="3"></div>
+        <div style="flex:1"><label for="pkDado">DADO</label>
+          <select id="pkDado"><option>6</option><option selected>8</option><option>10</option><option>12</option></select>
+        </div>
+      </div>
+      <label for="pkDueno">DUEÑO</label>
+      <select id="pkDueno"></select>
+      <div class="fila" style="margin-top:8px"><button class="bt rosa" id="pkAdd">BUSCAR Y AÑADIR</button></div>
+      <p class="nota">PS sugeridos = nivel × promedio del dado. Puedes reasignar el dueño después tocando el token.</p>
+    </div></details>
+
+    <details class="acc solodm"><summary>MAPA</summary><div class="cnt2">
+      <label for="selMapa">ESQUEMA INTEGRADO</label>
+      <select id="selMapa"></select>
+      <div class="fila" style="margin-top:8px"><button class="bt" id="cargarMapa">CARGAR</button></div>
+      <label for="imgArch" style="margin-top:4px">O IMAGEN DESDE TU EQUIPO</label>
+      <input id="imgArch" type="file" accept="image/png,image/webp,image/jpeg" style="padding:4px">
+      <label for="urlImg" style="margin-top:8px">O IMAGEN POR URL / RUTA</label>
+      <input id="urlImg" placeholder="mapas/fundacion.png">
+      <div class="fila" style="margin-top:6px">
+        <button class="bt" id="ponerImg">USAR IMAGEN</button>
+        <button class="bt" id="quitarImg">QUITAR</button>
+      </div>
+      <p class="nota" id="imgInfo">Si eliges un archivo, viaja a la sala y todos lo ven sin subirlo a ningún lado. Límite práctico: unos 180 kB.</p>
+      <div class="fila" style="margin-top:8px"><button class="bt" id="guardarLib">GUARDAR EN LA BIBLIOTECA</button></div>
+      <textarea id="libSalida" rows="3" readonly style="display:none;margin-top:6px;font-family:ui-monospace,monospace;font-size:10px"></textarea>
+      <label for="propio" style="margin-top:4px">O PEGA TU PROPIO ESQUEMA</label>
+      <textarea id="propio" rows="4" placeholder="Una fila por línea&#10;TTTTTT&#10;T,,,,T" style="font-family:ui-monospace,monospace;font-size:11px"></textarea>
+      <div class="fila" style="margin-top:6px"><button class="bt" id="usarPropio">USAR ESQUEMA</button></div>
+    </div></details>
+
+    <details class="acc solodm"><summary>TILESET</summary><div class="cnt2">
+      <label for="tsUrl">TIRA PNG POR URL</label>
+      <input id="tsUrl" placeholder="https://…/nubia-tiles.png">
+      <label for="tsArch" style="margin-top:8px">O ARCHIVO LOCAL</label>
+      <input id="tsArch" type="file" accept="image/png,image/webp" style="padding:4px">
+      <div class="fila" style="margin-top:8px">
+        <button class="bt" id="tsPoner">USAR TILESET</button>
+        <button class="bt" id="tsQuitar">QUITAR</button>
+      </div>
+      <p class="nota" id="tsInfo">Rejilla de <b>8 columnas × 3 filas</b> de tiles cuadrados.
+        A 32 px por tile el lienzo mide <b>256 × 96</b>. Orden de izquierda a derecha:<br>
+        <b style="font-family:ui-monospace,monospace;font-size:12px;line-height:1.7;letter-spacing:3px;display:block;margin-top:5px">
+        . , = ~ s h n i<br>T f ^ b o x # P<br>C M G H L D E</b></p>
+    </div></details>
+
+    <details class="acc solodm"><summary>OBJETOS CLAVE</summary><div class="cnt2">
+      <div class="cbox" id="objetos"></div>
+      <p class="nota">Al marcar uno, aparece en la pantalla de todos con su sello y su melodía. Desmarcarlo lo retira sin aviso.</p>
+    </div></details>
+
+    <details class="acc solodm"><summary>NIEBLA DE GUERRA</summary><div class="cnt2">
+      <div class="fila"><button class="bt" id="pincel">PINCEL: APAGADO</button></div>
+      <div class="fila">
+        <button class="bt" id="cubrir">CUBRIR TODO</button>
+        <button class="bt" id="revelar">REVELAR TODO</button>
+      </div>
+      <div class="fila">
+        <button class="bt on" data-p="1">1</button>
+        <button class="bt" data-p="2">3×3</button>
+        <button class="bt" data-p="3">5×5</button>
+      </div>
+      <p class="nota">Arrastra para descubrir. Mayús + arrastrar vuelve a cubrir.</p>
+    </div></details>
+  </div>
+
+  <!-- ================= CENTRO ================= -->
+  <div class="centro">
+    <div class="tbarra">
+      <div class="izq"><span class="nom" id="nomMapa">—</span></div>
+      <div class="der">
+        <span style="font-family:Silkscreen,monospace;font-size:9px;color:var(--tinta-suave)">ANCHO</span>
+        <button class="bt" data-z="880">CÓMODO</button>
+        <button class="bt on" data-z="1080">AMPLIO</button>
+        <button class="bt" data-z="0">COMPLETO</button>
+        <button class="bt" data-z="-1" title="Ajusta el ancho a un múltiplo exacto del mapa">1:1 NÍTIDO</button>
+        <button class="bt" id="enfoque" title="Tecla F">ENFOQUE</button>
+        <button class="bt solodm" id="verMapaN" style="border-color:var(--fucsia);color:var(--fucsia)">MAPA DE NUBIA</button>
+      </div>
+    </div>
+
+    <div id="marco">
+      <div id="tablero">
+        <div id="capaMapa"></div>
+        <div id="fondoImg"></div>
+        <div id="capaNiebla"></div>
+        <div id="capaAreas"></div>
+        <div id="capaMed"></div>
+        <div id="capaTokens"></div>
+        <div id="capaPings"></div>
+      </div>
+      <div class="pieinfo">
+        <span id="infoMapa">—</span>
+        <span>Arrastra para mover · doble clic sobre una ficha para editarla</span>
+      </div>
+
+      <!-- mesa de dados integrada -->
+      <div class="mesa">
+        <div class="lado">
+          <h2>MESA DE DADOS</h2>
+          <div class="dchips" id="dados"></div>
+          <div class="dfila">
+            <div><label style="font-family:Silkscreen,monospace;font-size:9px;color:var(--tinta-suave);display:block;margin-bottom:3px">MODIFICADOR</label>
+              <div class="mod">
+                <button id="menos" aria-label="Restar">−</button>
+                <input id="modif" type="number" value="0">
+                <button id="mas" aria-label="Sumar">+</button>
+              </div>
+            </div>
+            <div><label style="font-family:Silkscreen,monospace;font-size:9px;color:var(--tinta-suave);display:block;margin-bottom:3px">D20</label>
+              <div class="vent">
+                <button data-v="ventaja" aria-pressed="false">VENTAJA</button>
+                <button data-v="desventaja" aria-pressed="false">DESVENTAJA</button>
+              </div>
+            </div>
+            <input id="eti" placeholder="¿Qué estás tirando?">
+          </div>
+          <div class="formu" id="formu">— sin dados —</div>
+          <div class="dfila">
+            <button class="bt rosa" id="tirar" style="flex:1;font-size:13px;padding:13px" disabled>TIRAR</button>
+            <button class="bt" id="limpiar">LIMPIAR</button>
+          </div>
+          <div class="datajos" id="atajos"></div>
+        </div>
+        <div class="lado">
+          <h2>REGISTRO DE LA SALA</h2>
+          <div id="log"><div class="vacio">Todavía no ha tirado nadie.</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= DERECHA ================= -->
+  <div>
+    <details class="acc" open><summary>TU FICHA DE ENTRENADOR</summary><div class="cnt2">
+      <label for="fchPoke">ENLACE DE POKE5E</label>
+      <input id="fchPoke" placeholder="https://poke5e.app/trainers/…">
+      <div class="fila" style="margin-top:8px">
+        <div style="flex:1"><label for="fchPv">PS</label><input id="fchPv" type="number" value="10"></div>
+        <div style="flex:1"><label for="fchPvMax">MÁX</label><input id="fchPvMax" type="number" value="10"></div>
+        <div style="flex:1"><label for="fchIni">INIC.</label><input id="fchIni" type="number" value="0"></div>
+      </div>
+      <div class="fila"><button class="bt rosa" id="guardarFicha">PUBLICAR EN LA MESA</button></div>
+    </div></details>
+
+    <details class="acc" open><summary>ORDEN DE COMBATE</summary><div class="cnt2">
+      <div class="turnos solodm">
+        <button class="bt" id="tAnt">◀</button>
+        <button class="bt rosa" id="tSig">SIGUIENTE ▶</button>
+        <button class="bt" id="tReset">REINICIAR</button>
+      </div>
+      <div class="turnos"><span class="ronda" id="ronda">RONDA 1</span>
+        <span class="sub" id="quienTurno" style="font-family:'Alegreya Sans',sans-serif;font-size:12px;color:var(--tinta-suave)"></span></div>
+      <div class="subtabs" id="filtro">
+        <button data-f="todos" aria-pressed="true">TODOS</button>
+        <button data-f="ent" aria-pressed="false">ENTRENADORES</button>
+        <button data-f="pok" aria-pressed="false">POKÉMON</button>
+      </div>
+      <div class="lista" id="fichas"><div class="vacio">Nadie ha publicado su ficha todavía.</div></div>
+    </div></details>
+
+    <details class="acc" id="panelDex" style="display:none"><summary>POKÉDEX DE NUBIA</summary><div class="cnt2">
+      <div class="contador"><b id="dexN">0</b><span>/ <span id="dexT">151</span> REGISTRADOS</span></div>
+      <div class="barrap"><i id="dexBar" style="width:0%"></i></div>
+      <div class="fila"><button class="bt" id="escanear">ESCANEAR CON LA POKÉDEX</button></div>
+      <div class="regs" id="dexLista"></div>
+      <p class="nota">Con el escáner activo, toca cualquier Pokémon del tablero para registrarlo. Los que captures se marcan solos.</p>
+    </div></details>
+
+    <details class="acc solodm"><summary>CAPTURA</summary><div class="cnt2">
+      <label for="capObj">POKÉMON OBJETIVO</label>
+      <select id="capObj"></select>
+      <div class="fila" style="margin-top:8px">
+        <div style="flex:1"><label for="capBola">POKÉ BALL</label>
+          <select id="capBola">
+            <option value="0">Poké Ball (+0)</option>
+            <option value="2">Super Ball (+2)</option>
+            <option value="4">Ultra Ball (+4)</option>
+            <option value="6">Ball especial (+6)</option>
+          </select></div>
+        <div style="width:78px"><label for="capMod">EXTRA</label><input id="capMod" type="number" value="0"></div>
+      </div>
+      <div class="fila"><button class="bt rosa" id="capTirar">LANZAR</button></div>
+      <div class="capres" id="capRes" style="display:none"></div>
+      <p class="nota">Regla de la casa: CD 10 + mitad del nivel, con rebaja por PS bajos y por estado alterado. Todos los números se ven antes de tirar.</p>
+    </div></details>
+
+    <details class="acc"><summary>MARCADORES Y ÁREAS</summary><div class="cnt2">
+      <label>HERRAMIENTA</label>
+      <div class="herr" id="herr">
+        <button data-t="">MOVER</button>
+        <button data-t="ping">SEÑAL</button>
+        <button data-t="regla">REGLA</button>
+        <button data-t="circulo">CÍRCULO</button>
+        <button data-t="cono">CONO</button>
+        <button data-t="linea">LÍNEA</button>
+        <button data-t="cuadro">CUADRADO</button>
+        <button data-t="borrador">BORRADOR</button>
+        <button data-t="" style="visibility:hidden"></button>
+        <button data-t="" style="visibility:hidden"></button>
+      </div>
+      <div class="fila" style="margin-top:9px">
+        <div><label for="areaColor">COLOR</label><input id="areaColor" type="color" value="#e0951c" style="width:48px;height:32px;padding:2px"></div>
+        <div style="flex:1"><label for="pingTxt">ETIQUETA DE SEÑAL</label><input id="pingTxt" maxlength="18" placeholder="¡Aquí!"></div>
+      </div>
+      <div class="fila"><button class="bt" id="limpiarAreas">BORRAR TODAS LAS ÁREAS</button></div>
+      <p class="nota">Elige una forma y arrastra sobre el tablero desde el origen. La distancia sale en casillas y metros mientras arrastras. La <b>señal</b> es un toque: parpadea unos segundos en la pantalla de todos.</p>
+    </div></details>
+  </div>
+
+</div></main>
+
+<div class="vueltiao"></div>
+<footer><div class="wrap">
+  Sincronización en línea: pega tu URL y tu clave anónima de Supabase en <code>SUPABASE_URL</code> y <code>SUPABASE_KEY</code>.
+  Ilustraciones de <code>pokeapi.co</code>. Contenido de fans, sin relación con Nintendo, Game Freak ni Wizards of the Coast.
+</div></footer>
+
+<div id="capaObjeto"></div>
+<div id="capaMapaN"><div class="mapaN">
+  <div class="cab"><b id="mapaNTit">REGIÓN DE NUBIA</b>
+    <span>Pulsa Escape o haz clic fuera para cerrar</span></div>
+  <div id="mapaNSvg"></div>
+</div></div>
+
+<dialog id="dexDlg">
+  <div class="dexcab"><span>POKÉDEX DE NUBIA</span><i></i></div>
+  <div class="dexcuerpo" id="dexCuerpo"></div>
+  <div style="padding:0 16px 16px"><button class="bt" id="dexCerrar" style="width:100%">CERRAR</button></div>
+</dialog>
+
+<!-- ============ DIÁLOGO DE FICHA ============ -->
+<dialog id="dlg">
+  <div class="cab" id="dlgTit">EDITAR FICHA</div>
+  <div class="cnt">
+    <div class="previa" id="dlgPrev" style="display:none"><img id="dlgImg" alt=""><div id="dlgInfo"></div></div>
+    <div class="fila">
+      <div style="flex:1"><label for="dNom">NOMBRE</label><input id="dNom"></div>
+    </div>
+    <div class="fila">
+      <div style="flex:1"><label for="dDueno">DUEÑO</label><select id="dDueno"></select></div>
+    </div>
+    <div class="fila">
+      <div style="flex:1"><label for="dNivel">NIVEL</label><input id="dNivel" type="number" min="0"></div>
+      <div style="flex:1"><label for="dPv">PS</label><input id="dPv" type="number"></div>
+      <div style="flex:1"><label for="dPvMax">MÁX</label><input id="dPvMax" type="number"></div>
+    </div>
+    <div class="fila">
+      <div style="flex:1"><label for="dIni">INICIATIVA</label><input id="dIni" type="number"></div>
+      <div style="flex:1"><label for="dAtk">MOD. ATAQUE</label><input id="dAtk" type="number" value="0"></div>
+      <div><label for="dColor">COLOR</label><input id="dColor" type="color" style="width:48px;height:34px;padding:2px"></div>
+    </div>
+    <div class="fila">
+      <div style="flex:1"><label for="dDmg">FÓRMULA DE DAÑO</label><input id="dDmg" placeholder="2d6+3"></div>
+    </div>
+    <label>TIRAR DESDE ESTA FICHA</label>
+    <div class="dlgtiros">
+      <button id="tAtaque">ATAQUE</button>
+      <button id="tSalva">SALVACIÓN</button>
+      <button id="tDano">DAÑO</button>
+      <button id="tIniciativa">INICIATIVA</button>
+    </div>
+    <label>CONDICIONES</label>
+    <div class="cbox" id="dCond"></div>
+    <div class="fila" style="margin-bottom:0">
+      <button class="bt rosa" id="dOk">GUARDAR</button>
+      <button class="bt" id="dDel">BORRAR</button>
+      <button class="bt" id="dCancel">CERRAR</button>
+    </div>
+  </div>
+</dialog>
+
+<script src="nubia-config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+/* La configuración vive en nubia-config.js, un solo sitio para todo. */
+const CFG = window.NUBIA || {};
+const SUPABASE_URL = CFG.SUPABASE_URL || '';
+const SUPABASE_KEY = CFG.SUPABASE_KEY || '';
+let sb = null, cuenta = null, partida = null, guardando = null;
+
+const COLORES = {
+ '.':'#7ec46b', ',':'#d6ac74', '=':'#c6bfae', '~':'#3f9ed6', 's':'#efd9a2',
+ 'h':'#3f8f45', 'T':'#2e7d4f', 'f':'#e86a9b', '^':'#9a8f7f', 'b':'#b98a52',
+ 'o':'#463a30', 'x':'#6b4f33', 'n':'#eef4f7', 'i':'#bfe0ee', '#':'#8a7f72',
+ 'C':'#e0524f', 'M':'#3b7fd1', 'G':'#7b5ba6', 'H':'#c1854a', 'L':'#e0951c',
+ 'D':'#26262b', 'P':'#a9784a', 'E':'#f6e7c4'
+};
+
+const MAPAS = {
+'Localidades':{
+ 'Pueblo Fundación':['TTTTTTTTTT..TTTTTTTTTT',
+  'T....................T',
+  'T..HHH...LLL...HHH...T',
+  'T..HHH...LLL...HHH...T',
+  'T..H1H...L2L...H.H...T',
+  'E===================.T',
+  'T..,,,,,,,,,,,,,,,..,T',
+  'T..,CCC,,,,,,,MMM,..,T',
+  'T..,CCC,,,3,,,MMM,..,T',
+  'T..,C.C,,,,,,,M4M,..,T',
+  'T..,,,,,,,,,,,,,,,..,T',
+  'T.f...........5......T',
+  'T.fff...TTT.....TTT..T',
+  'TTTTTTTTTTTTTTTTTTTTTT'],
+ 'Ciudad Cumbia':['~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~',
+  '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~',
+  '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~',
+  'ssssssssssssssssssssssssss~~~~',
+  'T.....=........=....5.=..f~~~~',
+  'Tf===========2==========LLLL~~',
+  'T.======================LLLL~~',
+  'T..HHH=..HHH...=..HHH.=.LL===E',
+  'T..HHH=.fHHH...=..HHHT=.LLLPPT',
+  'Tf.HHH=..HHH...=..HHH.=....PPT',
+  'T.....=.1..f...=f..T..=.f4T..T',
+  'T.==========================.T',
+  'T.===============GGGGG==DDDD.T',
+  'T..CCC=..MMM...=.GGGGG=.DDDD.T',
+  'T..CCC=..MMM...=.GGGGG=.DDDD.T',
+  'Tf.CCC=..MMM.T.=TGGGGG=.DDDD.T',
+  'T.=================3========.T',
+  'T.==========================.T',
+  'T...=T=........=...T..=.f.f..T',
+  'TTTTETTTTTTTTTTTTTTTTTTTTTTTTT'],
+ 'Ciudad Muralla':['########################E###',
+  '#~~~~~~ss#=================#',
+  '#~~~~~~ss#=HHH===HHH===H=H=#',
+  '#~~~~~~ss#=HHH==fHHH===H=H=#',
+  '#~~~~~~ss#=HHH===HHH=f=HHH=#',
+  '#~~~~~~ss#=====1=====2=====#',
+  '#~~~~~~ss#=CCC===MMM==LLLL=#',
+  '#~~~~~~ss#=CCC===MMMf=LLLL=#',
+  '#~~~~~~PP#=CCCf==MMM==LLLL=#',
+  '#~~~~~~PP#=================#',
+  '#~~~~~~ss#=========3=======#',
+  '#~~~~~~ss#=GGGGGG===DDDD===#',
+  '#~~~~~~ss#=GGGGGG===DDDD===#',
+  '#~~~~~~ss#=GGGGGG===DDDD===#',
+  '#~~~~~~ss#=GGGGG===========#',
+  '#~~~~~~ss#====4==========5=#',
+  '#~~~~~~ss#======f=======f==#',
+  '################E###########'],
+ 'Pueblo Sabanal':['TTTTTTTTTETTTTTTTTTT',
+  'T........,..T...T..T',
+  'TT.HHHf..,....HHHf.T',
+  'T..HHH...,.f..HHH..T',
+  'T..HHH.1.,....HHH..T',
+  'T..T.....,.f.3.....T',
+  'T.,,,,,,,,,,,,,,,,.T',
+  'Tf,,,,,,,,,,,,,,,5,E',
+  'T........,2........T',
+  'T..CCC...,.####MM..T',
+  'T..CCCf.f,.#DD#MM..T',
+  'T.fCCC...,.#DD#MMT.T',
+  'T...........4......T',
+  'TTTTTTTTTTTTTTTTTTTT'],
+ 'Puerto Bermejo':['TTTTTTTTTTTTTTTTTTTTTTTT',
+  'T..................h...T',
+  'T..HHH...HHH,.....#DDD#T',
+  'T..HHH...HHH,.....#DD5#T',
+  'T..HHH...HHH,h3...#####T',
+  'T.,,,,,,,,,,,,,,,,,,,,.T',
+  'T.,,,,,,,,,,,,,,,,,,,,hT',
+  'E,,,CC......,.hMMM.h...T',
+  'T..CCC......,..MMM..4h.T',
+  'T.,CCC,,,,,,,,,MMM,,,,.T',
+  'T.,,,,,,,,,,,,,,,,,,,,.T',
+  'sssssssssss2ssssssssssss',
+  '~~~~~~PPP~~~,~~PPP~~~~~~',
+  '~~~~~~P1P~~~,~~PPP~~~~~~',
+  '~~~~~~~~~~~~,~~~~~~~~~~~',
+  '~~~~~~~~~~~~E~~~~~~~~~~~'],
+ 'Ciudad Cañaveral':['hhhhhhhhhhhhEhhhhhhh~~~~~~',
+  'hhh......f..=....f..~~~~~~',
+  'hhh.HHH.....=HH.....~~~~~~',
+  'hhh.HHH.=...=HH..=..~~~~~~',
+  'hhh.HHH1=f..HHH.3=..~~~~~~',
+  'hhh====================..h',
+  'E======================hhh',
+  'hhh.CCC.=...MMMf.=.LLL.hhh',
+  'hhh.CCC.=...MMM..=.LLL.hhh',
+  'hhh.CCC.=...MMM..=.LLL.hhh',
+  'hhh..f..=f.2f....=.....hhh',
+  'hhh====================hhh',
+  'hhh==========4=======5=hhh',
+  'hhh.....=.GGGGGG.=.DDDDhhh',
+  'hhh.f...=.GGGGGG.=.DDDDhhh',
+  'hhh.....=.GGGGGG.=.DDDDhhh',
+  'hhh.....=.GGGGGG.=.....hhh',
+  'hhhhhhhhhhhhhhhhhhhhhhhhhh'],
+ 'Ciudad Orquídea':['^^^^^^^^^^^^^^^^^^^^^^^^^^^^',
+  '^^^^.........#..........^^^^',
+  '^^^^..=HHH...#..HHH.=.f.^^^^',
+  '^^^^..=HHH..f#..HHH.=...^^^^',
+  '^^^^..=HHH.1.#..HHH.=...^^^^',
+  '^^^^.==================.^^^^',
+  '^^^^.=============3====.^^^^',
+  '^^^^..=.f....#......=.f.^^^^',
+  '^^^^..=CCC.f.#..MMMf=DDD^^^^',
+  '^^^^..=CCC...#..MMM.=DDD^^^^',
+  '^^^^..=CCC...#..MMM.=DDD^^^^',
+  '^^^^..=.....2#f.....=DDD^^^^',
+  '^^^^f==================.===E',
+  '^^^^.=================5.^^^^',
+  '^^^^f.=..f...#.GGGGG=...^^^^',
+  '^^^^..=HHH...#.GGGGG=LLL^^^^',
+  '^^^^..=HHHf..#.GGGGG=LLL^^^^',
+  '^^^^..=HHH...#.GGGGG=LLL^^^^',
+  '^^^^.==================.^^^^',
+  '^^^^.============4=====.^^^^',
+  '^^^^..f......#......=...^^^^',
+  '^^^^^^^^^^^^^^^^^^^^E^^^^^^^'],
+ 'Ciudad Páramo':['^^^^^^^^^^^^^^^^^^^^^^^E^^^^^^',
+  '^............h....h....=.....^',
+  '^......=.......=.......=.....^',
+  '^.....h=.......=.....h.=.....^',
+  '^.==========================.^',
+  '^.=======1==================.^',
+  '^..HHH.=..HHHh.=.LLLLL.=.LLLL^',
+  '^..HHH.=..HHH..=.LLLLL.=.LLLL^',
+  '^..HHH.=..HHH..=.LLLLL.=.LLLL^',
+  '^......=......3=.......=.....^',
+  'E==================2=======4.^',
+  '^.==========================.^',
+  '^..CCC.=..MMM..=.GGGGG.=.DDDD^',
+  '^..CCC.=..MMM..=.GGGGG.=.DDDD^',
+  '^..CCC.=..MMM..=.GGGGG.=.DDDD^',
+  '^.h....=.......=.GGGGG.=.DDDD^',
+  '^h==========================.^',
+  '^.=================5========.^',
+  '^......=.......=.....h.=.....^',
+  '^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^'],
+ 'Ciudad Vallenar':['TTTTTTTTTTT~~~TTTTETTTTT',
+  'T...f......~~~....,....T',
+  'T.HHH,LLLL.~~~....,.HHHT',
+  'T.HHH,LLLL.~~~..f.,.HHHT',
+  'T.HHH,LLLL.~~~....,.HHHT',
+  'T....,...1.~~~..3.,ff..T',
+  'T.,,,,,,,,,,,,,,,,,,,,,T',
+  'T.,,,,,,,,,,,,,,,,,,,,,T',
+  'T.CCC,.....~~~....,.MMMT',
+  'T.CCC,..f..~2~.f..,.MMMT',
+  'T.CCC,f.f..~~~....,.MMMT',
+  'T.,,,,,,4,,,,,,,,,,,,,,T',
+  'T.,,,,DDDD,,,,,GGGGG,5,T',
+  'T....,DDDD.~~~.GGGGG...T',
+  'T....,DDDD.~~~.GGGGG...T',
+  'TTTTTETTTTT~~~TTTTTTTTTT'],
+ 'Ciudad Brisamar':['~~~~~~sssTTTTTTTTTTTTT^^^^',
+  '~~~~~~sss...........f.^^^^',
+  '~~~~~~sssHHH=..HHH.=..^^^^',
+  '~~~~~~sssHHH=..HHH.=f.^^^^',
+  '~~~~~~sssHHH=..HHH.=..^^^^',
+  '~~~~~~sss=====1=====LL^^^^',
+  '~~~~~~sssCCC===MMM==LL^^^^',
+  '~~~~~~sssCCC=..MMM.=LL===E',
+  '~~~~~~PPsCCC=f.MMM.=LL^^^^',
+  'E===~~PPs...=......=..^^^^',
+  '~~~~~~ss2...=.....f=.5^^^^',
+  '~~~~~~sss...=.....3=..^^^^',
+  '~~~~~~sss=============^^^^',
+  '~~~~~~sssGGGGG==DDDD==^^^^',
+  '~~~~~~sssGGG=G..DDDDf.^^^^',
+  '~~~~~~sssGGG=G..DDDD..^^^^',
+  '~~~~~~sssGGG=G.....=..^^^^',
+  '~~~~~~sssTT4ETTTTTTTTT^^^^'],
+ 'Isla Sietecolores':['~~~~~~~~~~~~~~~~~~~~~~',
+  '~~~~~~~~~~~~~~~~~~~~~~',
+  '~~ssssssssssssssssss~~',
+  '~~ssssssssssssssssss~~',
+  '~~ss.HHH......HHHfss~~',
+  '~~ss.HHH..,...HHH.ss~~',
+  '~~ss.HHH.1,..THHH.ss~~',
+  '~~ss.,,,,,,,,,,,,.ss~~',
+  '~~ss......,..T..T.ss~~',
+  '~~ss.CCCT.,...MMMTss~~',
+  '~~PP.CCC.T,T2.MMM.ss~~',
+  '~~PP.CCC..,...MMM.sssE',
+  '~~ssf...3.,....f..ss~~',
+  '~~ss.,,,,,,,,,,,,.ss~~',
+  '~~ss...T..,..4.f.fss~~',
+  '~~ss...GGGGG..DDD.ss~~',
+  '~~ss...GGGGG..DDD.ss~~',
+  '~~ss...GGGGG..DDD.ss~~',
+  '~~sssssssssssssss5ss~~',
+  '~~ssssssssssssssssss~~',
+  '~~~~~~~~~~~~~~~~~~~~~~',
+  '~~~~~~~~~~~~~~~~~~~~~~']
+},
+'Rutas':{
+ 'Ruta 1 · Mangal':['TTTTTTTTTT~~~~~~~~~~TTTTTTTTTT',
+  'E,,,,hhhhh,,,,,,,,,,hhh,,,,,,E',
+  ',,,,,h1hhh,,,,2,,,,,hhh,,,3,,,',
+  '..T...hhh...T....T..hhh.......',
+  '..T....!....T....T.....T...4..',
+  'hhh.........,,,,,,.....T......',
+  'hhhh........,,,,,,...hhh......',
+  'TThhh.......~~~~~~...hhh...TTT',
+  'TTTTTTTTTT~~~~~~~~~~TTTTTTTTTT'],
+ 'Ruta 2 · Dunas':['~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~',
+  '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~',
+  '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~',
+  'shsssss1sssshssshssss3ssssssssss',
+  's,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,E',
+  's,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,T',
+  'shsshssssssshsss,ssshsssssssssss',
+  'E,,,ThssssssTs2T,ssshTsTsss4sshs',
+  'sssshsssshsshssh,ssshsssshssssss',
+  'hssshssssssssssssssssssssshshsss',
+  'TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT',
+  'TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT'],
+ 'Ruta 3 · Sabana':['TTTTTETTTTTT',
+  'T....,,....T',
+  'T....,,.hh.T',
+  'T...h,,....T',
+  'T...h,,....T',
+  'T..1.,,....T',
+  'T....,,....T',
+  'T.h..,,....T',
+  'T.,,,,,,,,hT',
+  'T..hh,,.2..T',
+  'T....,,....T',
+  'T.###,,.##.T',
+  'T.###,,h##.T',
+  'Th###,,.##.T',
+  'T....,,h...T',
+  'T..h.,,....T',
+  'T..3h,,....T',
+  'T.,,,,,,,,.T',
+  'T....,,...hT',
+  'Th...,,..h.T',
+  'T....,,....T',
+  'T....,,.4.hT',
+  'T....,,....T',
+  'Thh.h,,....T',
+  'T....,,..hhT',
+  'TTTTTTETTTTT'],
+ 'Ruta 4 · Monte Espinoso':['TTTTTTTTTTTTTTTTTTTTTTTTTTTTTT',
+  'Th.......h..h...........^^^..T',
+  'Th......hxx.,....h...h..^^^..T',
+  'T..hh.1..xx.,......h3h..^^^..T',
+  'E,,,,,,,,,,,,,,,,,,,,,,,,,,,,T',
+  'T,,,,,,,,,,,,,,,,,,,,,,,,,,,,E',
+  'T.hh....h...,...hh.xx.....4..T',
+  'T.........h.,2...h.xx......h.T',
+  '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~',
+  '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'],
+ 'Ruta 5 · Barcaza del Cauca':['TTssssEsssssTT',
+  'TTssss~sssssTT',
+  'TT~~~P~~~~~~TT',
+  'TT~~~P~~~~~~TT',
+  'TT~~~~~~~~~~TT',
+  'TT~~~~~~~~~~TT',
+  'TT~~1~~~~~~~TT',
+  'TT~~~~~~~~~~TT',
+  'TT~~~~~~~~~~TT',
+  'TT~~~~~~~~~~TT',
+  'TT~~~~~~~2~~TT',
+  'TT~~~~~~~~~~TT',
+  'TT~~~sssss~~TT',
+  'TT~~~shhhs~~TT',
+  'TT~~~shhhs~~TT',
+  'TT~~~sh3hs~~TT',
+  'TT~~~sssss~~TT',
+  'TT~~~~~~~~~~TT',
+  'TT~~~~~~~~~~TT',
+  'TT~~~~~~~~~~TT',
+  'TT~~~~~~~~~~TT',
+  'TT~~~4~~~~~~TT',
+  'TT~~~~~~~~~~TT',
+  'TT~~~~~~~~~~TT',
+  'TT~~~~~~PP~~TT',
+  'TT~~~~~~PP~~TT',
+  'TTsssss~ssssTT',
+  'TTsssssEssssTT'],
+ 'Ruta 6 · Cafetales y Túnel':['^^^^^E^^^^TTTTTTTTTTTT',
+  '^^^^^,^^^^......h....T',
+  '^^^oo,o^^^..h........T',
+  '^^^oo,o^^^......h....T',
+  '^^^oooo^^^......h....T',
+  '^^^^^^^^^^.......h...T',
+  '^^^^^4^^^^...........T',
+  'T.......,.h.....,.h.hT',
+  'Tfhf.h..,.......,....T',
+  'T......,,,,,,,,,,,,,,T',
+  'T......,,,,,2,,,,,,,,T',
+  'T.f...h.,.......,f.h.T',
+  'T.h.....,3....fh,....T',
+  'T.h...h.,....hf.,....T',
+  'T..h....,....h..,....T',
+  'T.,,,,,,,,,,,,,,,,,,,T',
+  'T.,,,,,,,,,,,,,,,,1,,T',
+  'T.....f.,.......,,...T',
+  'T..h...h.h.......,.f.T',
+  'TTTTTTTTTTTTTTTTTETTTT'],
+ 'Ruta 7 · Páramo':['^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^',
+  '^h..h............h.h...h...h..h....^',
+  '^....h.1.,h.....h.....3...,.h.h.h.h^',
+  '^.h......,.....^^^^....h..,........^',
+  '^hh......,.h.h.^^^^.......,........^',
+  'E,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,E',
+  '^,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,^',
+  '^........,....2h........h.,h..4....^',
+  '^h.....h....hhh........h..h........^',
+  '^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^'],
+ 'Ruta 8 · Cañón Rojo':['^^^^^^^^^^E^^^^^^^^^',
+  '^^^^^^^^^,,,^^^^^^^^',
+  '^^^^^^^^^,,,^^^^^^^^',
+  '^^^^^^^^^,,,^^^^4^^^',
+  '^^^^^^^^^,,,^^^hhh^^',
+  '^^^^^^^^^,,,^^^hhh^^',
+  '^^^,,,,,,,,,,,,hhh^^',
+  '^^^^^^^^^,,,^^^^^^^^',
+  '^^^^^^^^^,,,^^^^^^^^',
+  '^^^^^^^^^,,,3^^^^^^^',
+  '^^^^^^^^^,,,^^^^^^^^',
+  '^^^^^^^^^,,,^^^^^^^^',
+  '^^^^^^^^^,,,^^^^^^^^',
+  '^^^^^^^^^,,,^^^^^^^^',
+  '~~~~~~~bbbb~~~~~~~~~',
+  '~~~~~~~bbbb~~~~~~~~~',
+  '~~~~~~~bb2b~~~~~~~~~',
+  '^^^^^^^^,,,^^^^^^^^^',
+  '^^^^^^^^,,,^^^^^^^^^',
+  '^^hhh^^^,,,^^^^^^^^^',
+  '^^hhh^^^,,,^^^^^^^^^',
+  '^^hhh1^^,,,^^^^^^^^^',
+  '^^^^^^^^,,,^^^^^^^^^',
+  '^^^^^^^^^E^^^^^^^^^^'],
+ 'Ruta 9 · Falda de la Sierra':['TTTTTETTTTTT',
+  'T....,,.h..T',
+  'T....,,.h..T',
+  'T....,,....T',
+  'T....,,.4..T',
+  'T.hh.,,....T',
+  'T.hh.,,....T',
+  'T....,,..h.T',
+  'T....,,h...T',
+  '^^^^^,,^^^^^',
+  '^h^^^,,^^^^^',
+  '^^^3^,,^^h^^',
+  '^^^^~~~~h^^^',
+  'h^h^~bb~^^^^',
+  'h^^^~~~~^^^^',
+  '^^h^^,,^^^^^',
+  '^h^^^,,^h^^^',
+  'h^^^^,,h2hh^',
+  '^^^^^,,^^h^^',
+  '^^h^^,,^^^^^',
+  '^^^^^,,^^h^^',
+  '^^^1^,,^^^h^',
+  '^^^^^,,^^^^^',
+  '^^^^^,,^^^^^',
+  'h^h^^,,^^^^^',
+  '^^^^^^E^h^^^'],
+ 'Ruta 10 · Travesía':['~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~',
+  '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~',
+  '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~',
+  '~~~~~~1~~~~~~~~~~~~~~~~3~~~~~~~~~~',
+  '~~~~~~~~~~~~~sssssss~~~~~~~~~~~~~~',
+  '~~~~~~~~~~~~~ssTTTss~~~~~~~~~~~~~~',
+  'E~~~~~~~~~~~~ssTTTss~~~~~~~~~~~~~E',
+  '~~~~~~~~~~~~~sssssss~~~~~~~~~~~~~~',
+  '~~~~~~~~~~~2~~~~~~~~~~~~~~~~4~~~~~',
+  '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~',
+  '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~',
+  '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'],
+ 'Ruta 11 · Bosque Nublado':['TTTTTTTTTTTTTTTTTTTTTTTT',
+  'TTTTTTTTTTTTTTTTTTTTTTTT',
+  'TT..h.......,..TT.h...TT',
+  'TT...1...hh.,h.T3.....TT',
+  'TTh.h....TTT,..TTh....TT',
+  'TT....hh.TTT,.........TT',
+  'E,,,,,,,,,,,,,,,,,,,,,,E',
+  'T,,,,,,,,,,,,,,,,,,,,,,T',
+  'TT.........h,.........TT',
+  'TT..hh.hhh2.,....h..4hTT',
+  'TTTTTTTTTTTTTTTTTTTTTTTT',
+  'TTTTTTTTTTTTTTTTTTTTTTTT']
+},
+'Camino Victoria y Liga':{
+ 'CV I · Selva húmeda':['TTTTTTTTTTTTTTETTTTT',
+  'Th.h.,,.......,,...T',
+  'T....,,h.~~~.h,,...T',
+  'T.hhT,,..~~~h.,,...T',
+  'T..h.,,h.~~~..,4...T',
+  'T....,,..~~~..,,...T',
+  'T....,,..~~~..,,T..T',
+  'Thh.h,,3.~~~.h,,...T',
+  'TT...,,..bbb..,,h..T',
+  'TT...,,..~~~.h,,h.TT',
+  'T....,,..~~~.h,,.h.T',
+  'T....,,.h~~~T.,,...T',
+  'T.,,,,,,,,,,,,,,,,.T',
+  'T....,,....2.T,,.h.T',
+  'T....,,h......,,...T',
+  'TT...,,....h..,,...T',
+  'T...1,,.......,,...T',
+  'T.T.T,,..h....,,...T',
+  'T....,,h......,,...T',
+  'TTTTTETTTTTTTTTTTTTT'],
+ 'CV II · Bosque nublado':['TTTTTTTTTTETTTTTTTTT',
+  'T,,,,,,,,,,,,,h,,,,T',
+  'T,,,,,,,,,,,,,h,,h,T',
+  'T,,,,,,,,,,,,,,,4,,T',
+  'T,,,TTTT,,,,TTTT,,,T',
+  'T,h,TTTT,,,,TTTTh,,T',
+  'T,,,TTTT,,,,TTTT,,,T',
+  'T,,,TTTT,,,,TTTT,,hT',
+  'T,h,,,,,,,,,,,,h,,,T',
+  'T,,,h,,,,,,,,,,,,h,T',
+  'T,,,,,,,,,2,,,,,,3,T',
+  'T,,,,,,,,,h,,h,,,,,T',
+  'T,,,TTTT,,,,TTTT,,,T',
+  'T,,,TTTTh,,,TTTT,,,T',
+  'T,,,TTTT,,,,TTTT,,,T',
+  'T,,,TTTT,,,,TTTT,,,T',
+  'T,,,,,,hh,,,,,h,,,,T',
+  'T,,1,,hh,,,,,,,,,,,T',
+  'T,,,,,,,,,,,,,,,,,,T',
+  'TTTTTTTTTETTTTTTTTTT'],
+ 'CV III · Páramo':['^^^^^^^^^^^^^^^E^^^^',
+  '^^^^,,^^^^^^^^^,,^^^',
+  '^^###,,,,,,,,,,,,,^^',
+  '^^#1#,,,,,,,,,,,,,^^',
+  '^^###,,h,,,,,,,,,,^^',
+  '^^,h,h,,,,,,,,,,4h^^',
+  '^^,,,,,,,,,h,,,,,h^^',
+  '^^,,,,,^^^^^^,,,,,^^',
+  '^^,h,,,^^^^^^,,,,,^^',
+  '^^,,,,,^^^^^^,,,,,^^',
+  '^,,,,,,,,,3,,,,h,,,^',
+  '^,,,,,,,,,,,,,,,,,,^',
+  '^^h,,,,^^^^^^,,,,h^^',
+  '^^,,,,,h,,,,,,,,,,^^',
+  '^^,,,h,,,,,,,,,,,,^^',
+  '^^,,,,h,,,hh,,,###^^',
+  '^^,,,,,,,,,,,,,#2#^^',
+  '^^,,,,,,,,,,,,,###^^',
+  '^^^^,,^^^^^^^^^,,^^^',
+  '^^^^E^^^^^^^^^^^^^^^'],
+ 'CV IV · Nieve perpetua':['^^^^^^^^^^^^^^^E^^^^',
+  '^nnnnnnnnnnnnnnnnnn^',
+  '^nnnnnnnnnnnnnnnnnn^',
+  '^nn^nnnnnnnnnnn4nnn^',
+  '^nn^nnnnnnnnnnnnnnn^',
+  '^nn^nnnnnnnnnnnnnnn^',
+  '^nnnnnniiiiiinnnnnn^',
+  '^nnnnnniiiiiinnn3nn^',
+  '^nnnnnniiiiiinnnnnn^',
+  '^nnnnnniiiiiinnnnnn^',
+  '^nnnnnnnnn2nnnnnnnn^',
+  '^nnnnnnnnnnnnnnnnnn^',
+  '^nnnnnniiiiiinnnnnn^',
+  '^nnnnnniiiiiinnnnnn^',
+  '^nnnnnnnnnnnnn^nnnn^',
+  '^nnnnnnnnnnnnn^nnnn^',
+  '^nnn1nnnnnnnnn^nnnn^',
+  '^nnnnnnnnnnnnnnnnnn^',
+  '^nnnnnnnnnnnnnnnnnn^',
+  '^^^^E^^^^^^^^^^^^^^^'],
+ 'Liga Nubia':['^^^^^^^^^^^^^^^^^^^^^^^^^^',
+  '^########################^',
+  '^#======================#^',
+  '^#=LLLLL==========LLLLL=#^',
+  '^#=LLLLL==========LLLLL=#^',
+  '^#=LL1LL==nnnnnn==LL2LL=#^',
+  '^#=LLLLL==nnnnnn==LLLLL=#^',
+  '^#========niiiin========#^',
+  '^#========niiiin========#^',
+  '^#========nii5in========#^',
+  '^#========niiiin========#^',
+  '^#=LLLLL==nnnnnn==LLLLL=#^',
+  '^#=LLLLL==nnnnnn==LLLLL=#^',
+  '^#=LL3LL==========LL4LL=#^',
+  '^#=LLLLL==========LLLLL=#^',
+  '^#======================#^',
+  '^############=###########^',
+  '^^^^^^^^^^^^^E^^^^^^^^^^^^']
+},
+'Zonas legendarias':{
+ 'Caverna del Cauca I · Boca sumergida':['~~~~E~~~~~~~~~~~~~',
+  '~~~~,~~~~~~~~~~~~~',
+  '~~~~,~~~~~~~~~~~~~',
+  '~~~~,~~~~~~~~~~~~~',
+  '~~~~~~~~~~~~~~~~~~',
+  'ssssssssssssssssss',
+  '^^,,,,,,,,,,,,,,^^',
+  '^^,,,,,,,,,^^,3,^^',
+  '^^,,1,,,,,,^^,,,^^',
+  '^^,,,,^^^,,^^,,,^^',
+  '^^,,,,^^^,,^^,,oo^',
+  '^^,,,,^^^,,,,,,,,E',
+  '^^,,,,,,,,,,,,,oo^',
+  '^^,,,,,,,,2,,,,,^^',
+  '^^,,,,,,,,,,,,,,^^',
+  '^^^^^^^^^^^^^^^^^^'],
+ 'Caverna del Cauca II · Galería del río':['^^^^^^^^^^^^^^^^^^',
+  '^^,,,,,~~~~,,,,,^^',
+  '^^,,,,,~~~~,,,,,^^',
+  '^^,,1,,~~~~,,,,,^^',
+  '^^,,,,,~~~~,^^^,^^',
+  '^^,,,,,~~~~,^^^,^^',
+  '^^,,,,,bbbb,^^^,^^',
+  '^^,,,,,~~~~,,,,,^^',
+  '^^,^^^,~~~~,,,,,^^',
+  '^^,^^^,~~2~,,,,,^^',
+  '^^,^^^,~~~~,,,,,^^',
+  'E,,,,,,~~~~,,,,,^^',
+  '^^,,,,,bbbb,,,,,^^',
+  '^^,,,,,~~~~,,,,,^^',
+  '^^,,,,,~~~~,,,3,^^',
+  '^^,,,,,~~~~,,,,,^^',
+  '^^,,,,,~~~~,,,,,^^',
+  '^^^^^^^^^^^^^E^^^^'],
+ 'Caverna del Cauca III · Cámara de la corriente':['^^^^^^^^^^E^^^^^^^^^',
+  '^^^^^^^^^^,^^^^^^^^^',
+  '^^,,,,,,,,,,,,,,,,^^',
+  '^^,^^,,,,,,,,,,,,,^^',
+  '^^,^^,,,,,,,,,,,3,^^',
+  '^^,,,,~~~~~~~~,,,,^^',
+  '^^,,,,~~~~~~~~,,,,^^',
+  '^^,,,,~~ssss~~,,,,^^',
+  '^^,,,,~~ssss~~,,,,^^',
+  '^^,,,,~~ss1s~~,,,,^^',
+  '^^,,,,~~ssss~~,,,,^^',
+  '^^,,,,~~~~~~~~,,,,^^',
+  '^^,,,,~~~~~~~~,,,,^^',
+  '^^,,,,,,,,,,,,,^^,^^',
+  '^^,,2,,,,,,,,,,^^,^^',
+  '^^,,,,,,,,,,,,,,,,^^',
+  '^^^^^^^^^^^^^^^^^^^^',
+  '^^^^^^^^^^^^^^^^^^^^'],
+ 'Ojo del Cañón I · Socavón abandonado':['^^^^^^^^E^^^^^^^',
+  '^^,,,,,,,,,,,,^^',
+  '^^,,,,,,,,,,,,^^',
+  '^^,,,,3,,,,,,,^^',
+  '^^,,,,,,,,,,,,^^',
+  '^^,,xx,,,,,,,,^^',
+  '^^,,xx,,,,,,,,^^',
+  '^^,,,,^^^^,,,,^^',
+  '^^,,,,^^^^,2,,^^',
+  '^^,,,,^^^^,,,,^^',
+  '^^,,,,^^^^,,,,^^',
+  '^^,,,,,,,xx,,,^^',
+  '^^,,,,,,,xx,,,^^',
+  '^^,,,,,,,,,,,,^^',
+  '^^,,,,,,,,,,,,^^',
+  '^^,,,,,,,,,,,,^^',
+  '^^,,1,,,,,,,,,^^',
+  '^^,,,,,,,,,,,,^^',
+  '^^,,,,,,,,,,,,^^',
+  '^^^^^^^E^^^^^^^^'],
+ 'Ojo del Cañón II · Vetas ardientes':['^^^^^^^^^^^^^^^^^^',
+  '^^^^^^^^^^^^^^^^^^',
+  '^^,,,,,,,,,,,,,,^^',
+  '^^,,,,,,,3,,,,,,^^',
+  '^^,,,,,,,LL,,,,,^^',
+  '^^,,,,,,,LL,,,,,^^',
+  '^^,,LL,,,,,,,,,,,E',
+  '^^,,LL,,,,,,,,,,^^',
+  '^^,,,,,^^^^,,,,,^^',
+  '^^,,,,,^^^^,,2,,^^',
+  '^^,,,,,^^^^,,,,,^^',
+  '^^,,,,,^^^^,,,,,^^',
+  '^^,,,,,^^^^,LL,,^^',
+  '^^,,,,,,,,,,LL,,^^',
+  '^^,,,,,,,,,,,,,,^^',
+  '^^,,,,,,,,,,,,,,^^',
+  '^^,,,1,,,,,,,,,,^^',
+  '^^,,,,,,,,,,,,,,^^',
+  '^^^^^^^^^,^^^^^^^^',
+  '^^^^^^^^^E^^^^^^^^'],
+ 'Ojo del Cañón III · El Ojo':['^^^^^^^^^^^^^^^^^^^^',
+  '^^^^^^^^^^^^^^^^^^^^',
+  '^^^^^^^^^^^^^^^^^^^^',
+  '^^^,,,,,,,,,,,,,,^^^',
+  '^^^,,,,,,,,,,,,,,^^^',
+  '^^^,,xx,,,,,,,,3,^^^',
+  '^^^,,xx,,,,,,,,,,^^^',
+  '^^^,,,,,,,,,,,,,,^^^',
+  '^^^,,,,,LLLL,,,,,^^^',
+  '^^^,,,,,LLLL,,,,,^^^',
+  'E,,,,,,,LL1L,,,,,^^^',
+  '^^^,,,,,LLLL,,,,,^^^',
+  '^^^,,,,,,,,,,,,,,^^^',
+  '^^^,,,,,,,,,,xx,,^^^',
+  '^^^,,,,,,,,,,xx,,^^^',
+  '^^^,,2,,,,,,,,,,,^^^',
+  '^^^,,,,,,,,,,,,,,^^^',
+  '^^^^^^^^^^^^^^^^^^^^',
+  '^^^^^^^^^^^^^^^^^^^^',
+  '^^^^^^^^^^^^^^^^^^^^'],
+ 'Picos Gemelos I · Grieta del glaciar':['^^^^^^^^^E^^^^^^^^^^',
+  '^nnnnnnnnnnnnnnnnnn^',
+  '^nnnnnnnnnnniiiinnn^',
+  '^nnnnnnnnnnniiiinnn^',
+  '^nnnniiiinnnii3innn^',
+  '^nnnniiiinnniiiinnn^',
+  '^nnnniiiinnniiiinnn^',
+  '^nnnniiii^^^iiiinnn^',
+  '^nnnniiii^^^iiiinnn^',
+  '^nnnniiii^^2iiiinnn^',
+  '^nnnniiii^^^iiiinnn^',
+  '^nnnniiiinnniiiinnn^',
+  '^nnnniiiinnniiiinnn^',
+  '^nnnniiiinnniiiinnn^',
+  '^nnnnnn1nnnnnnnnnnn^',
+  '^nnnnnnnnnnnnnnnnnn^',
+  '^nnnnnnnnnnnnnnnnnn^',
+  '^^^^^^^^^^E^^^^^^^^^'],
+ 'Picos Gemelos II · Balcón de hielo':['^^^^^^^^^^^^^^^^^^^^^^',
+  '^nnnnnnnnnnnnnnnnnnnn^',
+  '^nnnnnnnnnnnnnnnnnnnn^',
+  '^nniiiiiiiiiiiiiiiinn^',
+  '^nniiiiiiiiiiiiii3inn^',
+  '^nniiiiiiiiiiiiiiiinn^',
+  '^nniiiiiiiiiiiiiiiinn^',
+  '^nnnnnnnnn^^^nnnnnnnn^',
+  '^nnnnnnnnn^2^nnnnnnnnE',
+  '^nnnnnnnnn^^^nnnnnnnn^',
+  '^nniiiiiiiiiiiiiiiinn^',
+  '^nniiiiiiiiiiiiiiiinn^',
+  '^nniin1iiiiiiiiiiiinn^',
+  '^nnnnnnnnnnnnnnnnnnnn^',
+  '^nnnnnnnnnnnnnnnnnnnn^',
+  '^^^^^E^^^^^^^^^^^^^^^^'],
+ 'Picos Gemelos III · La Cumbre Callada':['^^^^^^^^^^^^^^^^^^^^',
+  '^^^^^^^^^^^^^^^^^^^^',
+  '^^^^^^^^^^^^^^^^^^^^',
+  '^^^nnnnnnnnnnnnnn^^^',
+  '^^^nnnnnnnnnnnnnn^^^',
+  '^^^nn^^nnnnnnnnnn^^^',
+  '^^^nn^^nnnnnnnn3n^^^',
+  '^^^nnnniiiiiinnnn^^^',
+  '^^^nnnniiiiiinnnn^^^',
+  '^^^nnnniiiiiinnnn^^^',
+  'Ennnnnniii1iinnnn^^^',
+  '^^^nnnniiiiiinnnn^^^',
+  '^^^nnnniiiiiinnnn^^^',
+  '^^^nnnnnnnnnn^^nn^^^',
+  '^^^nnnnnnnnnn^^nn^^^',
+  '^^^nnn2nnnnnnnnnn^^^',
+  '^^^nnnnnnnnnnnnnn^^^',
+  '^^^^^^^^^^^^^^^^^^^^',
+  '^^^^^^^^^^^^^^^^^^^^',
+  '^^^^^^^^^^^^^^^^^^^^']
+}
+};
+
+/* =====================================================================
+   BIBLIOTECA DE IMÁGENES — aquí se guardan tus mapas para siempre.
+   Pon una ruta relativa ('mapas/fundacion.png') o pega un DataURL.
+   Al cargar el esquema desde el desplegable, su imagen entra sola.
+   ===================================================================== */
+const MAPAS_IMG = {
+  'Pueblo Fundación': '',
+  'Ciudad Cumbia': '',
+  'Ciudad Muralla': '',
+  'Pueblo Sabanal': '',
+  'Puerto Bermejo': '',
+  'Ciudad Cañaveral': '',
+  'Ciudad Orquídea': '',
+  'Ciudad Páramo': '',
+  'Ciudad Vallenar': '',
+  'Ciudad Brisamar': '',
+  'Isla Sietecolores': '',
+  'Ruta 1 · Mangal': '',
+  'Ruta 2 · Dunas': '',
+  'Ruta 3 · Sabana': '',
+  'Ruta 4 · Monte Espinoso': '',
+  'Ruta 5 · Barcaza del Cauca': '',
+  'Ruta 6 · Cafetales y Túnel': '',
+  'Ruta 7 · Páramo': '',
+  'Ruta 8 · Cañón Rojo': '',
+  'Ruta 9 · Falda de la Sierra': '',
+  'Ruta 10 · Travesía': '',
+  'Ruta 11 · Bosque Nublado': '',
+  'CV I · Selva húmeda': '',
+  'CV II · Bosque nublado': '',
+  'CV III · Páramo': '',
+  'CV IV · Nieve perpetua': '',
+  'Liga Nubia': '',
+  'Caverna del Cauca I · Boca sumergida': '',
+  'Caverna del Cauca II · Galería del río': '',
+  'Caverna del Cauca III · Cámara de la corriente': '',
+  'Ojo del Cañón I · Socavón abandonado': '',
+  'Ojo del Cañón II · Vetas ardientes': '',
+  'Ojo del Cañón III · El Ojo': '',
+  'Picos Gemelos I · Grieta del glaciar': '',
+  'Picos Gemelos II · Balcón de hielo': '',
+  'Picos Gemelos III · La Cumbre Callada': ''
+};
+
+/* ===================== ESTADO ===================== */
+let S = { nombreMapa:'Pueblo Fundación', filas:MAPAS.Localidades['Pueblo Fundación'],
+          img:'', tileset:'', tokens:[], niebla:[], fichas:[], areas:[], objetos:[], turno:{i:0,ronda:1} };
+let soyDM=false, yo='', canal=null, sel=null, pincel=0, tamPincel=1;
+let presentes = new Set();
+let filtro='todos', herramienta='', trazo=null;
+const CONDICIONES = [
+  ['env','Envenenado','#4caf50'], ['que','Quemado','#e0602c'],
+  ['par','Paralizado','#e6c800'], ['dor','Dormido','#5a7fd6'],
+  ['con','Congelado','#8fd6e8'], ['cnf','Confuso','#a05bc4'],
+  ['atr','Atrapado','#a9784a'], ['der','Derribado','#8a8a8a']
+];
+const COLCOND = Object.fromEntries(CONDICIONES.map(c=>[c[0],c[2]]));
+/* Tileset en rejilla. Cambia COLS si prefieres otra distribucion;
+   ORDEN se lee de izquierda a derecha y de arriba abajo. */
+const COLS = 8;
+const ORDEN = [
+  '.', ',', '=', '~', 's', 'h', 'n', 'i',   // terrenos
+  'T', 'f', '^', 'b', 'o', 'x', '#', 'P',   // naturaleza y obstaculos
+  'C', 'M', 'G', 'H', 'L', 'D', 'E'         // edificios y salida
+];
+const FILAS_TS = Math.ceil(ORDEN.length / COLS);
+
+const $ = s => document.querySelector(s);
+const id8 = () => Math.random().toString(36).slice(2,10);
+const esc = s => String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const W = () => Math.max(...S.filas.map(f=>f.length));
+const H = () => S.filas.length;
+
+/* ===================== MAPA ===================== */
+$('#selMapa').innerHTML = Object.entries(MAPAS).map(([g,ms])=>
+  `<optgroup label="${g}">${Object.keys(ms).map(n=>`<option>${n}</option>`).join('')}</optgroup>`).join('');
+const buscarMapa = n => { for(const g of Object.values(MAPAS)) if(g[n]) return g[n]; return null; };
+
+function dibujarMapa(){
+  const w=W(), h=H();
+  const filas = S.filas.map(f=>f.padEnd(w, f[f.length-1]||'.'));
+  $('#capaMapa').style.gridTemplateColumns = `repeat(${w},1fr)`;
+  $('#capaMapa').innerHTML = filas.map(f=>[...f].map(ch=>{
+    const i = S.tileset ? ORDEN.indexOf(ch) : -1;
+    if(i >= 0){
+      const cx = i % COLS, cy = Math.floor(i / COLS);
+      const px = COLS > 1 ? (cx / (COLS - 1)) * 100 : 0;
+      const py = FILAS_TS > 1 ? (cy / (FILAS_TS - 1)) * 100 : 0;
+      return `<div class="c ts" style="background-image:url('${S.tileset}');`
+        + `background-size:${COLS*100}% ${FILAS_TS*100}%;background-position:${px}% ${py}%"></div>`;
+    }
+    return `<div class="c" style="background:${COLORES[ch]||'#7ec46b'}"></div>`;
+  }).join('')).join('');
+
+  const fi=$('#fondoImg');
+  if(S.img){ fi.style.display='block'; fi.style.backgroundImage=`url("${S.img}")`; $('#capaMapa').style.visibility='hidden'; }
+  else { fi.style.display='none'; $('#capaMapa').style.visibility='visible'; }
+
+  const cn=$('#capaNiebla');
+  cn.style.gridTemplateColumns=`repeat(${w},1fr)`;
+  cn.classList.toggle('dm', soyDM);
+  const oc=new Set(S.niebla);
+  let html='';
+  for(let y=0;y<h;y++) for(let x=0;x<w;x++)
+    html += `<div class="n ${oc.has(x+','+y)?'oculta':''}" data-x="${x}" data-y="${y}"></div>`;
+  cn.innerHTML=html;
+
+  $('#nomMapa').textContent = S.nombreMapa;
+  $('#infoMapa').textContent = `${w} × ${h} casillas · 1 casilla = 5 m`;
+  dibujarTokens();
+}
+
+function dibujarTokens(){
+  const w=W(), h=H(), oc=new Set(S.niebla);
+  $('#capaTokens').innerHTML = S.tokens.map(t=>{
+    if(!soyDM && oc.has(t.x+','+t.y) && t.dueno!==yo) return '';
+    const mio = soyDM || t.dueno===yo;
+    const ini = (t.nombre||'?').slice(0,2).toUpperCase();
+    const cond = t.cond||[];
+    const anillo = cond.length ? `;box-shadow:0 0 0 3px ${COLCOND[cond[0]]||'#fff'},0 2px 0 rgba(0,0,0,.35)` : '';
+    return `<div class="tk ${mio?'mio':''} ${sel===t.id?'sel':''}" data-id="${t.id}"
+      style="left:${(t.x/w)*100}%;top:${(t.y/h)*100}%;width:${(1/w)*100}%;height:${(1/h)*100}%;background:${t.color}${anillo}">
+      <span class="rd">${t.img?`<img src="${t.img}" alt="">`:esc(ini)}</span>
+      ${cond.length?`<span class="cnd">${cond.map(c=>`<i style="background:${COLCOND[c]||'#fff'}" title="${c}"></i>`).join('')}</span>`:''}
+      ${t.nivel?`<span class="lv">${t.nivel}</span>`:''}
+      <span class="nm">${esc(t.nombre)}</span>
+    </div>`;
+  }).join('');
+}
+
+function ordenIniciativa(){
+  return [...S.fichas].sort((a,b)=>(b.ini||0)-(a.ini||0));
+}
+function dibujarFichas(){
+  const c=$('#fichas'), orden=ordenIniciativa();
+  const t=S.turno||{i:0,ronda:1};
+  $('#ronda').textContent='RONDA '+(t.ronda||1);
+  $('#quienTurno').textContent = orden.length ? ('Turno de '+(orden[t.i%orden.length]?.nombre||'—')) : '';
+
+  const vis = orden.filter(f=> filtro==='todos' ? true : filtro==='pok' ? !!f.especie : !f.especie);
+  if(!vis.length){ c.innerHTML='<div class="vacio">Nada que mostrar en esta pestaña.</div>'; return; }
+
+  c.innerHTML = vis.map(f=>{
+    const pct=f.pvMax>0?Math.max(0,Math.min(100,(f.pv/f.pvMax)*100)):0;
+    const cl=pct<=25?'bajo':pct<=55?'medio':'';
+    const editable = soyDM || f.nombre===yo || f.dueno===yo;
+    const verPS = soyDM || f.nombre===yo || f.dueno===yo;
+    const activo = orden.length && orden[t.i%orden.length] && orden[t.i%orden.length].id===f.id;
+    return `<div class="item ${f.nombre===yo?'mia':''} ${f.especie?'poke':''} ${activo?'activo':''}">
+      <div class="top"><span class="nom">${esc(f.nombre)}</span><span class="ini">${f.ini??0}</span></div>
+      ${f.especie ? `<span class="sub">${esc(f.especie)} · Nv ${f.nivel||1}${f.dueno?' · de '+esc(f.dueno):' · del director'}</span>`
+        : (f.poke5e?`<a href="${esc(f.poke5e)}" target="_blank" rel="noopener">Abrir ficha en poke5e ↗</a>`:'<span class="sub">Sin enlace de ficha</span>')}
+      ${verPS?`<div class="pv"><i class="${cl}" style="width:${pct}%"></i></div>
+      <div class="pvtxt">${f.pv} / ${f.pvMax} PS</div>`
+      :`<div class="pvtxt" style="color:${pct<=25?'var(--fucsia)':pct<=55?'var(--oro)':'var(--selva)'}">${
+          pct<=0?'fuera de combate':pct<=25?'muy malherido':pct<=55?'herido':'en pie'}</div>`}
+      ${editable?`<div class="mini">
+        <button data-h="${f.id}" data-d="-5">−5</button><button data-h="${f.id}" data-d="-1">−1</button>
+        <button data-h="${f.id}" data-d="1">+1</button><button data-h="${f.id}" data-d="5">+5</button>
+      </div>`:''}
+    </div>`;
+  }).join('');
+}
+$('#filtro').addEventListener('click',e=>{
+  const b=e.target.closest('[data-f]'); if(!b) return;
+  filtro=b.dataset.f;
+  document.querySelectorAll('#filtro button').forEach(x=>x.setAttribute('aria-pressed',x===b));
+  dibujarFichas();
+});
+function pasoTurno(d){
+  const n=ordenIniciativa().length; if(!n) return;
+  const t=S.turno=S.turno||{i:0,ronda:1};
+  t.i+=d;
+  if(t.i>=n){ t.i=0; t.ronda++; }
+  if(t.i<0){ t.i=n-1; t.ronda=Math.max(1,t.ronda-1); }
+  dibujarFichas(); enviar('estado',S);
+}
+$('#tSig').onclick=()=>pasoTurno(1);
+$('#tAnt').onclick=()=>pasoTurno(-1);
+$('#tReset').onclick=()=>{ S.turno={i:0,ronda:1}; dibujarFichas(); enviar('estado',S); };
+$('#fichas').addEventListener('click', e=>{
+  const b=e.target.closest('[data-h]'); if(!b) return;
+  const f=S.fichas.find(x=>x.id===b.dataset.h); if(!f) return;
+  const antes=f.pv, d=+b.dataset.d;
+  f.pv = Math.max(0, Math.min(f.pvMax, f.pv + d));
+  const real=f.pv-antes;
+  if(real){
+    const txt = real<0 ? `<b>${esc(f.nombre)}</b> recibe ${-real} de daño · ${antes} → ${f.pv} PS`
+                       : `<b>${esc(f.nombre)}</b> recupera ${real} PS · ${antes} → ${f.pv} PS`;
+    const cae = f.pv===0 ? ` · <b style="color:var(--fucsia)">fuera de combate</b>` : '';
+    anotar(txt+cae);
+  }
+  dibujarFichas(); enviar('ficha', f);
+});
+const pintar = ()=>{ dibujarMapa(); dibujarFichas(); dibujarAreas(); listaDuenos(); listaCapturables(); pintarObjetos(); };
+
+/* ===================== ANCHO ===================== */
+document.querySelectorAll('[data-z]').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('[data-z]').forEach(x=>x.classList.toggle('on',x===b));
+  const z=+b.dataset.z;
+  if(z === -1){
+    // ancho = múltiplo entero de 32 px por casilla, el mayor que quepa
+    const disp = $('#marco').parentElement.clientWidth;
+    const mult = Math.max(1, Math.floor(disp / (W()*32)));
+    $('#marco').style.maxWidth = (W()*32*mult) + 'px';
+  } else {
+    $('#marco').style.maxWidth = z ? z+'px' : 'none';
+  }
+});
+
+/* ===================== ARRASTRE Y DOBLE CLIC ===================== */
+let drag=null;
+$('#capaTokens').addEventListener('pointerdown', e=>{
+  const n=e.target.closest('.tk'); if(!n) return;
+  const t=S.tokens.find(x=>x.id===n.dataset.id); if(!t) return;
+  if(!soyDM && t.dueno!==yo) return;
+  sel=t.id; drag={t,n,inicio:{x:t.x,y:t.y}}; n.classList.add('arrastrando');
+  n.setPointerCapture(e.pointerId); e.preventDefault();
+});
+$('#capaTokens').addEventListener('pointermove', e=>{
+  if(!drag) return;
+  const r=$('#tablero').getBoundingClientRect(), w=W(), h=H();
+  const x=Math.max(0,Math.min(w-1,Math.floor(((e.clientX-r.left)/r.width)*w)));
+  const y=Math.max(0,Math.min(h-1,Math.floor(((e.clientY-r.top)/r.height)*h)));
+  drag.n.style.left=(x/w)*100+'%'; drag.n.style.top=(y/h)*100+'%';
+  drag.destino={x,y};
+  const o=drag.inicio;
+  dibujarAreas({t:'regla', color:'#e0951c',
+    o:{x:o.x+.5,y:o.y+.5}, d:{x:x+.5,y:y+.5},
+    cas:Math.max(Math.abs(x-o.x),Math.abs(y-o.y))});
+});
+$('#capaTokens').addEventListener('pointerup', ()=>{
+  if(!drag) return;
+  drag.n.classList.remove('arrastrando');
+  const d = drag.destino;
+  const movido = d && (d.x!==drag.inicio.x || d.y!==drag.inicio.y);
+  const t = drag.t;
+  if(movido){ t.x=d.x; t.y=d.y; enviar('mover',{id:t.id,x:t.x,y:t.y}); }
+  drag=null; dibujarTokens(); dibujarAreas();
+  if(!movido){ if(escaneando && t.especie) abrirPokedex(t); else abrirDlg(t); }   // un toque sin desplazamiento abre el editor
+});
+$('#capaTokens').addEventListener('contextmenu', e=>{
+  const n=e.target.closest('.tk'); if(!n) return;
+  const t=S.tokens.find(x=>x.id===n.dataset.id); if(!t) return;
+  e.preventDefault();
+  if(soyDM || t.dueno===yo) abrirDlg(t);
+});
+$('#capaTokens').addEventListener('dblclick', e=>{
+  const n=e.target.closest('.tk'); if(!n) return;
+  const t=S.tokens.find(x=>x.id===n.dataset.id); if(!t) return;
+  if(!soyDM && t.dueno!==yo) return;
+  abrirDlg(t);
+});
+
+/* ===================== DIÁLOGO DE FICHA ===================== */
+let editando=null;
+function listaDuenos(){
+  const nombres=[...new Set([...presentes, ...S.fichas.map(f=>f.nombre), yo].filter(Boolean))];
+  const html = '<option value="">Del director / nadie</option>' +
+    nombres.map(n=>`<option>${esc(n)}</option>`).join('');
+  $('#dDueno').innerHTML=html; $('#pkDueno').innerHTML=html;
+}
+function abrirDlg(t){
+  editando=t; listaDuenos();
+  const f=S.fichas.find(x=>x.tokenId===t.id);
+  $('#dlgTit').textContent = t.especie ? ('POKÉMON · '+t.especie.toUpperCase()) : 'FICHA · '+t.nombre.toUpperCase();
+  $('#dNom').value=t.nombre; $('#dDueno').value=t.dueno||'';
+  $('#dNivel').value=t.nivel||0; $('#dColor').value=t.color||'#c6386b';
+  $('#dAtk').value=t.atk||0; $('#dDmg').value=t.dmg||'';
+  const cond=t.cond||[];
+  $('#dCond').innerHTML = CONDICIONES.map(([k,n,c])=>
+    `<label><input type="checkbox" data-c="${k}" ${cond.includes(k)?'checked':''}><b style="background:${c}"></b>${n}</label>`).join('');
+  $('#dPv').value=f?f.pv:0; $('#dPvMax').value=f?f.pvMax:0; $('#dIni').value=f?f.ini:0;
+  const p=$('#dlgPrev');
+  if(t.img){ p.style.display='flex'; $('#dlgImg').src=t.img;
+    $('#dlgInfo').innerHTML = `<b>${esc(t.especie||t.nombre)}</b>${esc(t.tipos||'')}`; }
+  else p.style.display='none';
+  $('#dDel').style.display = (soyDM || t.dueno===yo) ? '' : 'none';
+  $('#dDueno').disabled = !soyDM;
+  $('#dlg').showModal();
+}
+$('#dOk').onclick=()=>{
+  const t=editando; if(!t) return;
+  t.nombre=$('#dNom').value.trim()||t.nombre;
+  if(soyDM) t.dueno=$('#dDueno').value;
+  t.nivel=+$('#dNivel').value||0; t.color=$('#dColor').value;
+  t.atk=+$('#dAtk').value||0; t.dmg=$('#dDmg').value.trim();
+  t.cond=[...$('#dCond').querySelectorAll('input:checked')].map(i=>i.dataset.c);
+  let f=S.fichas.find(x=>x.tokenId===t.id);
+  if(!f){ f={id:id8(), tokenId:t.id, nombre:t.nombre}; S.fichas.push(f); }
+  f.nombre=t.nombre; f.dueno=t.dueno; f.nivel=t.nivel; f.especie=t.especie||'';
+  f.pv=+$('#dPv').value||0; f.pvMax=+$('#dPvMax').value||0; f.ini=+$('#dIni').value||0;
+  $('#dlg').close(); pintar(); enviar(soyDM?'estado':'ficha', soyDM?S:f);
+  if(!soyDM) enviar('mover',{id:t.id,x:t.x,y:t.y});
+};
+$('#dDel').onclick=()=>{
+  const t=editando; if(!t) return;
+  S.tokens=S.tokens.filter(x=>x.id!==t.id);
+  S.fichas=S.fichas.filter(x=>x.tokenId!==t.id);
+  $('#dlg').close(); pintar(); enviar('estado',S);
+};
+$('#dCancel').onclick=()=>$('#dlg').close();
+
+/* ===================== POKÉAPI ===================== */
+let listaCargada=false;
+$('#pkNom').addEventListener('focus', async ()=>{
+  if(listaCargada) return; listaCargada=true;
+  try{
+    const r=await fetch('https://pokeapi.co/api/v2/pokemon?limit=1400');
+    const j=await r.json();
+    $('#listaPk').innerHTML=j.results.map(p=>`<option value="${p.name}">`).join('');
+  }catch{ listaCargada=false; }
+});
+const PROM={6:3.5,8:4.5,10:5.5,12:6.5};
+$('#pkAdd').onclick = async ()=>{
+  const clave=$('#pkNom').value.trim().toLowerCase().replace(/\s+/g,'-');
+  if(!clave) return;
+  const b=$('#pkAdd'); b.disabled=true; b.textContent='BUSCANDO…';
+  let img='', tipos='', nombre=clave;
+  try{
+    const r=await fetch('https://pokeapi.co/api/v2/pokemon/'+encodeURIComponent(clave));
+    if(r.ok){
+      const j=await r.json();
+      img = j.sprites?.other?.['official-artwork']?.front_default || j.sprites?.front_default || '';
+      tipos = j.types.map(t=>t.type.name).join(' / ');
+      nombre = j.name.charAt(0).toUpperCase()+j.name.slice(1);
+    }
+  }catch{}
+  b.disabled=false; b.textContent='BUSCAR Y AÑADIR';
+
+  const nivel=Math.max(1,+$('#pkNivel').value||1), dado=+$('#pkDado').value;
+  const ps=Math.round(nivel*PROM[dado]);
+  const t={ id:id8(), nombre, especie:nombre, tipos, nivel, img, color:'#0e7c8b',
+            x:Math.min(2,W()-1), y:Math.min(2,H()-1), dueno:$('#pkDueno').value||'' };
+  S.tokens.push(t);
+  S.fichas.push({ id:id8(), tokenId:t.id, nombre, especie:nombre, nivel,
+                  dueno:t.dueno, pv:ps, pvMax:ps, ini:0 });
+  $('#pkNom').value='';
+  pintar(); enviar('estado',S);
+};
+
+/* ===================== FICHA PROPIA / TOKEN ===================== */
+function reducir(file){
+  return new Promise(res=>{
+    const fr=new FileReader();
+    fr.onload=()=>{ const im=new Image();
+      im.onload=()=>{ const cv=document.createElement('canvas'); cv.width=cv.height=96;
+        const g=cv.getContext('2d'), l=Math.min(im.width,im.height);
+        g.drawImage(im,(im.width-l)/2,(im.height-l)/2,l,l,0,0,96,96);
+        res(cv.toDataURL('image/jpeg',.8)); };
+      im.onerror=()=>res(''); im.src=fr.result; };
+    fr.onerror=()=>res(''); fr.readAsDataURL(file);
+  });
+}
+$('#crearTk').onclick = async ()=>{
+  const nom=$('#tkNom').value.trim()||(yo||'Ficha');
+  const f=$('#tkArch').files[0];
+  const img = f ? (await subirImagen(f,'fichas')) || (await reducir(f)) : '';
+  const t={ id:id8(), nombre:nom, color:$('#tkColor').value, img,
+            x:1, y:1, nivel:0, dueno: soyDM?'':yo };
+  S.tokens.push(t); $('#tkNom').value=''; $('#tkArch').value='';
+  dibujarTokens(); enviar(soyDM?'estado':'token', soyDM?S:t);
+};
+$('#editarSel').onclick=()=>{
+  const t=S.tokens.find(x=>x.id===sel);
+  if(!t){ alert('Toca primero una ficha del tablero para seleccionarla.'); return; }
+  if(!soyDM && t.dueno!==yo){ alert('Esa ficha no es tuya.'); return; }
+  abrirDlg(t);
+};
+$('#borrarSel').onclick=()=>{
+  const t=S.tokens.find(x=>x.id===sel);
+  if(!t){ alert('Toca primero una ficha del tablero para seleccionarla.'); return; }
+  if(!soyDM && t.dueno!==yo){ alert('Esa ficha no es tuya.'); return; }
+  S.tokens=S.tokens.filter(x=>x.id!==t.id);
+  S.fichas=S.fichas.filter(x=>x.tokenId!==t.id);
+  sel=null; pintar(); enviar('estado',S);
+};
+$('#guardarFicha').onclick=()=>{
+  if(!yo){ alert('Escribe tu nombre arriba antes de publicar la ficha.'); return; }
+  let f=S.fichas.find(x=>x.nombre===yo && !x.especie);
+  if(!f){ f={id:id8(), nombre:yo}; S.fichas.push(f); }
+  f.poke5e=$('#fchPoke').value.trim(); f.pv=+$('#fchPv').value||0;
+  f.pvMax=+$('#fchPvMax').value||0; f.ini=+$('#fchIni').value||0;
+  dibujarFichas(); enviar('ficha',f);
+};
+
+/* ===================== NIEBLA ===================== */
+$('#pincel').onclick=()=>{
+  pincel=pincel?0:1;
+  $('#pincel').textContent='PINCEL: '+(pincel?'ENCENDIDO':'APAGADO');
+  $('#pincel').classList.toggle('on',!!pincel);
+  $('#capaNiebla').classList.toggle('pintando',!!pincel);
+  $('#capaNiebla').style.pointerEvents=pincel?'auto':'none';
+};
+document.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>{
+  tamPincel=+b.dataset.p;
+  document.querySelectorAll('[data-p]').forEach(x=>x.classList.toggle('on',x===b));
+});
+let pintando=false;
+$('#capaNiebla').addEventListener('pointerdown',e=>{ if(pincel){pintando=true;brocha(e);} });
+$('#capaNiebla').addEventListener('pointermove',e=>{ if(pincel&&pintando)brocha(e); });
+addEventListener('pointerup',()=>{ if(pintando){pintando=false;enviar('estado',S);} });
+function brocha(e){
+  const c=document.elementFromPoint(e.clientX,e.clientY);
+  if(!c||!c.classList.contains('n')) return;
+  const cx=+c.dataset.x, cy=+c.dataset.y, r=tamPincel-1, set=new Set(S.niebla);
+  for(let y=cy-r;y<=cy+r;y++) for(let x=cx-r;x<=cx+r;x++)
+    e.shiftKey ? set.add(x+','+y) : set.delete(x+','+y);
+  S.niebla=[...set]; dibujarMapa();
+}
+$('#cubrir').onclick=()=>{ const s=[];
+  for(let y=0;y<H();y++) for(let x=0;x<W();x++) s.push(x+','+y);
+  S.niebla=s; pintar(); enviar('estado',S); };
+$('#revelar').onclick=()=>{ S.niebla=[]; pintar(); enviar('estado',S); };
+
+$('#cargarMapa').onclick=()=>{
+  const n=$('#selMapa').value, m=buscarMapa(n); if(!m) return;
+  S.nombreMapa=n; S.filas=m; S.img=MAPAS_IMG[n]||''; S.niebla=[];
+  S.tokens.forEach(t=>{ t.x=Math.min(t.x,m[0].length-1); t.y=Math.min(t.y,m.length-1); });
+  pintar(); enviar('estado',S);
+  if((S.objetos||[]).includes('mapa')) abrirMapaN(true);
+};
+$('#ponerImg').onclick=async()=>{
+  const f=$('#imgArch').files[0], u=$('#urlImg').value.trim();
+  if(f){
+    const dato=await new Promise(r=>{ const fr=new FileReader();
+      fr.onload=()=>r(fr.result); fr.onerror=()=>r(''); fr.readAsDataURL(f); });
+    if(!dato) return;
+    const url = await subirImagen(f, 'mapas');
+    if(url){
+      S.img=url; S.nombreMapa=f.name.replace(/\.[^.]+$/,'');
+      $('#imgInfo').textContent='Imagen guardada en la nube · queda disponible en próximas sesiones.';
+    } else {
+      const kb=Math.round(dato.length/1400);
+      if(kb>180){
+        $('#imgInfo').innerHTML='Pesa unos '+kb+' kB y no cabe en un mensaje de sala. '
+          + 'Entra con tu cuenta para guardarla en la nube, o redúcela.';
+        return;
+      }
+      S.img=dato; S.nombreMapa=f.name.replace(/\.[^.]+$/,'');
+      $('#imgInfo').textContent='Imagen cargada solo para esta sesión · unos '+kb+' kB.';
+    }
+  } else if(u){ S.img=u; S.nombreMapa='Imagen propia'; }
+  else return;
+  pintar(); enviar('estado',S);
+};
+$('#quitarImg').onclick=()=>{ S.img=''; $('#imgArch').value=''; pintar(); enviar('estado',S); };
+$('#guardarLib').onclick=async()=>{
+  if(!S.img){ $('#imgInfo').textContent='Carga primero una imagen.'; return; }
+  const linea = `  '${S.nombreMapa}': '${S.img}',`;
+  const t=$('#libSalida'); t.style.display='block'; t.value=linea;
+  try{ await navigator.clipboard.writeText(linea); $('#guardarLib').textContent='LÍNEA COPIADA'; }
+  catch{ t.select(); $('#guardarLib').textContent='COPIA MANUAL ↓'; }
+  $('#imgInfo').textContent='Pega esta línea dentro de MAPAS_IMG, al inicio del script, reemplazando la del mismo nombre.';
+  setTimeout(()=>$('#guardarLib').textContent='GUARDAR EN LA BIBLIOTECA', 3200);
+};
+$('#tsPoner').onclick=async()=>{
+  const f=$('#tsArch').files[0], u=$('#tsUrl').value.trim();
+  if(f){
+    const dato=await new Promise(r=>{ const fr=new FileReader();
+      fr.onload=()=>r(fr.result); fr.onerror=()=>r(''); fr.readAsDataURL(f); });
+    if(!dato) return;
+    const kb=Math.round(dato.length/1400);
+    if(kb>280){ alert('La tira pesa unos '+kb+' kB. Reduce el tamaño de tile a 32 px o súbela por URL.'); return; }
+    S.tileset=dato; $('#tsInfo').innerHTML='Tileset cargado desde archivo · unos '+kb+' kB.';
+  } else if(u){ S.tileset=u; }
+  else return;
+  pintar(); enviar('estado',S);
+};
+$('#tsQuitar').onclick=()=>{ S.tileset=''; $('#tsArch').value=''; pintar(); enviar('estado',S); };
+$('#usarPropio').onclick=()=>{
+  const f=$('#propio').value.split('\n').map(l=>l.replace(/\s+$/,'')).filter(l=>l.length);
+  if(!f.length) return;
+  S.filas=f; S.img=''; S.nombreMapa='Esquema propio'; S.niebla=[];
+  pintar(); enviar('estado',S);
+};
+
+/* ===================== DADOS ===================== */
+const CARAS=[2,3,4,6,8,10,12,20,100];
+const ATAJOS=[['Ataque',{20:1},0,'Tirada de ataque'],['Salvación',{20:1},0,'Tirada de salvación'],
+ ['Habilidad',{20:1},0,'Prueba de habilidad'],['Iniciativa',{20:1},0,'Iniciativa'],
+ ['Captura',{20:1},0,'Tirada de captura'],['1d6',{6:1},0,'Daño'],['2d6',{6:2},0,'Daño'],
+ ['1d8',{8:1},0,'Daño'],['d100',{100:1},0,'Porcentaje']];
+let pool={}, ventaja=null;
+
+const pintaDados=()=>$('#dados').innerHTML=CARAS.map(c=>
+  `<button class="dado ${pool[c]?'activo':''}" data-c="${c}">d${c}<span class="cnt">${pool[c]||''}</span></button>`).join('');
+function suma(c,n){ pool[c]=Math.max(0,Math.min(50,(pool[c]||0)+n)); if(!pool[c])delete pool[c]; pintaDados(); formu(); }
+$('#dados').addEventListener('click',e=>{ const b=e.target.closest('.dado'); if(b) suma(+b.dataset.c, e.shiftKey?-1:1); });
+$('#dados').addEventListener('contextmenu',e=>{ const b=e.target.closest('.dado'); if(b){e.preventDefault();suma(+b.dataset.c,-1);} });
+function texto(){
+  const p=Object.keys(pool).map(Number).sort((a,b)=>a-b).map(c=>`${pool[c]}d${c}`);
+  if(!p.length) return '';
+  const m=+$('#modif').value||0;
+  let t=p.join(' + ');
+  if(m) t+=(m>0?' + ':' − ')+Math.abs(m);
+  if(ventaja&&pool[20]) t+=ventaja==='ventaja'?'  (vent.)':'  (desv.)';
+  return t;
+}
+function formu(){ const t=texto(); $('#formu').textContent=t||'— sin dados —'; $('#tirar').disabled=!t; }
+$('#modif').addEventListener('input',formu);
+$('#menos').onclick=()=>{ $('#modif').value=(+$('#modif').value||0)-1; formu(); };
+$('#mas').onclick=()=>{ $('#modif').value=(+$('#modif').value||0)+1; formu(); };
+document.querySelectorAll('.vent button').forEach(b=>b.onclick=()=>{
+  ventaja = ventaja===b.dataset.v ? null : b.dataset.v;
+  document.querySelectorAll('.vent button').forEach(x=>x.setAttribute('aria-pressed',x.dataset.v===ventaja));
+  formu();
+});
+$('#limpiar').onclick=()=>{ pool={}; ventaja=null; $('#modif').value=0; $('#eti').value='';
+  document.querySelectorAll('.vent button').forEach(x=>x.setAttribute('aria-pressed',false));
+  pintaDados(); formu(); };
+$('#atajos').innerHTML=ATAJOS.map((a,i)=>`<button data-i="${i}">${a[0]}</button>`).join('');
+$('#atajos').addEventListener('click',e=>{ const b=e.target.closest('[data-i]'); if(!b)return;
+  const [,p,m,et]=ATAJOS[+b.dataset.i]; pool={...p}; $('#modif').value=m; $('#eti').value=et;
+  pintaDados(); formu(); });
+
+const dd=c=>Math.floor(Math.random()*c)+1;
+$('#tirar').onclick=()=>{
+  const caras=Object.keys(pool).map(Number).sort((a,b)=>a-b); if(!caras.length)return;
+  const mod=+$('#modif').value||0, grupos=[]; let total=0;
+  caras.forEach(c=>{
+    let vals, desc=-1;
+    if(c===20&&ventaja&&pool[20]===1){
+      const a=dd(20), b=dd(20), usar=ventaja==='ventaja'?Math.max(a,b):Math.min(a,b);
+      vals=[a,b]; desc=(a===usar&&b!==usar)?1:(b===usar&&a!==usar?0:1); total+=usar;
+    }else{ vals=Array.from({length:pool[c]},()=>dd(c)); total+=vals.reduce((x,y)=>x+y,0); }
+    grupos.push({caras:c,vals,desc});
+  });
+  total+=mod;
+  const g=grupos.find(x=>x.caras===20), u=g?g.vals.filter((_,i)=>i!==g.desc):[];
+  const t={id:id8(), nombre:yo||'Entrenador', eti:$('#eti').value.trim(), formula:texto(),
+           grupos, total, cr:u.some(v=>v===20), pf:u.length===1&&u[0]===1, ts:Date.now()};
+  verTirada(t,true); enviar('tirada',t);
+};
+const vistas=new Set();
+function verTirada(t,mia){
+  if(vistas.has(t.id))return; vistas.add(t.id);
+  const v=$('#log .vacio'); if(v)v.remove();
+  let caras='';
+  t.grupos.forEach(g=>g.vals.forEach((val,i)=>{
+    const cl=i===g.desc?'desc':val===g.caras?'max':(val===1&&g.caras>2?'min':'');
+    caras+=`<span class="cara ${cl}" title="d${g.caras}">${val}</span>`; }));
+  const n=document.createElement('div'); n.className='tir'+(mia?' mia':'');
+  n.innerHTML=`<div class="t1"><span class="q">${esc(t.nombre)}</span>
+    <span class="tot ${t.cr?'cr':''}${t.pf?'pf':''}">${t.total}</span></div>
+    ${t.eti?`<div class="e">${esc(t.eti)}</div>`:''}
+    <div class="caras">${caras}</div>
+    <div class="fmu">${esc(t.formula)}${t.cr?' · crítico':''}${t.pf?' · pifia':''}</div>`;
+  $('#log').prepend(n);
+  while($('#log').children.length>80) $('#log').lastChild.remove();
+}
+
+
+/* ===================== ÁREAS, REGLA Y SEÑALES ===================== */
+const CELDA_M = 5;                       // metros por casilla
+const cheb = (a,b) => Math.max(Math.abs(a.x-b.x), Math.abs(a.y-b.y));
+
+function svgAreas(lista){
+  const w=W(), h=H();
+  const forma = a => {
+    const o=a.o, d=a.d, col=a.color, op=.34;
+    const dx=d.x-o.x, dy=d.y-o.y, L=Math.hypot(dx,dy)||.0001;
+    if(a.t==='circulo')
+      return `<circle cx="${o.x}" cy="${o.y}" r="${L}" fill="${col}" fill-opacity="${op}" stroke="${col}" stroke-width=".12"/>`;
+    if(a.t==='cuadro'){
+      const x=Math.min(o.x,d.x), y=Math.min(o.y,d.y);
+      return `<rect x="${x}" y="${y}" width="${Math.abs(dx)}" height="${Math.abs(dy)}" fill="${col}" fill-opacity="${op}" stroke="${col}" stroke-width=".12"/>`;
+    }
+    if(a.t==='linea'){
+      const nx=-dy/L*.5, ny=dx/L*.5;
+      return `<polygon points="${o.x+nx},${o.y+ny} ${d.x+nx},${d.y+ny} ${d.x-nx},${d.y-ny} ${o.x-nx},${o.y-ny}" fill="${col}" fill-opacity="${op}" stroke="${col}" stroke-width=".12"/>`;
+    }
+    if(a.t==='cono'){                     // cono de 5E: ancho final = longitud
+      const nx=-dy/L*(L/2), ny=dx/L*(L/2);
+      return `<polygon points="${o.x},${o.y} ${d.x+nx},${d.y+ny} ${d.x-nx},${d.y-ny}" fill="${col}" fill-opacity="${op}" stroke="${col}" stroke-width=".12"/>`;
+    }
+    return `<line x1="${o.x}" y1="${o.y}" x2="${d.x}" y2="${d.y}" stroke="${col}" stroke-width=".18" stroke-dasharray=".5 .3"/>`;
+  };
+  return `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
+    ${lista.map(a=>`<g data-id="${a.id||''}">${forma(a)}</g>`).join('')}</svg>`;
+}
+function textoMedida(a){
+  if(a.cas!==undefined) return `${a.cas} c · ${a.cas*CELDA_M} m`;
+  const L = a.t==='cuadro' ? Math.max(Math.abs(a.d.x-a.o.x), Math.abs(a.d.y-a.o.y))
+                           : Math.hypot(a.d.x-a.o.x, a.d.y-a.o.y);
+  const c = Math.round(L*10)/10;
+  return `${c} c · ${Math.round(c*CELDA_M)} m`;
+}
+function dibujarAreas(extra){
+  const todas=[...S.areas, ...(extra?[extra]:[])];
+  $('#capaAreas').innerHTML = todas.length ? svgAreas(todas) : '';
+  $('#capaMed').innerHTML = todas.map(a=>
+    `<span class="medida" style="left:${(a.d.x/W())*100}%;top:${(a.d.y/H())*100}%">${textoMedida(a)}</span>`
+  ).join('');
+}
+
+function celdaFrac(e){
+  const r=$('#tablero').getBoundingClientRect();
+  return { x:((e.clientX-r.left)/r.width)*W(), y:((e.clientY-r.top)/r.height)*H() };
+}
+document.querySelectorAll('#herr [data-t]').forEach(b=>b.onclick=()=>{
+  herramienta = herramienta===b.dataset.t ? '' : b.dataset.t;
+  document.querySelectorAll('#herr button').forEach(x=>x.classList.toggle('on', x.dataset.t===herramienta && herramienta));
+  $('#capaAreas').classList.toggle('activa', !!herramienta);
+  $('#capaAreas').classList.toggle('borrando', herramienta==='borrador');
+});
+function borrarEn(e){
+  const g=e.target.closest('g[data-id]');
+  if(!g || !g.dataset.id) return;
+  S.areas=S.areas.filter(a=>a.id!==g.dataset.id);
+  dibujarAreas(); enviar('estado',S);
+}
+$('#capaAreas').addEventListener('pointerdown', e=>{
+  if(!herramienta) return;
+  if(herramienta==='borrador'){ borrarEn(e); return; }
+  const p=celdaFrac(e);
+  if(herramienta==='ping'){ soltarPing(p, $('#pingTxt').value.trim()); return; }
+  trazo={ t:herramienta, o:p, d:p, color:$('#areaColor').value };
+  $('#capaAreas').setPointerCapture(e.pointerId);
+});
+$('#capaAreas').addEventListener('pointermove', e=>{
+  if(herramienta==='borrador'){ if(e.buttons) borrarEn(e); return; }
+  if(!trazo) return; trazo.d=celdaFrac(e); dibujarAreas(trazo);
+});
+$('#capaAreas').addEventListener('pointerup', ()=>{
+  if(!trazo) return;
+  const L=Math.hypot(trazo.d.x-trazo.o.x, trazo.d.y-trazo.o.y);
+  if(L>.3){ trazo.id=id8(); S.areas.push(trazo); enviar('area',trazo); }
+  trazo=null; dibujarAreas();
+});
+$('#limpiarAreas').onclick=()=>{ S.areas=[]; dibujarAreas(); enviar('estado',S); };
+
+function soltarPing(p, txt){
+  ponerPing(p, txt, yo);
+  enviar('ping', {p, txt, de:yo});
+}
+function ponerPing(p, txt, quien){
+  const n=document.createElement('div');
+  n.className='ping';
+  n.style.left=(p.x/W())*100+'%'; n.style.top=(p.y/H())*100+'%';
+  n.innerHTML=`<i></i><i></i><b>${esc(txt||quien||'aquí')}</b>`;
+  $('#capaPings').appendChild(n);
+  setTimeout(()=>n.remove(), 4500);
+}
+
+
+/* ===================== NOTAS, TIRADAS DE FICHA, CAPTURA, ENFOQUE ===================== */
+function anotar(html, propia=true){
+  const v=$('#log .vacio'); if(v) v.remove();
+  const n=document.createElement('div');
+  n.className='nota-log'; n.innerHTML=html;
+  $('#log').prepend(n);
+  while($('#log').children.length>80) $('#log').lastChild.remove();
+  if(propia) enviar('nota', html);
+}
+
+function tirarDados(n, caras, mod, eti){
+  const vals=Array.from({length:n},()=>dd(caras));
+  const total=vals.reduce((a,b)=>a+b,0)+mod;
+  const t={ id:id8(), nombre:yo||'Entrenador', eti,
+    formula:`${n}d${caras}${mod?(mod>0?' + ':' − ')+Math.abs(mod):''}`,
+    grupos:[{caras,vals,desc:-1}], total,
+    cr: caras===20 && n===1 && vals[0]===20,
+    pf: caras===20 && n===1 && vals[0]===1, ts:Date.now() };
+  verTirada(t,true); enviar('tirada',t); return t;
+}
+function tirarFormula(txt, eti){
+  const m=String(txt||'').match(/^\s*(\d*)d(\d+)\s*([+-]\s*\d+)?\s*$/i);
+  if(!m){ alert('La fórmula debe verse como 2d6+3'); return null; }
+  return tirarDados(+(m[1]||1), +m[2], m[3]?+m[3].replace(/\s+/g,''):0, eti);
+}
+$('#tAtaque').onclick     = ()=>{ const t=editando; if(t) tirarDados(1,20,+$('#dAtk').value||0, `${t.nombre} · ataque`); };
+$('#tSalva').onclick      = ()=>{ const t=editando; if(t) tirarDados(1,20,+$('#dAtk').value||0, `${t.nombre} · salvación`); };
+$('#tIniciativa').onclick = ()=>{ const t=editando; if(!t) return;
+  const r=tirarDados(1,20,0,`${t.nombre} · iniciativa`); $('#dIni').value=r.total; };
+$('#tDano').onclick       = ()=>{ const t=editando; if(t) tirarFormula($('#dDmg').value, `${t.nombre} · daño`); };
+
+/* ---------- captura ---------- */
+function listaCapturables(){
+  const ops=S.tokens.filter(t=>t.especie).map(t=>{
+    const f=S.fichas.find(x=>x.tokenId===t.id);
+    const pct=f&&f.pvMax?Math.round(f.pv/f.pvMax*100):100;
+    return `<option value="${t.id}">${esc(t.nombre)} · Nv ${t.nivel||1} · ${pct}% PS</option>`;
+  });
+  $('#capObj').innerHTML = ops.length?ops.join(''):'<option value="">Sin Pokémon en el tablero</option>';
+}
+function datosCaptura(){
+  const t=S.tokens.find(x=>x.id===$('#capObj').value);
+  if(!t) return null;
+  const f=S.fichas.find(x=>x.tokenId===t.id);
+  const pct=f&&f.pvMax?f.pv/f.pvMax:1;
+  let cd=10+Math.floor((t.nivel||1)/2), detalle=[`base ${cd}`];
+  if(pct<=.25){ cd-=5; detalle.push('PS bajo −5'); }
+  else if(pct<=.5){ cd-=2; detalle.push('PS medio −2'); }
+  if((t.cond||[]).length){ cd-=2; detalle.push('estado alterado −2'); }
+  if(f && f.pv===0){ cd-=3; detalle.push('debilitado −3'); }
+  return {t,f,cd:Math.max(5,cd),detalle,pct};
+}
+$('#capObj').onchange=()=>{
+  const d=datosCaptura(); if(!d) return;
+  $('#capRes').style.display='block';
+  $('#capRes').innerHTML=`<div class="cd">CD ${d.cd} · ${d.detalle.join(' · ')}</div>`;
+};
+$('#capTirar').onclick=()=>{
+  const d=datosCaptura();
+  if(!d){ alert('No hay ningún Pokémon en el tablero.'); return; }
+  const bono=(+$('#capBola').value||0)+(+$('#capMod').value||0);
+  const r=tirarDados(1,20,bono,`Captura de ${d.t.nombre}`);
+  const exito=r.total>=d.cd;
+  $('#capRes').style.display='block';
+  $('#capRes').innerHTML=`<div class="cd">CD ${d.cd} · ${d.detalle.join(' · ')} · bono +${bono}</div>
+    <div class="ver ${exito?'si':'no'}">${r.total} · ${exito?'¡CAPTURADO!':'SE ESCAPÓ'}</div>`;
+  anotar(`<b>${esc(yo||'Entrenador')}</b> lanza una ball a <b>${esc(d.t.nombre)}</b>: ${r.total} contra CD ${d.cd} · ${exito?'capturado':'se escapó'}`);
+  if(exito && soyDM){ d.t.dueno = yo; if(d.f) d.f.dueno = yo; pintar(); enviar('estado',S); }
+};
+
+/* ---------- modo enfoque ---------- */
+function alternarEnfoque(){
+  document.body.classList.toggle('enfoque');
+  $('#enfoque').classList.toggle('on', document.body.classList.contains('enfoque'));
+}
+$('#enfoque').onclick=alternarEnfoque;
+addEventListener('keydown', e=>{
+  if(e.key.toLowerCase()!=='f') return;
+  if(/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName)) return;
+  if($('#dlg').open) return;
+  alternarEnfoque();
+});
+
+
+/* ===================== OBJETOS CLAVE Y MAPA DE NUBIA ===================== */
+const OBJETOS = [
+  ['mapa','Mapa de Nubia','#0e7c8b',
+   '<path d="M8 16 L24 10 L40 16 L56 10 V48 L40 54 L24 48 L8 54 Z" fill="#f6e7c4" stroke="#12283f" stroke-width="3"/>'
+  +'<path d="M24 10 V48 M40 16 V54" stroke="#12283f" stroke-width="2.5"/>'
+  +'<circle cx="18" cy="30" r="4" fill="#c6386b" stroke="#12283f" stroke-width="2"/>'
+  +'<circle cx="46" cy="26" r="4" fill="#c6386b" stroke="#12283f" stroke-width="2"/>'],
+  ['pokedex','Pokédex de Nubia','#e0524f',
+   '<rect x="10" y="8" width="44" height="48" rx="4" fill="#e0524f" stroke="#12283f" stroke-width="3"/>'
+  +'<circle cx="22" cy="20" r="7" fill="#8fd6e8" stroke="#12283f" stroke-width="3"/>'
+  +'<rect x="16" y="34" width="32" height="14" fill="#f6e7c4" stroke="#12283f" stroke-width="2.5"/>'],
+  ['trofeoAM','Trofeo del Alto Mando','#8fb8e0',
+   '<path d="M20 12 H44 V26 A12 12 0 0 1 20 26 Z" fill="#8fb8e0" stroke="#12283f" stroke-width="3"/>'
+  +'<path d="M14 14 A7 7 0 0 0 20 22 M50 14 A7 7 0 0 1 44 22" stroke="#12283f" stroke-width="3" fill="none"/>'
+  +'<rect x="28" y="38" width="8" height="10" fill="#8fb8e0" stroke="#12283f" stroke-width="3"/>'
+  +'<rect x="20" y="48" width="24" height="7" fill="#8fb8e0" stroke="#12283f" stroke-width="3"/>'],
+  ['trofeoCA','Trofeo de Campeón','#e0951c',
+   '<path d="M20 10 H44 V26 A12 12 0 0 1 20 26 Z" fill="#e0951c" stroke="#12283f" stroke-width="3"/>'
+  +'<path d="M12 12 A8 8 0 0 0 20 22 M52 12 A8 8 0 0 1 44 22" stroke="#12283f" stroke-width="3" fill="none"/>'
+  +'<path d="M32 30 l3 6 7 1 -5 5 1 7 -6 -3 -6 3 1 -7 -5 -5 7 -1 Z" fill="#f6e7c4" stroke="#12283f" stroke-width="2"/>'
+  +'<rect x="28" y="42" width="8" height="8" fill="#e0951c" stroke="#12283f" stroke-width="3"/>'
+  +'<rect x="19" y="50" width="26" height="7" fill="#e0951c" stroke="#12283f" stroke-width="3"/>']
+];
+
+function pintarObjetos(){
+  const t=S.objetos||[];
+  $('#objetos').innerHTML = OBJETOS.map(([k,n,c])=>
+    `<label><input type="checkbox" data-o="${k}" ${t.includes(k)?'checked':''}><b style="background:${c}"></b>${n}</label>`).join('');
+}
+$('#objetos').addEventListener('change', e=>{
+  const i=e.target.closest('[data-o]'); if(!i) return;
+  S.objetos=S.objetos||[];
+  const k=i.dataset.o;
+  if(i.checked){
+    if(!S.objetos.includes(k)) S.objetos.push(k);
+    mostrarObjeto(k); enviar('objeto',k);
+  } else {
+    S.objetos=S.objetos.filter(x=>x!==k);
+  }
+  enviar('estado',S);
+});
+
+function melodia(){
+  try{
+    const A=new (window.AudioContext||window.webkitAudioContext)();
+    const notas=[[659,0],[784,.11],[988,.22],[1319,.33]];
+    notas.forEach(([f,t])=>{
+      const o=A.createOscillator(), g=A.createGain();
+      o.type='square'; o.frequency.value=f;
+      g.gain.setValueAtTime(.0001, A.currentTime+t);
+      g.gain.exponentialRampToValueAtTime(.16, A.currentTime+t+.02);
+      g.gain.exponentialRampToValueAtTime(.0001, A.currentTime+t+.3);
+      o.connect(g).connect(A.destination);
+      o.start(A.currentTime+t); o.stop(A.currentTime+t+.32);
+    });
+    setTimeout(()=>A.close(), 1400);
+  }catch{}
+}
+function mostrarObjeto(k){
+  const o=OBJETOS.find(x=>x[0]===k); if(!o) return;
+  const c=$('#capaObjeto');
+  c.innerHTML=`<div class="sello">
+    <svg viewBox="0 0 64 64" aria-hidden="true">${o[3]}</svg>
+    <div class="txt">¡HAS RECIBIDO</div>
+    <div class="obj">${esc(o[1].toUpperCase())}!</div></div>`;
+  c.classList.add('ver'); melodia();
+  setTimeout(()=>{ const n=c.querySelector('.sello'); if(n) n.classList.add('salir'); }, 2000);
+  setTimeout(()=>{ c.classList.remove('ver'); c.innerHTML=''; }, 2400);
+}
+
+/* ---------- mapa emergente de la región ---------- */
+const UBIC = {
+ 'Pueblo Fundación':[540,270],'Ciudad Cumbia':[400,270],'Ciudad Muralla':[255,335],
+ 'Pueblo Sabanal':[230,430],'Puerto Bermejo':[430,500],'Ciudad Cañaveral':[330,690],
+ 'Ciudad Orquídea':[180,560],'Ciudad Páramo':[500,640],'Ciudad Vallenar':[700,400],
+ 'Ciudad Brisamar':[660,180],'Isla Sietecolores':[110,130],
+ 'Ruta 1 · Mangal':[470,270],'Ruta 2 · Dunas':[328,302],'Ruta 3 · Sabana':[243,383],
+ 'Ruta 4 · Monte Espinoso':[330,465],'Ruta 5 · Barcaza del Cauca':[380,595],
+ 'Ruta 6 · Cafetales y Túnel':[255,625],'Ruta 7 · Páramo':[340,600],
+ 'Ruta 8 · Cañón Rojo':[600,520],'Ruta 9 · Falda de la Sierra':[680,290],
+ 'Ruta 10 · Travesía':[385,155],'Ruta 11 · Bosque Nublado':[730,190],
+ 'Caverna del Cauca I · Boca sumergida':[372,600],'Caverna del Cauca II · Galería del río':[372,600],'Caverna del Cauca III · Cámara de la corriente':[372,600],'Ojo del Cañón I · Socavón abandonado':[604,520],'Ojo del Cañón II · Vetas ardientes':[604,520],'Ojo del Cañón III · El Ojo':[604,520],'Picos Gemelos I · Grieta del glaciar':[790,150],'Picos Gemelos II · Balcón de hielo':[790,150],'Picos Gemelos III · La Cumbre Callada':[790,150],
+ 'CV I · Selva húmeda':[762,252],'CV II · Bosque nublado':[774,232],
+ 'CV III · Páramo':[786,214],'CV IV · Nieve perpetua':[794,204],'Liga Nubia':[800,200]
+};
+const NODOS_N = [
+ ['Isla Sietecolores',110,130],['Ciudad Muralla',255,335],['Ciudad Cumbia',400,270],
+ ['Pueblo Fundación',540,270],['Ciudad Brisamar',660,180],['Ciudad Vallenar',700,400],
+ ['Pueblo Sabanal',230,430],['Puerto Bermejo',430,500],['Ciudad Orquídea',180,560],
+ ['Ciudad Páramo',500,640],['Ciudad Cañaveral',330,690]
+];
+const TRAMOS = [
+ [540,270,400,270,'1'],[400,270,255,335,'2'],[255,335,230,430,'3'],[230,430,430,500,'4'],
+ [430,500,330,690,'5'],[330,690,180,560,'6'],[180,560,500,640,'7'],[500,640,700,400,'8'],
+ [700,400,660,180,'9'],[660,180,110,130,'10'],[660,180,800,200,'11']
+];
+function svgNubia(){
+  const u = UBIC[S.nombreMapa];
+  let g=`<svg viewBox="0 0 1000 780">
+   <rect width="1000" height="780" fill="#fdf6e6"/>
+   <path d="M0,0 H1000 V130 Q840,168 700,150 Q560,130 470,200 Q360,286 240,318 Q120,348 0,420 Z" fill="#3f9ed6" opacity=".9"/>
+   <path d="M620,210 L720,120 L820,190 L900,180 L870,360 L740,400 L640,320 Z" fill="#7a6a58"/>
+   <path d="M746,182 L784,138 L820,196 L776,214 Z" fill="#eef4f7"/>
+   <path d="M408,258 Q430,400 434,520 Q438,650 470,760" fill="none" stroke="#3f9ed6" stroke-width="10"/>
+   <path d="M330,700 Q372,610 410,540 Q424,512 430,500" fill="none" stroke="#3f9ed6" stroke-width="7"/>`;
+  TRAMOS.forEach(([x1,y1,x2,y2,n])=>{
+    g+=`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#12283f" stroke-width="4" stroke-dasharray="10 7" opacity=".7"/>`;
+    const mx=(x1+x2)/2,my=(y1+y2)/2;
+    g+=`<circle cx="${mx}" cy="${my}" r="11" fill="#fdf6e6" stroke="#12283f" stroke-width="2.5"/>
+        <text x="${mx}" y="${my+4}" text-anchor="middle" font-family="Silkscreen,monospace" font-size="10" fill="#12283f">${n}</text>`;
+  });
+  NODOS_N.forEach(([n,x,y])=>{
+    const aqui = S.nombreMapa===n;
+    g+=`<circle cx="${x}" cy="${y}" r="${aqui?15:12}" fill="${aqui?'#e0951c':'#c6386b'}" stroke="#12283f" stroke-width="3"/>
+        <text class="faroTxt" x="${x}" y="${y-21}" text-anchor="middle">${n.replace(/^(Ciudad|Pueblo|Isla) /,'')}</text>`;
+  });
+  if(u){
+    g+=`<circle class="faro" cx="${u[0]}" cy="${u[1]}" r="11" fill="none" stroke="#e0951c" stroke-width="5"/>
+        <circle cx="${u[0]}" cy="${u[1]}" r="6" fill="#e0951c" stroke="#12283f" stroke-width="2.5"/>`;
+  }
+  return g+'</svg>';
+}
+function abrirMapaN(auto){
+  $('#mapaNTit').textContent = 'REGIÓN DE NUBIA · ' + (S.nombreMapa||'').toUpperCase();
+  $('#mapaNSvg').innerHTML = svgNubia();
+  $('#capaMapaN').classList.add('ver');
+  if(auto) setTimeout(()=>$('#capaMapaN').classList.remove('ver'), 3800);
+}
+$('#verMapaN').onclick = ()=>{ abrirMapaN(false); enviar('mapaN', S.nombreMapa); };
+$('#capaMapaN').onclick = e=>{ if(e.target.id==='capaMapaN') $('#capaMapaN').classList.remove('ver'); };
+addEventListener('keydown', e=>{ if(e.key==='Escape') $('#capaMapaN').classList.remove('ver'); });
+
+
+/* ===================== CUENTA, PARTIDA GUARDADA Y POKÉDEX ===================== */
+let escaneando = false, dexSet = new Set();
+
+async function iniciarCuenta(){
+  if(!sb) return;
+  const { data:{ session } } = await sb.auth.getSession();
+  cuenta = session?.user || null;
+  if(!cuenta) return;
+  if(!$('#nombre').value){
+    $('#nombre').value = cuenta.user_metadata?.full_name || cuenta.email.split('@')[0];
+    yo = $('#nombre').value; hash();
+  }
+  await cargarPartida();
+  await cargarPokedex();
+}
+
+async function cargarPartida(){
+  const cod = $('#sala').value.trim().toUpperCase();
+  if(!cod || !cuenta) return;
+  const { data, error } = await sb.from('partidas')
+    .select('id,codigo,nombre,director,estado').eq('codigo', cod).maybeSingle();
+  if(error || !data) return;
+  partida = data;
+  fijarRol(data.director === cuenta.id);
+  if(data.estado && Object.keys(data.estado).length){
+    S = Object.assign(S, data.estado);
+    S.areas = S.areas||[]; S.objetos = S.objetos||[]; S.turno = S.turno||{i:0,ronda:1};
+    pintar();
+    anotar(`<b>Mesa restaurada</b> · ${esc(data.nombre)}`, false);
+  }
+}
+
+function guardarPartida(){
+  if(!sb || !partida || !soyDM) return;
+  clearTimeout(guardando);
+  guardando = setTimeout(async ()=>{
+    await sb.from('partidas')
+      .update({ estado: S, actualizado: new Date().toISOString() })
+      .eq('id', partida.id);
+  }, 1500);
+}
+
+/* ---------- imágenes en el almacenamiento ---------- */
+async function subirImagen(file, carpeta){
+  if(!sb || !cuenta) return null;
+  const cod = ($('#sala').value.trim().toUpperCase()) || 'suelta';
+  const ext = (file.name.split('.').pop() || 'png').toLowerCase();
+  const ruta = `${cod}/${carpeta}/${id8()}.${ext}`;
+  const { error } = await sb.storage.from('nubia').upload(ruta, file, { upsert:true });
+  if(error) return null;
+  return sb.storage.from('nubia').getPublicUrl(ruta).data.publicUrl;
+}
+
+/* ---------- pokédex ---------- */
+async function cargarPokedex(){
+  if(!sb || !cuenta || !partida) return;
+  $('#panelDex').style.display = 'block';
+  $('#dexT').textContent = CFG.POKEDEX_TOTAL || 151;
+  const { data } = await sb.from('pokedex')
+    .select('especie,nombre,atrapado')
+    .eq('partida', partida.id).eq('jugador', cuenta.id);
+  dexSet = new Set((data||[]).map(r=>r.especie));
+  pintarDex(data||[]);
+}
+function pintarDex(filas){
+  const tot = CFG.POKEDEX_TOTAL || 151;
+  const n = dexSet.size;
+  $('#dexN').textContent = n;
+  $('#dexBar').style.width = Math.min(100, (n/tot)*100) + '%';
+  $('#dexLista').innerHTML = filas.length
+    ? filas.sort((a,b)=>a.especie.localeCompare(b.especie)).map(r=>
+        `<div class="reg"><b>${esc(r.nombre||r.especie)}</b><span>${r.atrapado?'atrapado':'visto'}</span></div>`).join('')
+    : '<div class="reg"><span>Todavía no has registrado nada.</span></div>';
+}
+$('#escanear').onclick = ()=>{
+  escaneando = !escaneando;
+  $('#escanear').classList.toggle('on', escaneando);
+  $('#escanear').textContent = escaneando ? 'ESCÁNER ACTIVO · TOCA UN POKÉMON' : 'ESCANEAR CON LA POKÉDEX';
+};
+
+async function abrirPokedex(t){
+  if(!t.especie){ return; }
+  const clave = t.especie.toLowerCase().replace(/\s+/g,'-');
+  const c = $('#dexCuerpo');
+  c.innerHTML = '<div style="padding:30px" class="dexnom">CONSULTANDO…</div>';
+  $('#dexDlg').showModal();
+
+  let genero = '', texto = '', tipos = (t.tipos||'').split(' / ').filter(Boolean);
+  try{
+    const r = await fetch('https://pokeapi.co/api/v2/pokemon-species/'+encodeURIComponent(clave));
+    if(r.ok){
+      const j = await r.json();
+      const g = j.genera?.find(x=>x.language.name==='es') || j.genera?.find(x=>x.language.name==='en');
+      genero = g ? g.genus : '';
+      const f = j.flavor_text_entries?.find(x=>x.language.name==='es')
+             || j.flavor_text_entries?.find(x=>x.language.name==='en');
+      texto = f ? f.flavor_text.replace(/[\n\f\r]/g,' ') : '';
+    }
+  }catch{}
+
+  c.innerHTML = `
+    ${t.img?`<img src="${t.img}" alt="">`:''}
+    <div class="dexnom">${esc(t.especie.toUpperCase())}</div>
+    <div class="dexgen">${esc(genero || 'Especie sin clasificar')}</div>
+    ${tipos.length?`<div class="dextipos">${tipos.map(x=>`<span>${esc(x)}</span>`).join('')}</div>`:''}
+    <div class="dextxt">${esc(texto || 'La Pokédex de Nubia todavía no tiene una entrada para esta especie. Escribe tú la primera: es tu región.')}</div>
+    <div id="dexNuevo"></div>`;
+
+  if(sb && cuenta && partida && !dexSet.has(clave)){
+    const { error } = await sb.from('pokedex').insert({
+      partida: partida.id, jugador: cuenta.id, especie: clave, nombre: t.especie
+    });
+    if(!error){
+      dexSet.add(clave);
+      const n = dexSet.size;
+      $('#dexNuevo').innerHTML = `<div class="dexmeta"><b>NUEVO REGISTRO</b>Llevas ${n} de ${CFG.POKEDEX_TOTAL||151} especies.</div>`;
+      anotar(`<b>${esc(yo||'Entrenador')}</b> registra a <b>${esc(t.especie)}</b> en la Pokédex · ${n} especies`);
+      const meta = (CFG.METAS||[]).find(m=>m[0]===n);
+      if(meta){
+        $('#dexNuevo').innerHTML += `<div class="dexmeta"><b>META ALCANZADA · ${esc(meta[1]).toUpperCase()}</b>${esc(meta[2])}</div>`;
+        melodia();
+        anotar(`<b>${esc(yo||'Entrenador')}</b> alcanza la meta <b>${esc(meta[1])}</b>: ${esc(meta[2])}`);
+      }
+      await cargarPokedex();
+    }
+  }
+}
+$('#dexCerrar').onclick = ()=> $('#dexDlg').close();
+
+/* ===================== SINCRONIZACIÓN ===================== */
+function enviar(tipo,dato){
+  if(canal) canal.send({type:'broadcast',event:'op',payload:{tipo,dato,de:yo}});
+  if(tipo==='estado') guardarPartida();
+}
+function recibir({tipo,dato,de}){
+  if(de){ presentes.add(de); listaDuenos(); }
+  if(tipo==='hola'){ if(soyDM) enviar('estado',S); return; }
+  if(tipo==='estado'){ if(!soyDM){
+      const cambio = S.nombreMapa !== dato.nombreMapa;
+      S=dato; S.areas=S.areas||[]; S.objetos=S.objetos||[]; pintar();
+      if(cambio && (S.objetos||[]).includes('mapa')) abrirMapaN(true);
+    } return; }
+  if(tipo==='tirada'){ verTirada(dato,false); return; }
+  if(tipo==='ping'){ ponerPing(dato.p, dato.txt, dato.de); return; }
+  if(tipo==='nota'){ anotar(dato, false); return; }
+  if(tipo==='objeto'){ mostrarObjeto(dato); return; }
+  if(tipo==='mapaN'){ abrirMapaN(false); return; }
+  if(tipo==='area'){ if(!S.areas.some(a=>a.id===dato.id)) S.areas.push(dato);
+    dibujarAreas(); if(soyDM) enviar('estado',S); return; }
+  if(tipo==='mover'){ const t=S.tokens.find(x=>x.id===dato.id);
+    if(t){t.x=dato.x;t.y=dato.y;dibujarTokens();} if(soyDM)enviar('estado',S); return; }
+  if(tipo==='token'){ if(!S.tokens.some(t=>t.id===dato.id))S.tokens.push(dato);
+    dibujarTokens(); if(soyDM)enviar('estado',S); return; }
+  if(tipo==='ficha'){ const i=S.fichas.findIndex(f=>f.id===dato.id||(f.nombre===dato.nombre&&!f.especie&&!dato.especie));
+    i>=0?S.fichas[i]=dato:S.fichas.push(dato); dibujarFichas(); if(soyDM)enviar('estado',S); }
+}
+function conectar(){
+  const sala=$('#sala').value.trim().toUpperCase(), est=$('#estado');
+  if(canal){canal.unsubscribe();canal=null;}
+  if(!SUPABASE_URL||!SUPABASE_KEY){est.className='estado';est.textContent='Modo local · sin conexión configurada';return;}
+  if(!sala){est.className='estado';est.textContent='Escribe un nombre de sala';return;}
+  if(!window.supabase){est.className='estado mala';est.textContent='No cargó la librería de sincronización';return;}
+  est.className='estado'; est.textContent='Conectando…';
+  sb = sb || window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+  canal=sb.channel('tablero-'+sala,{config:{broadcast:{self:false}}});
+  canal.on('broadcast',{event:'op'},({payload})=>recibir(payload));
+  canal.subscribe(s=>{
+    if(s==='SUBSCRIBED'){ est.className='estado viva'; est.textContent='En línea · sala '+sala;
+      soyDM?enviar('estado',S):enviar('hola',null); }
+    else if(s==='CHANNEL_ERROR'||s==='TIMED_OUT'){ est.className='estado mala'; est.textContent='Sin conexión con la sala'; }
+  });
+}
+
+/* ===================== ROL Y ARRANQUE ===================== */
+function fijarRol(esDM){
+  soyDM=esDM; document.body.classList.toggle('dm',soyDM);
+  $('#rol').textContent = soyDM ? 'DIRECTOR' : 'JUGADOR';
+  $('#rol').classList.toggle('dm', soyDM);
+  $('#rol').title = soyDM
+    ? 'Abriste el tablero desde el panel del director.'
+    : 'Modo jugador. El director entra por su propio panel.';
+  $('#capaNiebla').style.pointerEvents=(soyDM&&pincel)?'auto':'none';
+}
+function hash(){
+  const p=new URLSearchParams();
+  if($('#sala').value)p.set('sala',$('#sala').value);
+  if($('#nombre').value)p.set('nombre',$('#nombre').value);
+  if(soyDM)p.set('dm','1');
+  history.replaceState(null,'','#'+p.toString());
+}
+let esp;
+['sala','nombre'].forEach(i=>$('#'+i).addEventListener('input',()=>{
+  yo=$('#nombre').value.trim(); hash(); listaDuenos();
+  clearTimeout(esp); esp=setTimeout(conectar,700);
+}));
+$('#copiar').onclick=async()=>{
+  const u=location.origin+location.pathname+'#sala='+encodeURIComponent($('#sala').value.trim().toUpperCase());
+  try{ await navigator.clipboard.writeText(u); $('#copiar').textContent='ENLACE COPIADO'; }
+  catch{ $('#copiar').textContent='COPIA MANUAL: '+u; }
+  setTimeout(()=>$('#copiar').textContent='COPIAR INVITACIÓN',2600);
+};
+
+const hp=new URLSearchParams(location.hash.slice(1));
+$('#sala').value=hp.get('sala')||''; $('#nombre').value=hp.get('nombre')||'';
+yo=$('#nombre').value.trim();
+fijarRol(hp.get('dm')==='1');
+$('#capaNiebla').style.pointerEvents='none';
+pintaDados(); formu(); pintar(); conectar();
+if(SUPABASE_URL && SUPABASE_KEY && window.supabase){
+  sb = window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+  iniciarCuenta();
+}
+</script>
+</body>
+</html>

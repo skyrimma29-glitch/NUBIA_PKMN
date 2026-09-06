@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mesa de Dados — Nubia</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=Alegreya:wght@400;500;700&family=Alegreya+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --tinta:#12283f; --tinta-suave:#3d556e; --mar:#0e7c8b;
+  --arena:#f6e7c4; --arena-hueso:#fdf6e6; --oro:#e0951c;
+  --selva:#2e7d4f; --fucsia:#c6386b; --sombra:rgba(18,40,63,.18);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--arena);color:var(--tinta);
+  font-family:'Alegreya',Georgia,serif;font-size:17px;line-height:1.6}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+h1,h2,h3,.pix{font-family:'Silkscreen','Courier New',monospace;letter-spacing:.01em;line-height:1.3}
+.vueltiao{height:14px;background:
+  repeating-linear-gradient(135deg,var(--tinta) 0 8px,transparent 8px 16px),
+  repeating-linear-gradient(45deg,var(--tinta) 0 8px,var(--arena-hueso) 8px 16px)}
+
+header{background:var(--tinta);color:var(--arena-hueso);padding:22px 0}
+header .fila{display:flex;justify-content:space-between;align-items:baseline;gap:20px;flex-wrap:wrap}
+header h1{margin:0;font-size:clamp(20px,3.4vw,30px);color:var(--arena-hueso)}
+header h1 span{color:var(--oro)}
+header a{color:#8fc8d3;font-family:'Alegreya Sans',sans-serif;font-size:14px;text-decoration:none;border-bottom:1px solid #4d7183}
+header a:hover{color:var(--arena-hueso)}
+
+/* ---- barra de sala ---- */
+.sala{background:var(--arena-hueso);border-bottom:3px solid var(--tinta)}
+.sala .wrap{display:flex;gap:16px;align-items:end;flex-wrap:wrap;padding-top:14px;padding-bottom:14px}
+.campo{display:flex;flex-direction:column;gap:4px}
+.campo span{font-family:'Silkscreen',monospace;font-size:10px;color:var(--tinta-suave)}
+.campo input{font-family:'Silkscreen',monospace;font-size:13px;padding:9px 10px;
+  border:2px solid var(--tinta);background:#fff;color:var(--tinta);width:170px}
+.campo input:focus-visible{outline:3px solid var(--mar);outline-offset:1px}
+.estado{font-family:'Alegreya Sans',sans-serif;font-size:14px;padding:8px 12px;border:2px dashed var(--tinta-suave);color:var(--tinta-suave)}
+.estado.viva{border-style:solid;border-color:var(--selva);color:var(--selva);background:#eaf6ee}
+.estado.mala{border-color:var(--fucsia);color:var(--fucsia)}
+button{font-family:'Silkscreen',monospace;cursor:pointer}
+.bt{font-size:11px;padding:10px 13px;border:2px solid var(--tinta);background:var(--arena-hueso);color:var(--tinta)}
+.bt:hover{background:#fff}
+.bt:focus-visible{outline:3px solid var(--fucsia);outline-offset:2px}
+
+main{padding:30px 0 70px}
+.cols{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:30px;align-items:start}
+@media(max-width:920px){.cols{grid-template-columns:1fr}}
+
+.panel{background:var(--arena-hueso);border:3px solid var(--tinta);box-shadow:6px 6px 0 var(--sombra);padding:20px}
+.panel h2{font-size:14px;margin:0 0 14px;color:var(--mar)}
+
+/* ---- dados ---- */
+.dados{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:8px}
+.dado{position:relative;border:3px solid var(--tinta);background:#fff;padding:14px 6px 10px;
+  text-align:center;font-family:'Silkscreen',monospace;font-size:15px;color:var(--tinta)}
+.dado:hover{background:#fff6df}
+.dado .cnt{position:absolute;top:-10px;right:-10px;min-width:24px;height:24px;
+  background:var(--fucsia);color:#fff;border:2px solid var(--tinta);border-radius:50%;
+  font-size:11px;display:none;place-items:center}
+.dado.activo .cnt{display:grid}
+.dado.activo{background:#fff6df;box-shadow:3px 3px 0 var(--sombra)}
+.ayuda{font-family:'Alegreya Sans',sans-serif;font-size:13px;color:var(--tinta-suave);margin:10px 0 0}
+
+.linea{display:flex;gap:14px;align-items:end;flex-wrap:wrap;margin-top:20px}
+.mod{display:flex;align-items:center;border:2px solid var(--tinta);background:#fff}
+.mod button{border:0;background:none;font-size:15px;padding:8px 12px;color:var(--tinta)}
+.mod button:hover{background:#fff6df}
+.mod input{width:62px;border:0;text-align:center;font-family:'Silkscreen',monospace;font-size:14px;padding:9px 0}
+.mod input:focus-visible{outline:2px solid var(--mar)}
+.vent{display:flex;border:2px solid var(--tinta)}
+.vent button{border:0;background:var(--arena-hueso);font-size:10px;padding:10px 11px;color:var(--tinta-suave)}
+.vent button[aria-pressed="true"]{background:var(--tinta);color:var(--arena-hueso)}
+#etiqueta{font-family:'Alegreya',serif;font-size:16px;padding:9px 11px;border:2px solid var(--tinta);background:#fff;flex:1;min-width:190px}
+
+.formula{margin-top:20px;font-family:'Silkscreen',monospace;font-size:19px;
+  border:3px solid var(--tinta);background:var(--tinta);color:var(--oro);padding:15px;text-align:center}
+.acciones{display:flex;gap:10px;margin-top:14px}
+.tirar{flex:1;font-family:'Silkscreen',monospace;font-size:17px;padding:17px;
+  border:3px solid var(--tinta);background:var(--fucsia);color:#fff;box-shadow:5px 5px 0 var(--tinta)}
+.tirar:hover{background:#d8437c}
+.tirar:active{transform:translate(3px,3px);box-shadow:2px 2px 0 var(--tinta)}
+.tirar:disabled{background:#c9c2b4;color:#7d7669;box-shadow:5px 5px 0 var(--sombra);cursor:not-allowed}
+
+.presets{display:flex;flex-wrap:wrap;gap:7px;margin-top:6px}
+.preset{font-size:10px;padding:9px 10px;border:2px dashed var(--tinta-suave);background:none;color:var(--tinta-suave)}
+.preset:hover{border-style:solid;border-color:var(--tinta);color:var(--tinta);background:#fff}
+
+/* ---- registro ---- */
+#registro{max-height:640px;overflow-y:auto;display:grid;gap:2px;background:var(--tinta);border:3px solid var(--tinta)}
+.vacio{background:var(--arena-hueso);padding:26px 20px;text-align:center;color:var(--tinta-suave);font-family:'Alegreya Sans',sans-serif;font-size:14px}
+.tirada{background:var(--arena-hueso);padding:13px 15px}
+.tirada.mia{background:#fff6df}
+.tirada .top{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.tirada .quien{font-family:'Silkscreen',monospace;font-size:12px}
+.tirada .hora{font-family:'Alegreya Sans',sans-serif;font-size:12px;color:var(--tinta-suave)}
+.tirada .eti{font-family:'Alegreya Sans',sans-serif;font-size:14px;color:var(--mar);margin:2px 0 6px}
+.tirada .cuerpo{display:flex;justify-content:space-between;align-items:center;gap:14px}
+.caras{display:flex;flex-wrap:wrap;gap:5px}
+.cara{font-family:'Silkscreen',monospace;font-size:11px;min-width:28px;text-align:center;
+  padding:5px 4px;border:2px solid var(--tinta-suave);background:#fff;color:var(--tinta)}
+.cara.max{border-color:var(--selva);background:#e6f5ea;color:var(--selva)}
+.cara.min{border-color:var(--fucsia);background:#fdeaf1;color:var(--fucsia)}
+.cara.desc{opacity:.35;text-decoration:line-through}
+.total{font-family:'Silkscreen',monospace;font-size:27px;white-space:nowrap}
+.total.critico{color:var(--selva)}
+.total.pifia{color:var(--fucsia)}
+.det{font-family:'Alegreya Sans',sans-serif;font-size:12px;color:var(--tinta-suave);margin-top:5px}
+
+footer{background:var(--tinta);color:#a8c2ce;padding:22px 0;
+  font-family:'Alegreya Sans',sans-serif;font-size:14px}
+footer code{background:#1c3a56;padding:2px 5px;color:#cfe0e6}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<style>
+/* animaciones compartidas de Nubia */
+@keyframes nb-surgir{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:none}}
+@keyframes nb-brotar{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:none}}
+main>.wrap>*,section.tab.on>.wrap>*{animation:nb-surgir .3s ease both}
+.card,.ruta,.item,.npc,.lider,.tir,.carta{animation:nb-surgir .24s ease both}
+.panel,.mapa-caja,.tilewrap,.bloque,.res{animation:nb-brotar .28s ease both}
+.bt,button,.chip,.dado,a.carta,nav button{transition:background .14s,color .14s,transform .09s,box-shadow .14s,border-color .14s}
+.bt:active,button:active,.chip:active,.dado:active{transform:translateY(1px)}
+a.carta:hover,.card:hover{transform:translateY(-3px)}
+a.carta,.card{transition:transform .16s,background .14s}
+.t,.tk{transition:transform .12s,filter .12s}
+.t.pt:hover,.t.npc:hover{filter:brightness(1.08)}
+tr,.punto,.npc{transition:background .14s}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap fila">
+    <h1>Mesa de <span>Dados</span> · Nubia</h1>
+    <a href="nubia-director.html">← Volver al panel</a>
+  </div>
+</header>
+<div class="vueltiao"></div>
+
+<div class="sala">
+  <div class="wrap">
+    <label class="campo"><span>SALA</span><input id="sala" maxlength="12" placeholder="NUBIA1"></label>
+    <label class="campo"><span>TU NOMBRE</span><input id="nombre" maxlength="18" placeholder="Entrenador"></label>
+    <div class="estado" id="estado">Modo local</div>
+    <button class="bt" id="copiar">COPIAR INVITACIÓN</button>
+  </div>
+</div>
+
+<main>
+<div class="wrap cols">
+
+  <section class="panel">
+    <h2>BANDEJA</h2>
+    <div class="dados" id="dados"></div>
+    <p class="ayuda">Clic para sumar un dado. Clic derecho o Mayús+clic para restar uno.</p>
+
+    <div class="linea">
+      <div class="campo"><span>MODIFICADOR</span>
+        <div class="mod">
+          <button id="menos" aria-label="Restar uno al modificador">−</button>
+          <input id="modificador" type="number" value="0" step="1">
+          <button id="mas" aria-label="Sumar uno al modificador">+</button>
+        </div>
+      </div>
+      <div class="campo"><span>D20</span>
+        <div class="vent">
+          <button data-v="ventaja" aria-pressed="false">VENTAJA</button>
+          <button data-v="desventaja" aria-pressed="false">DESVENTAJA</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="linea">
+      <input id="etiqueta" placeholder="¿Qué estás tirando? (ej. Placaje de Chispa)">
+    </div>
+
+    <div class="formula" id="formula">— sin dados —</div>
+
+    <div class="acciones">
+      <button class="tirar" id="tirar" disabled>TIRAR</button>
+      <button class="bt" id="limpiar">LIMPIAR</button>
+    </div>
+
+    <h2 style="margin-top:26px">ATAJOS</h2>
+    <div class="presets" id="presets"></div>
+  </section>
+
+  <section>
+    <div class="panel" style="padding:0;box-shadow:none;border:0">
+      <h2 style="margin:0 0 14px">REGISTRO DE LA SALA</h2>
+      <div id="registro"><div class="vacio">Todavía no ha tirado nadie. Las tiradas de la sala aparecen aquí, de la más reciente a la más antigua.</div></div>
+    </div>
+  </section>
+
+</div>
+</main>
+
+<div class="vueltiao"></div>
+<footer>
+  <div class="wrap">
+    Para jugar en línea, el director pega su URL y su clave anónima de Supabase en las constantes
+    <code>SUPABASE_URL</code> y <code>SUPABASE_KEY</code> al inicio del script, y reparte el enlace de invitación.
+    Sin esas dos líneas, la mesa funciona igual pero solo en tu pantalla.
+  </div>
+</footer>
+
+<script src="nubia-config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+/* =======================================================================
+   CONFIGURACIÓN — el director rellena estas dos líneas una sola vez.
+   Panel de Supabase → Project Settings → API → Project URL y anon public.
+   Si las dejas vacías, la mesa funciona en modo local (solo tu pantalla).
+   ======================================================================= */
+const CFG = window.NUBIA || {};
+const SUPABASE_URL = CFG.SUPABASE_URL || '';
+const SUPABASE_KEY = CFG.SUPABASE_KEY || '';
+/* ===================================================================== */
+
+const CARAS = [2,3,4,6,8,10,12,20,100];
+const ATAJOS = [
+  ['Tirada de ataque',       {20:1}, 0,  'Tirada de ataque'],
+  ['Salvación',              {20:1}, 0,  'Tirada de salvación'],
+  ['Prueba de habilidad',    {20:1}, 0,  'Prueba de habilidad'],
+  ['Iniciativa',             {20:1}, 0,  'Iniciativa'],
+  ['Captura (Poké Ball)',    {20:1}, 0,  'Tirada de captura'],
+  ['Daño 1d6',               {6:1},  0,  'Daño'],
+  ['Daño 2d6',               {6:2},  0,  'Daño'],
+  ['Daño 1d8',               {8:1},  0,  'Daño'],
+  ['Porcentaje d100',        {100:1},0,  'Porcentaje'],
+  ['Curación 2d4+2',         {4:2},  2,  'Curación']
+];
+
+const $ = s => document.querySelector(s);
+const el = (t,c) => { const e=document.createElement(t); if(c)e.className=c; return e; };
+
+let pool = {};          // {caras: cantidad}
+let ventaja = null;     // 'ventaja' | 'desventaja' | null
+let canal = null;       // canal de Supabase
+let yo = '';
+
+/* ---------- sala y nombre desde el enlace ---------- */
+function leerHash(){
+  const p = new URLSearchParams(location.hash.slice(1));
+  return { sala: p.get('sala') || '', nombre: p.get('nombre') || '' };
+}
+function escribirHash(){
+  const p = new URLSearchParams();
+  if($('#sala').value) p.set('sala', $('#sala').value);
+  if($('#nombre').value) p.set('nombre', $('#nombre').value);
+  history.replaceState(null,'','#'+p.toString());
+}
+
+/* ---------- bandeja ---------- */
+function pintarDados(){
+  $('#dados').innerHTML = CARAS.map(c=>`
+    <button class="dado ${pool[c]?'activo':''}" data-c="${c}">
+      d${c}<span class="cnt">${pool[c]||''}</span>
+    </button>`).join('');
+}
+function suma(c,n){
+  pool[c] = Math.max(0, Math.min(50, (pool[c]||0)+n));
+  if(!pool[c]) delete pool[c];
+  pintarDados(); pintarFormula();
+}
+$('#dados').addEventListener('click', e=>{
+  const b = e.target.closest('.dado'); if(!b) return;
+  suma(+b.dataset.c, e.shiftKey ? -1 : 1);
+});
+$('#dados').addEventListener('contextmenu', e=>{
+  const b = e.target.closest('.dado'); if(!b) return;
+  e.preventDefault(); suma(+b.dataset.c, -1);
+});
+
+function texto(){
+  const partes = Object.keys(pool).map(Number).sort((a,b)=>a-b)
+    .map(c=>`${pool[c]}d${c}`);
+  if(!partes.length) return '';
+  const m = +$('#modificador').value || 0;
+  let t = partes.join(' + ');
+  if(m) t += (m>0?' + ':' − ') + Math.abs(m);
+  if(ventaja && pool[20]) t += ventaja==='ventaja' ? '  (ventaja)' : '  (desventaja)';
+  return t;
+}
+function pintarFormula(){
+  const t = texto();
+  $('#formula').textContent = t || '— sin dados —';
+  $('#tirar').disabled = !t;
+}
+$('#modificador').addEventListener('input', pintarFormula);
+$('#menos').onclick = ()=>{ $('#modificador').value = (+$('#modificador').value||0)-1; pintarFormula(); };
+$('#mas').onclick   = ()=>{ $('#modificador').value = (+$('#modificador').value||0)+1; pintarFormula(); };
+document.querySelectorAll('.vent button').forEach(b=>b.onclick=()=>{
+  ventaja = ventaja===b.dataset.v ? null : b.dataset.v;
+  document.querySelectorAll('.vent button').forEach(x=>x.setAttribute('aria-pressed', x.dataset.v===ventaja));
+  pintarFormula();
+});
+$('#limpiar').onclick = ()=>{
+  pool={}; ventaja=null; $('#modificador').value=0; $('#etiqueta').value='';
+  document.querySelectorAll('.vent button').forEach(x=>x.setAttribute('aria-pressed',false));
+  pintarDados(); pintarFormula();
+};
+
+/* ---------- atajos ---------- */
+$('#presets').innerHTML = ATAJOS.map((a,i)=>`<button class="preset" data-i="${i}">${a[0]}</button>`).join('');
+$('#presets').addEventListener('click', e=>{
+  const b = e.target.closest('.preset'); if(!b) return;
+  const [,p,m,eti] = ATAJOS[+b.dataset.i];
+  pool = {...p}; $('#modificador').value = m; $('#etiqueta').value = eti;
+  pintarDados(); pintarFormula();
+});
+
+/* ---------- tirar ---------- */
+const d = c => Math.floor(Math.random()*c)+1;
+
+function tirar(){
+  const caras = Object.keys(pool).map(Number).sort((a,b)=>a-b);
+  if(!caras.length) return;
+  const mod = +$('#modificador').value || 0;
+  const grupos = [];
+  let total = 0;
+
+  caras.forEach(c=>{
+    let vals, descartado = -1;
+    if(c===20 && ventaja && pool[20]===1){
+      const a=d(20), b=d(20);
+      const usar = ventaja==='ventaja' ? Math.max(a,b) : Math.min(a,b);
+      vals = [a,b];
+      descartado = (a===usar && b!==usar) ? 1 : (b===usar && a!==usar ? 0 : 1);
+      total += usar;
+    }else{
+      vals = Array.from({length:pool[c]}, ()=>d(c));
+      total += vals.reduce((x,y)=>x+y,0);
+    }
+    grupos.push({caras:c, vals, descartado});
+  });
+
+  total += mod;
+  const g20 = grupos.find(g=>g.caras===20);
+  const usado20 = g20 ? g20.vals.filter((_,i)=>i!==g20.descartado) : [];
+
+  const t = {
+    id: Math.random().toString(36).slice(2,10),
+    nombre: yo || 'Entrenador',
+    etiqueta: $('#etiqueta').value.trim(),
+    formula: texto(),
+    grupos, mod, total,
+    critico: usado20.some(v=>v===20),
+    pifia: usado20.length===1 && usado20[0]===1,
+    ts: Date.now()
+  };
+
+  mostrar(t, true);
+  if(canal) canal.send({type:'broadcast', event:'tirada', payload:t});
+}
+$('#tirar').onclick = tirar;
+document.addEventListener('keydown', e=>{
+  if(e.key==='Enter' && !$('#tirar').disabled && e.target.id!=='sala' && e.target.id!=='nombre') tirar();
+});
+
+/* ---------- registro ---------- */
+const vistas = new Set();
+function mostrar(t, propia){
+  if(vistas.has(t.id)) return;
+  vistas.add(t.id);
+  const v = $('.vacio'); if(v) v.remove();
+
+  const caja = el('div','tirada'+(propia?' mia':''));
+  const hora = new Date(t.ts).toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
+
+  let caras = '';
+  t.grupos.forEach(g=>{
+    g.vals.forEach((val,i)=>{
+      const cls = i===g.descartado ? 'desc'
+        : val===g.caras ? 'max' : (val===1 && g.caras>2 ? 'min' : '');
+      caras += `<span class="cara ${cls}" title="d${g.caras}">${val}</span>`;
+    });
+  });
+
+  caja.innerHTML = `
+    <div class="top">
+      <span class="quien">${esc(t.nombre)}</span>
+      <span class="hora">${hora}</span>
+    </div>
+    ${t.etiqueta ? `<div class="eti">${esc(t.etiqueta)}</div>` : ''}
+    <div class="cuerpo">
+      <div class="caras">${caras}</div>
+      <div class="total ${t.critico?'critico':''}${t.pifia?'pifia':''}">${t.total}</div>
+    </div>
+    <div class="det">${esc(t.formula)}${t.critico?' · crítico natural':''}${t.pifia?' · pifia natural':''}</div>`;
+
+  const reg = $('#registro');
+  reg.prepend(caja);
+  while(reg.children.length > 120) reg.lastChild.remove();
+  if(propia) animar(caja.querySelector('.total'), t.total);
+}
+function animar(nodo, fin){
+  if(window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  let n = 0; const pasos = 8;
+  const id = setInterval(()=>{
+    n++;
+    nodo.textContent = n>=pasos ? fin : Math.floor(Math.random()*Math.max(fin,6))+1;
+    if(n>=pasos) clearInterval(id);
+  }, 38);
+}
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ---------- sincronización ---------- */
+function conectar(){
+  const sala = $('#sala').value.trim().toUpperCase();
+  const est = $('#estado');
+
+  if(canal){ canal.unsubscribe(); canal = null; }
+
+  if(!SUPABASE_URL || !SUPABASE_KEY){
+    est.className = 'estado'; est.textContent = 'Modo local · sin conexión configurada';
+    return;
+  }
+  if(!sala){
+    est.className = 'estado'; est.textContent = 'Escribe un nombre de sala para conectarte';
+    return;
+  }
+  if(!window.supabase){
+    est.className = 'estado mala'; est.textContent = 'No cargó la librería de sincronización';
+    return;
+  }
+
+  est.className = 'estado'; est.textContent = 'Conectando…';
+  const cliente = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  canal = cliente.channel('mesa-'+sala, { config:{ broadcast:{ self:false } } });
+  canal.on('broadcast', {event:'tirada'}, ({payload}) => mostrar(payload, false));
+  canal.subscribe(s=>{
+    if(s === 'SUBSCRIBED'){ est.className='estado viva'; est.textContent = 'En línea · sala '+sala; }
+    else if(s === 'CHANNEL_ERROR' || s === 'TIMED_OUT'){ est.className='estado mala'; est.textContent = 'Sin conexión con la sala'; }
+  });
+}
+
+let espera;
+['sala','nombre'].forEach(id => $('#'+id).addEventListener('input', ()=>{
+  yo = $('#nombre').value.trim();
+  escribirHash();
+  clearTimeout(espera);
+  espera = setTimeout(conectar, 700);
+}));
+
+$('#copiar').onclick = async ()=>{
+  escribirHash();
+  const url = location.origin + location.pathname + '#sala=' + encodeURIComponent($('#sala').value.trim().toUpperCase());
+  try{ await navigator.clipboard.writeText(url); $('#copiar').textContent = 'ENLACE COPIADO'; }
+  catch{ $('#copiar').textContent = 'COPIA MANUAL: ' + url; }
+  setTimeout(()=>$('#copiar').textContent='COPIAR INVITACIÓN', 2600);
+};
+
+/* ---------- arranque ---------- */
+const inicio = leerHash();
+$('#sala').value = inicio.sala;
+$('#nombre').value = inicio.nombre;
+yo = inicio.nombre;
+pintarDados(); pintarFormula(); conectar();
+</script>
+</body>
+</html>
