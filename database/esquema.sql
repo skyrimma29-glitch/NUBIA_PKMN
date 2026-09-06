@@ -69,6 +69,39 @@ alter table partidas  enable row level security;
 alter table miembros  enable row level security;
 alter table pokedex   enable row level security;
 
+-- Estas funciones consultan las relaciones sin volver a evaluar sus políticas RLS.
+-- Evitan la recursión partidas -> miembros -> partidas.
+create or replace function public.es_director_partida(p_partida uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1 from partidas
+    where id = p_partida and director = auth.uid()
+  );
+$$;
+
+create or replace function public.es_miembro_partida(p_partida uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1 from miembros
+    where partida = p_partida and jugador = auth.uid()
+  );
+$$;
+
+revoke execute on function public.es_director_partida(uuid) from public;
+revoke execute on function public.es_miembro_partida(uuid) from public;
+grant execute on function public.es_director_partida(uuid) to authenticated;
+grant execute on function public.es_miembro_partida(uuid) to authenticated;
+
 -- Perfiles: todos los identificados pueden leer nombres; cada quien edita el suyo
 drop policy if exists perfiles_leer on perfiles;
 create policy perfiles_leer on perfiles
@@ -83,7 +116,7 @@ drop policy if exists partidas_leer on partidas;
 create policy partidas_leer on partidas
   for select to authenticated using (
     director = auth.uid()
-    or exists (select 1 from miembros m where m.partida = partidas.id and m.jugador = auth.uid())
+    or public.es_miembro_partida(id)
   );
 
 drop policy if exists partidas_crear on partidas;
@@ -104,7 +137,7 @@ drop policy if exists miembros_leer on miembros;
 create policy miembros_leer on miembros
   for select to authenticated using (
     jugador = auth.uid()
-    or exists (select 1 from partidas p where p.id = miembros.partida and p.director = auth.uid())
+    or public.es_director_partida(partida)
   );
 
 drop policy if exists miembros_salir on miembros;
@@ -116,7 +149,7 @@ drop policy if exists pokedex_leer on pokedex;
 create policy pokedex_leer on pokedex
   for select to authenticated using (
     jugador = auth.uid()
-    or exists (select 1 from partidas p where p.id = pokedex.partida and p.director = auth.uid())
+    or public.es_director_partida(partida)
   );
 
 drop policy if exists pokedex_registrar on pokedex;
