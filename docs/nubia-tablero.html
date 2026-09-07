@@ -267,6 +267,29 @@ body.enfoque main{padding-top:10px}
 .fichaya b{font-family:'Silkscreen',monospace;font-size:11px;display:block}
 .fichaya span{font-family:'Alegreya Sans',sans-serif;font-size:12px;color:var(--tinta-suave)}
 
+/* ------------- biblioteca del director ------------- */
+.npcs{display:grid;gap:2px;background:var(--tinta);border:2px solid var(--tinta);max-height:270px;overflow:auto}
+.npc-it{background:var(--arena-hueso);padding:8px 9px;display:grid;
+  grid-template-columns:32px 1fr auto;gap:9px;align-items:center;cursor:grab;
+  transition:background .12s,transform .12s}
+.npc-it:hover{background:#fff6df}
+.npc-it.arrastrado{opacity:.4}
+.npc-it .av{width:32px;height:32px;border-radius:50%;border:2px solid var(--tinta);
+  display:grid;place-items:center;overflow:hidden;font-family:'Silkscreen',monospace;font-size:9px;color:#fff}
+.npc-it .av img{width:100%;height:100%;object-fit:cover}
+.npc-it b{font-family:'Silkscreen',monospace;font-size:10px;display:block}
+.npc-it span{font-family:'Alegreya Sans',sans-serif;font-size:11px;color:var(--tinta-suave)}
+.npc-it .accs{display:flex;gap:4px}
+.npc-it .accs button{font-size:8px;padding:4px 6px;border:2px solid var(--tinta-suave);
+  background:#fff;color:var(--tinta)}
+.npc-it .accs button:hover{border-color:var(--tinta)}
+#tablero.soltando{outline:4px dashed var(--oro);outline-offset:3px}
+.imgrow{display:flex;gap:8px;align-items:center;background:#fff;border:2px solid var(--tinta);padding:7px;margin-bottom:10px}
+.imgrow .prev{width:42px;height:42px;border-radius:50%;border:2px solid var(--tinta);
+  overflow:hidden;display:grid;place-items:center;flex:0 0 auto;font-family:'Silkscreen',monospace;font-size:10px;color:#fff}
+.imgrow .prev img{width:100%;height:100%;object-fit:cover}
+.imgrow input[type=file]{flex:1;min-width:0;padding:4px;font-size:12px}
+
 /* ------------- acordeones ------------- */
 .acc{background:var(--arena-hueso);border:3px solid var(--tinta);box-shadow:5px 5px 0 var(--sombra);margin-bottom:13px}
 .acc>summary{list-style:none;cursor:pointer;font-family:'Silkscreen',monospace;font-size:11px;
@@ -604,6 +627,15 @@ footer code{background:#1c3a56;padding:2px 5px;color:#cfe0e6}
       <div class="lista" id="fichas"><div class="vacio">Nadie ha publicado su ficha todavía.</div></div>
     </div></details>
 
+    <details class="acc solodm" id="panelNpcs" open><summary>FICHAS DEL DIRECTOR</summary><div class="cnt2">
+      <div class="npcs" id="listaNpcs"></div>
+      <div class="fila" style="margin-top:9px">
+        <button class="bt rosa" id="npcNueva">NUEVA FICHA</button>
+        <button class="bt" id="npcGuardarSel">GUARDAR LA SELECCIONADA</button>
+      </div>
+      <p class="nota">Arrastra un nombre al tablero para colocarlo, o pulsa PONER. Las fichas de aquí se guardan en la partida y no se pierden al cambiar de escenario.</p>
+    </div></details>
+
     <details class="acc" id="panelEquipo" open><summary>EQUIPO POKÉMON</summary><div class="cnt2">
       <div class="slots" id="slots"></div>
       <div class="fila" style="margin-top:10px"><button class="bt rosa" id="abrirPC" style="width:100%">ABRIR EQUIPO Y PC BOX</button></div>
@@ -706,6 +738,11 @@ footer code{background:#1c3a56;padding:2px 5px;color:#cfe0e6}
   <div class="cab" id="dlgTit">EDITAR FICHA</div>
   <div class="cnt">
     <div class="previa" id="dlgPrev" style="display:none"><img id="dlgImg" alt=""><div id="dlgInfo"></div></div>
+    <div class="imgrow">
+      <div class="prev" id="dPrev"></div>
+      <input id="dImgArch" type="file" accept="image/*">
+      <button class="bt" id="dImgQuitar" style="font-size:9px">QUITAR</button>
+    </div>
     <div class="fila">
       <div style="flex:1"><label for="dNom">NOMBRE</label><input id="dNom"></div>
     </div>
@@ -1467,7 +1504,7 @@ const MAPAS_IMG = {
 
 /* ===================== ESTADO ===================== */
 let S = { nombreMapa:'Pueblo Fundación', filas:MAPAS.Localidades['Pueblo Fundación'],
-          img:'', tileset:'', tokens:[], niebla:[], fichas:[], areas:[], objetos:[], imgs:{}, piezas:{}, equipos:{}, turno:{i:0,ronda:1} };
+          img:'', tileset:'', tokens:[], niebla:[], fichas:[], areas:[], objetos:[], imgs:{}, piezas:{}, equipos:{}, npcs:[], turno:{i:0,ronda:1} };
 let soyDM=false, yo='', canal=null, sel=null, pincel=0, tamPincel=1;
 let presentes = new Set();
 let filtro='todos', herramienta='', trazo=null;
@@ -1553,7 +1590,9 @@ function dibujarTokens(){
 }
 
 function ordenIniciativa(){
-  return [...S.fichas].sort((a,b)=>(b.ini||0)-(a.ini||0));
+  return [...S.fichas]
+    .filter(f=> f.enIniciativa && (!f.tokenId || S.tokens.some(t=>t.id===f.tokenId)))
+    .sort((a,b)=>(b.ini||0)-(a.ini||0));
 }
 function dibujarFichas(){
   const c=$('#fichas'), orden=ordenIniciativa();
@@ -1561,8 +1600,16 @@ function dibujarFichas(){
   $('#ronda').textContent='RONDA '+(t.ronda||1);
   $('#quienTurno').textContent = orden.length ? ('Turno de '+(orden[t.i%orden.length]?.nombre||'—')) : '';
 
-  const vis = orden.filter(f=> filtro==='todos' ? true : filtro==='pok' ? !!f.especie : !f.especie);
-  if(!vis.length){ c.innerHTML='<div class="vacio">Nada que mostrar en esta pestaña.</div>'; return; }
+  const enMapa = f => !f.tokenId || S.tokens.some(t=>t.id===f.tokenId);
+  const vis = orden
+    .filter(f=> f.enIniciativa && enMapa(f))
+    .filter(f=> filtro==='todos' ? true : filtro==='pok' ? !!f.especie : !f.especie);
+  if(!vis.length){
+    c.innerHTML='<div class="vacio">Nadie ha tirado iniciativa en este escenario.<br>'
+      + 'Abre una ficha del tablero y pulsa INICIATIVA para que entre en el orden.</div>';
+    if(typeof pintarPanelFicha === 'function') pintarPanelFicha();
+    return;
+  }
 
   c.innerHTML = vis.map(f=>{
     const pct=f.pvMax>0?Math.max(0,Math.min(100,(f.pv/f.pvMax)*100)):0;
@@ -1583,7 +1630,7 @@ function dibujarFichas(){
       ${editable?`<div class="mini">
         <button data-h="${f.id}" data-d="-5">−5</button><button data-h="${f.id}" data-d="-1">−1</button>
         <button data-h="${f.id}" data-d="1">+1</button><button data-h="${f.id}" data-d="5">+5</button>
-        <button data-quitar="${f.id}" title="Quitar de la mesa" style="margin-left:auto;color:var(--fucsia);border-color:var(--fucsia)">✕</button>
+        <button data-quitar="${f.id}" title="Sacar del orden de combate · la ficha sigue en el tablero" style="margin-left:auto;color:var(--fucsia);border-color:var(--fucsia)">✕</button>
       </div>`:''}
     </div>`;
   }).join('');
@@ -1617,12 +1664,10 @@ $('#fichas').addEventListener('click', e=>{
   if(q){
     const f=S.fichas.find(x=>x.id===q.dataset.quitar); if(!f) return;
     if(!(soyDM || f.nombre===yo || f.dueno===yo || f.jugador===yo)){ alert('Esa ficha no es tuya.'); return; }
-    if(!confirm('¿Quitar a '+f.nombre+' de la mesa? También se borra su pieza del tablero.')) return;
-    S.tokens=S.tokens.filter(t=>t.id!==f.tokenId);
-    S.fichas=S.fichas.filter(x=>x.id!==f.id);
-    anotar(`<b>${esc(f.nombre)}</b> sale de la mesa`);
+    f.enIniciativa = false;
+    anotar(`<b>${esc(f.nombre)}</b> sale del orden de combate`, false);
     pintar();
-    soyDM ? enviar('estado',S) : enviar('quitar',{tokenId:f.tokenId, fichaId:f.id});
+    soyDM ? enviar('estado',S) : enviar('ficha', f);
     return;
   }
   const b=e.target.closest('[data-h]'); if(!b) return;
@@ -1652,7 +1697,7 @@ function actualizarAccesoObjetos(){
 }
 const pintar = ()=>{ dibujarMapa(); dibujarFichas(); dibujarAreas(); listaDuenos();
   listaCapturables(); pintarObjetos(); actualizarAccesoObjetos();
-  pintarEquipo(); pintarPanelFicha(); };
+  pintarEquipo(); pintarPanelFicha(); pintarNpcs(); };
 
 /* ===================== ANCHO ===================== */
 document.querySelectorAll('[data-z]').forEach(b=>b.onclick=()=>{
@@ -1738,6 +1783,11 @@ function abrirDlg(t){
   $('#dCond').innerHTML = CONDICIONES.map(([k,n,c])=>
     `<label><input type="checkbox" data-c="${k}" ${cond.includes(k)?'checked':''}><b style="background:${c}"></b>${n}</label>`).join('');
   $('#dPv').value=f?f.pv:0; $('#dPvMax').value=f?f.pvMax:0; $('#dIni').value=f?f.ini:0;
+  $('#dIni').dataset.tirada='';
+  const pv=$('#dPrev');
+  pv.style.background = t.color || '#c6386b';
+  pv.innerHTML = t.img ? `<img src="${t.img}" alt="">`
+                       : esc((t.nombre||'?').slice(0,2).toUpperCase());
   const p=$('#dlgPrev');
   if(t.img){ p.style.display='flex'; $('#dlgImg').src=t.img;
     $('#dlgInfo').innerHTML = `<b>${esc(t.especie||t.nombre)}</b>${esc(t.tipos||'')}`; }
@@ -1748,6 +1798,18 @@ function abrirDlg(t){
 }
 $('#dOk').onclick=()=>{
   const t=editando; if(!t) return;
+  if(t.esNpc){                      // plantilla de la biblioteca del director
+    const n = t.esNpc;
+    n.nombre = $('#dNom').value.trim() || n.nombre;
+    n.nivel  = +$('#dNivel').value || n.nivel;
+    n.color  = $('#dColor').value;
+    n.atk    = +$('#dAtk').value || 0;
+    n.dmg    = $('#dDmg').value.trim();
+    n.pv     = +$('#dPv').value || n.pv;
+    n.pvMax  = +$('#dPvMax').value || n.pvMax;
+    $('#dlg').close(); pintarNpcs(); enviar('estado', S);
+    return;
+  }
   if(t.esPk){                       // se está editando un Pokémon guardado, no una pieza
     const pk=t.esPk, e=equipoLeer(yo);
     pk.nombre=$('#dNom').value.trim()||pk.nombre;
@@ -1766,7 +1828,12 @@ $('#dOk').onclick=()=>{
   let f=S.fichas.find(x=>x.tokenId===t.id);
   if(!f){ f={id:id8(), tokenId:t.id, nombre:t.nombre}; S.fichas.push(f); }
   f.nombre=t.nombre; f.dueno=t.dueno; f.nivel=t.nivel; f.especie=t.especie||'';
-  f.pv=+$('#dPv').value||0; f.pvMax=+$('#dPvMax').value||0; f.ini=+$('#dIni').value||0;
+  f.pv=+$('#dPv').value||0; f.pvMax=+$('#dPvMax').value||0;
+  const iniAntes = f.ini||0, iniAhora = +$('#dIni').value||0;
+  f.ini = iniAhora;
+  // Entra al orden de combate si se tiró aquí o si se escribió un valor a mano
+  if($('#dIni').dataset.tirada==='1' || (iniAhora && iniAhora!==iniAntes)) f.enIniciativa = true;
+  f.img = t.img || f.img || '';
   if(t.especie && t.dueno) alEquipo(t.dueno, pkDesdeToken(t));
   $('#dlg').close(); pintar(); enviar(soyDM?'estado':'ficha', soyDM?S:f);
   if(!soyDM) enviar('mover',{id:t.id,x:t.x,y:t.y});
@@ -2028,7 +2095,7 @@ $('#guardarFicha').onclick=async()=>{
   let t = S.tokens.find(x=>x.id===f.tokenId)
        || S.tokens.find(x=>x.dueno===yo && !x.especie);
   if(!t){
-    t = { id:id8(), nombre:nombre, color:'#c6386b', img:'',
+    t = { id:id8(), nombre:nombre, color:'#c6386b', img:f.img||'',
           x:Math.min(2,W()-1), y:Math.min(2,H()-1), nivel:0, dueno:yo };
     S.tokens.push(t);
     enviar('token', t);
@@ -2319,8 +2386,12 @@ function tirarFormula(txt, eti){
 }
 $('#tAtaque').onclick     = ()=>{ const t=editando; if(t) tirarDados(1,20,+$('#dAtk').value||0, `${t.nombre} · ataque`); };
 $('#tSalva').onclick      = ()=>{ const t=editando; if(t) tirarDados(1,20,+$('#dAtk').value||0, `${t.nombre} · salvación`); };
-$('#tIniciativa').onclick = ()=>{ const t=editando; if(!t) return;
-  const r=tirarDados(1,20,0,`${t.nombre} · iniciativa`); $('#dIni').value=r.total; };
+$('#tIniciativa').onclick = ()=>{
+  const t=editando; if(!t) return;
+  const r=tirarDados(1,20,0,`${t.nombre} · iniciativa`);
+  $('#dIni').value=r.total;
+  $('#dIni').dataset.tirada = '1';        // marca que esta ficha entra al orden
+};
 $('#tDano').onclick       = ()=>{ const t=editando; if(t) tirarFormula($('#dDmg').value, `${t.nombre} · daño`); };
 
 /* ---------- captura ---------- */
@@ -2554,7 +2625,7 @@ async function cargarPartida(){
   fijarRol(data.director === cuenta.id);
   if(data.estado && Object.keys(data.estado).length){
     S = Object.assign(S, data.estado);
-    S.areas = S.areas||[]; S.objetos = S.objetos||[]; S.imgs = S.imgs||{}; S.piezas = S.piezas||{}; S.equipos = S.equipos||{}; S.turno = S.turno||{i:0,ronda:1};
+    S.areas = S.areas||[]; S.objetos = S.objetos||[]; S.imgs = S.imgs||{}; S.piezas = S.piezas||{}; S.equipos = S.equipos||{}; S.npcs = S.npcs||[]; S.turno = S.turno||{i:0,ronda:1};
     pintar();
     anotar(`<b>Mesa restaurada</b> · ${esc(data.nombre)}`, false);
   }
@@ -2591,7 +2662,7 @@ function escucharPartida(){
           const antes = S.nombreMapa;
           S = Object.assign({}, S, fila.estado);
           S.areas=S.areas||[]; S.objetos=S.objetos||[]; S.imgs=S.imgs||{};
-          S.piezas=S.piezas||{}; S.equipos=S.equipos||{};
+          S.piezas=S.piezas||{}; S.equipos=S.equipos||{}; S.npcs=S.npcs||[];
           pintar();
           if(S.nombreMapa !== antes && (S.objetos||[]).includes('mapa')) abrirMapaN(true);
         })
@@ -2885,7 +2956,7 @@ function pintarPanelFicha(){
   const ini=(f.nombre||'?').slice(0,2).toUpperCase();
   c.innerHTML = `
     <div class="fichaya">
-      <div class="av" style="background:${t?t.color:'#c6386b'}">${t&&t.img?`<img src="${t.img}" alt="">`:esc(ini)}</div>
+      <div class="av" style="background:${t?t.color:'#c6386b'}">${(f.img||(t&&t.img))?`<img src="${f.img||t.img}" alt="">`:esc(ini)}</div>
       <div><b>${esc(f.nombre)}</b><span>${f.pv} / ${f.pvMax} PS · iniciativa ${f.ini||0}</span></div>
     </div>
     <div class="fila" style="margin-top:9px">
@@ -2898,7 +2969,7 @@ function pintarPanelFicha(){
       : 'Solo puedes tener una ficha de entrenador. Para crear otra, elimina esta primero.'}</p>`;
   if($('#editarMiFicha')) $('#editarMiFicha').onclick = ()=>{ sel=t.id; abrirDlg(t); };
   if($('#alTablero')) $('#alTablero').onclick = ()=>{
-    const nt = { id:id8(), nombre:f.nombre, color:'#c6386b', img:'', nivel:0, dueno:yo,
+    const nt = { id:id8(), nombre:f.nombre, color:'#c6386b', img:f.img||'', nivel:0, dueno:yo,
                  x:Math.min(2,W()-1), y:Math.min(2,H()-1) };
     S.tokens.push(nt); f.tokenId = nt.id;
     pintar(); enviar('token', nt); enviar('ficha', f);
@@ -2913,6 +2984,133 @@ function pintarPanelFicha(){
     soyDM ? enviar('estado',S) : enviar('quitar',{tokenId:f.tokenId, fichaId:f.id});
   };
 }
+
+
+/* ===================== IMAGEN DE LA FICHA Y BIBLIOTECA DEL DIRECTOR ===================== */
+
+/* ---------- imagen dentro del editor ---------- */
+$('#dImgArch').onchange = async ()=>{
+  const f = $('#dImgArch').files[0], t = editando;
+  if(!f || !t) return;
+  const pv = $('#dPrev');
+  pv.textContent = '…';
+  const url = (await subirImagen(f,'fichas')) || (await reducir(f));
+  if(!url){ pv.textContent = '!'; return; }
+  t.img = url;
+  const fi = S.fichas.find(x=>x.tokenId===t.id);
+  if(fi) fi.img = url;                 // la imagen vive en la ficha, no solo en la pieza
+  if(t.esPk) t.esPk.img = url;
+  if(t.esNpc) t.esNpc.img = url;
+  pv.innerHTML = `<img src="${url}" alt="">`;
+  $('#dImgArch').value='';
+  pintar();
+};
+$('#dImgQuitar').onclick = ()=>{
+  const t = editando; if(!t) return;
+  t.img = '';
+  const fi = S.fichas.find(x=>x.tokenId===t.id); if(fi) fi.img='';
+  if(t.esPk) t.esPk.img=''; if(t.esNpc) t.esNpc.img='';
+  $('#dPrev').innerHTML = esc((t.nombre||'?').slice(0,2).toUpperCase());
+  pintar();
+};
+
+/* ---------- biblioteca de fichas del director ---------- */
+function pintarNpcs(){
+  if(!soyDM || !$('#listaNpcs')) return;
+  const L = S.npcs || [];
+  $('#listaNpcs').innerHTML = L.length ? L.map(n=>{
+    const ini = (n.nombre||'?').slice(0,2).toUpperCase();
+    return `<div class="npc-it" draggable="true" data-npc="${n.id}">
+      <div class="av" style="background:${n.color||'#7b5ba6'}">
+        ${n.img?`<img src="${n.img}" alt="">`:esc(ini)}</div>
+      <div><b>${esc(n.nombre)}</b><span>${n.especie?esc(n.especie)+' · ':''}Nv ${n.nivel||1} · ${n.pvMax||10} PS</span></div>
+      <div class="accs">
+        <button data-npcacc="poner" data-id="${n.id}">PONER</button>
+        <button data-npcacc="editar" data-id="${n.id}">EDITAR</button>
+        <button data-npcacc="borrar" data-id="${n.id}" style="color:var(--fucsia)">✕</button>
+      </div>
+    </div>`;
+  }).join('') : '<div class="npc-it" style="grid-template-columns:1fr;cursor:default"><span>Sin fichas guardadas. Crea una o guarda la que tengas seleccionada en el tablero.</span></div>';
+}
+
+function ponerNpc(id, x, y){
+  const n = (S.npcs||[]).find(v=>v.id===id); if(!n) return;
+  const t = { id:id8(), npc:n.id, nombre:n.nombre, especie:n.especie||'', tipos:n.tipos||'',
+              nivel:n.nivel||1, img:n.img||'', color:n.color||'#7b5ba6', atk:n.atk||0, dmg:n.dmg||'',
+              dueno:'', x: x!==undefined?x:Math.min(4,W()-1), y: y!==undefined?y:Math.min(4,H()-1) };
+  S.tokens.push(t);
+  S.fichas.push({ id:id8(), tokenId:t.id, nombre:n.nombre, especie:n.especie||'', img:n.img||'',
+                  nivel:n.nivel||1, dueno:'', pv:n.pv||n.pvMax||10, pvMax:n.pvMax||10,
+                  ini:0, enIniciativa:false });
+  anotar(`<b>${esc(n.nombre)}</b> aparece en ${esc(S.nombreMapa)}`);
+  pintar(); enviar('estado', S);
+}
+
+$('#listaNpcs').addEventListener('click', e=>{
+  const b = e.target.closest('[data-npcacc]'); if(!b) return;
+  const id = b.dataset.id;
+  if(b.dataset.npcacc==='poner') ponerNpc(id);
+  if(b.dataset.npcacc==='borrar'){
+    const n=(S.npcs||[]).find(v=>v.id===id);
+    if(n && confirm('¿Borrar «'+n.nombre+'» de la biblioteca? Las piezas ya puestas en el tablero no se tocan.')){
+      S.npcs = S.npcs.filter(v=>v.id!==id);
+      pintarNpcs(); enviar('estado', S);
+    }
+  }
+  if(b.dataset.npcacc==='editar'){
+    const n=(S.npcs||[]).find(v=>v.id===id); if(!n) return;
+    abrirDlg(Object.assign({}, n, { esNpc:n, dueno:'', x:0, y:0 }));
+  }
+});
+
+/* arrastrar un nombre desde la lista hasta el tablero */
+let npcArr = null;
+$('#listaNpcs').addEventListener('dragstart', e=>{
+  const it = e.target.closest('[data-npc]'); if(!it) return;
+  npcArr = it.dataset.npc; it.classList.add('arrastrado');
+  e.dataTransfer.effectAllowed='copy';
+  try{ e.dataTransfer.setData('text/plain', npcArr); }catch{}
+});
+$('#listaNpcs').addEventListener('dragend', e=>{
+  npcArr=null; document.querySelectorAll('.npc-it.arrastrado').forEach(n=>n.classList.remove('arrastrado'));
+  $('#tablero').classList.remove('soltando');
+});
+$('#tablero').addEventListener('dragover', e=>{
+  if(!npcArr) return; e.preventDefault();
+  e.dataTransfer.dropEffect='copy'; $('#tablero').classList.add('soltando');
+});
+$('#tablero').addEventListener('dragleave', ()=> $('#tablero').classList.remove('soltando'));
+$('#tablero').addEventListener('drop', e=>{
+  if(!npcArr) return; e.preventDefault();
+  $('#tablero').classList.remove('soltando');
+  const r = $('#tablero').getBoundingClientRect();
+  const x = Math.max(0, Math.min(W()-1, Math.floor(((e.clientX-r.left)/r.width)*W())));
+  const y = Math.max(0, Math.min(H()-1, Math.floor(((e.clientY-r.top)/r.height)*H())));
+  ponerNpc(npcArr, x, y);
+  npcArr = null;
+});
+
+$('#npcNueva').onclick = ()=>{
+  const n = { id:id8(), nombre:'Ficha nueva', color:'#7b5ba6', img:'', nivel:1,
+              especie:'', tipos:'', atk:0, dmg:'', pv:10, pvMax:10 };
+  S.npcs = S.npcs || []; S.npcs.push(n);
+  pintarNpcs(); enviar('estado', S);
+  abrirDlg(Object.assign({}, n, { esNpc:n, dueno:'', x:0, y:0 }));
+};
+
+$('#npcGuardarSel').onclick = ()=>{
+  const t = S.tokens.find(x=>x.id===sel);
+  if(!t){ alert('Toca primero una ficha del tablero para seleccionarla.'); return; }
+  const f = S.fichas.find(x=>x.tokenId===t.id) || {};
+  S.npcs = S.npcs || [];
+  if(S.npcs.some(n=>n.id===t.npc)){ alert('Esa ficha ya está en la biblioteca.'); return; }
+  const n = { id:id8(), nombre:t.nombre, color:t.color, img:t.img||f.img||'', nivel:t.nivel||1,
+              especie:t.especie||'', tipos:t.tipos||'', atk:t.atk||0, dmg:t.dmg||'',
+              pv:f.pv||10, pvMax:f.pvMax||10 };
+  S.npcs.push(n); t.npc = n.id;
+  anotar(`<b>${esc(n.nombre)}</b> se guarda en la biblioteca del director`, false);
+  pintarNpcs(); enviar('estado', S);
+};
 
 /* ===================== SINCRONIZACIÓN ===================== */
 function aligerar(e){
@@ -2941,7 +3139,7 @@ function recibir({tipo,dato,de}){
   if(tipo==='hola'){ if(soyDM) enviar('estado',S); return; }
   if(tipo==='estado'){ if(!soyDM){
       const cambio = S.nombreMapa !== dato.nombreMapa;
-      S=dato; S.areas=S.areas||[]; S.objetos=S.objetos||[]; S.imgs=S.imgs||{}; S.piezas=S.piezas||{}; S.equipos=S.equipos||{}; pintar();
+      S=dato; S.areas=S.areas||[]; S.objetos=S.objetos||[]; S.imgs=S.imgs||{}; S.piezas=S.piezas||{}; S.equipos=S.equipos||{}; S.npcs=S.npcs||[]; pintar();
       if(cambio && (S.objetos||[]).includes('mapa')) abrirMapaN(true);
     } return; }
   if(tipo==='tirada'){ verTirada(dato,false); return; }
