@@ -290,6 +290,44 @@ body.enfoque main{padding-top:10px}
 .imgrow .prev img{width:100%;height:100%;object-fit:cover}
 .imgrow input[type=file]{flex:1;min-width:0;padding:4px;font-size:12px}
 
+/* ------------- liberar ------------- */
+@keyframes palpita{0%,100%{transform:scale(1)}50%{transform:scale(1.13)}}
+#pcDlg.liberando .cel:not(.hueco),#pcDlg.liberando .slot:not(.vacio){
+  animation:palpita .82s ease-in-out infinite;border-color:var(--fucsia);cursor:pointer}
+#modoLiberar.on{background:var(--fucsia);color:#fff;border-color:var(--fucsia)}
+
+/* ------------- confirmación propia ------------- */
+#confirmar{position:fixed;inset:0;z-index:140;display:none;place-items:center;
+  background:rgba(10,20,32,.6);backdrop-filter:blur(2px)}
+#confirmar.ver{display:grid;animation:brotar .18s ease both}
+.confcaja{background:var(--arena-hueso);border:4px solid var(--fucsia);max-width:380px;width:92%;
+  box-shadow:0 16px 44px rgba(0,0,0,.5)}
+.confcaja .cab{background:var(--fucsia);color:#fff;padding:11px 15px;
+  font-family:'Silkscreen',monospace;font-size:12px}
+.confcaja .cnt{padding:18px;text-align:center}
+.confcaja .av{width:84px;height:84px;margin:0 auto 12px;border-radius:50%;
+  border:3px solid var(--tinta);display:grid;place-items:center;overflow:hidden}
+.confcaja .av img{width:100%;height:100%;object-fit:contain}
+.confcaja p{margin:0 0 16px;font-size:16px}
+.confcaja .fila{display:flex;gap:9px}
+.confcaja .fila button{flex:1}
+
+/* ------------- jugadores ------------- */
+.jug{background:var(--arena-hueso);border-bottom:2px solid #e2d5b4;padding:9px 10px;cursor:pointer;
+  transition:background .12s}
+.jug:hover{background:#fff6df}
+.jug b{font-family:'Silkscreen',monospace;font-size:10px;display:block}
+.jug span{font-family:'Alegreya Sans',sans-serif;font-size:11px;color:var(--tinta-suave)}
+.jugdet{background:#fff8e8;border:2px solid var(--oro);padding:10px;margin-top:8px}
+.jugdet h5{font-family:'Silkscreen',monospace;font-size:10px;margin:0 0 8px;color:#8a6410}
+.jugpk{display:flex;align-items:center;gap:8px;background:#fff;border:2px solid var(--tinta);
+  padding:5px 7px;margin-bottom:5px}
+.jugpk .mini{width:26px;height:26px;border-radius:50%;border:2px solid var(--tinta);overflow:hidden;
+  display:grid;place-items:center;flex:0 0 auto}
+.jugpk .mini img{width:100%;height:100%;object-fit:contain}
+.jugpk b{font-family:'Silkscreen',monospace;font-size:9px;flex:1}
+.jugpk button{font-size:8px;padding:4px 6px;border:2px solid var(--fucsia);background:#fff;color:var(--fucsia)}
+
 /* ------------- acordeones ------------- */
 .acc{background:var(--arena-hueso);border:3px solid var(--tinta);box-shadow:5px 5px 0 var(--sombra);margin-bottom:13px}
 .acc>summary{list-style:none;cursor:pointer;font-family:'Silkscreen',monospace;font-size:11px;
@@ -614,11 +652,9 @@ footer code{background:#1c3a56;padding:2px 5px;color:#cfe0e6}
       <div class="turnos solodm">
         <button class="bt" id="tAnt">◀</button>
         <button class="bt rosa" id="tSig">SIGUIENTE ▶</button>
-        <button class="bt" id="tReset">REINICIAR</button>
-        <button class="bt" id="tLimpiar">LIMPIAR ORDEN</button>
+        <button class="bt" id="tLimpiar" style="border-color:var(--fucsia);color:var(--fucsia)">VACIAR ORDEN</button>
       </div>
-      <div class="turnos"><span class="ronda" id="ronda">RONDA 1</span>
-        <span class="sub" id="quienTurno" style="font-family:'Alegreya Sans',sans-serif;font-size:12px;color:var(--tinta-suave)"></span></div>
+      <div class="turnos"><span class="sub" id="quienTurno" style="font-family:'Alegreya Sans',sans-serif;font-size:12px;color:var(--tinta-suave)"></span></div>
       <div class="subtabs" id="filtro">
         <button data-f="todos" aria-pressed="true">TODOS</button>
         <button data-f="ent" aria-pressed="false">ENTRENADORES</button>
@@ -627,9 +663,14 @@ footer code{background:#1c3a56;padding:2px 5px;color:#cfe0e6}
       <div class="lista" id="fichas"><div class="vacio">Nadie ha publicado su ficha todavía.</div></div>
     </div></details>
 
-    <details class="acc solodm" id="panelNpcs" open><summary>FICHAS DEL DIRECTOR</summary><div class="cnt2">
+    <details class="acc solodm" id="panelNpcs" open><summary>PANEL DEL DIRECTOR</summary><div class="cnt2">
+      <div class="subtabs" id="dmTabs">
+        <button data-dm="fichas" aria-pressed="true">FICHAS</button>
+        <button data-dm="jugadores" aria-pressed="false">JUGADORES</button>
+      </div>
+      <div id="dmJugadores" style="display:none"></div>
       <div class="npcs" id="listaNpcs"></div>
-      <div class="fila" style="margin-top:9px">
+      <div class="fila" style="margin-top:9px" id="npcBotones">
         <button class="bt rosa" id="npcNueva">NUEVA FICHA</button>
         <button class="bt" id="npcGuardarSel">GUARDAR LA SELECCIONADA</button>
       </div>
@@ -717,7 +758,9 @@ footer code{background:#1c3a56;padding:2px 5px;color:#cfe0e6}
       <div class="slots" id="pcEquipo"></div>
     </div>
     <div class="lado">
-      <h4>CAJA</h4>
+      <h4>CAJA
+        <button class="bt" id="modoLiberar" style="float:right;font-size:9px;padding:5px 8px">LIBERAR</button>
+      </h4>
       <div class="caja" id="pcCaja"></div>
       <p class="pcpie" id="pcVacia" style="display:none;color:var(--fucsia)">Todavía no tienes ningún Pokémon. El director te asigna uno desde el editor de la ficha, o lo consigues capturándolo.</p>
       <p class="pcpie">Arrastra entre la caja y el equipo. Si sueltas encima de un hueco ocupado, los dos intercambian su sitio.</p>
@@ -726,6 +769,18 @@ footer code{background:#1c3a56;padding:2px 5px;color:#cfe0e6}
 </dialog>
 
 <div class="menuslot" id="menuSlot"></div>
+
+<div id="confirmar"><div class="confcaja">
+  <div class="cab" id="confTit">CONFIRMAR</div>
+  <div class="cnt">
+    <div class="av" id="confAv" style="display:none"></div>
+    <p id="confTxt"></p>
+    <div class="fila">
+      <button class="bt rosa" id="confSi">SÍ, LIBERAR</button>
+      <button class="bt" id="confNo">CANCELAR</button>
+    </div>
+  </div>
+</div></div>
 
 <dialog id="dexDlg">
   <div class="dexcab"><span>POKÉDEX DE NUBIA</span><i></i></div>
@@ -1597,7 +1652,6 @@ function ordenIniciativa(){
 function dibujarFichas(){
   const c=$('#fichas'), orden=ordenIniciativa();
   const t=S.turno||{i:0,ronda:1};
-  $('#ronda').textContent='RONDA '+(t.ronda||1);
   $('#quienTurno').textContent = orden.length ? ('Turno de '+(orden[t.i%orden.length]?.nombre||'—')) : '';
 
   const enMapa = f => !f.tokenId || S.tokens.some(t=>t.id===f.tokenId);
@@ -1652,52 +1706,15 @@ function pasoTurno(d){
 }
 $('#tSig').onclick=()=>pasoTurno(1);
 $('#tAnt').onclick=()=>pasoTurno(-1);
-$('#tReset').onclick=()=>{ S.turno={i:0,ronda:1}; dibujarFichas(); enviar('estado',S); };
 $('#tLimpiar').onclick=()=>{
-  if(!soyDM) return;
-  S.fichas.forEach(f=>{ f.ini=0; });
+  const n = S.fichas.filter(f=>f.enIniciativa).length;
+  if(!n) return;
+  if(!confirm('¿Vaciar el orden de combate? Las '+n+' fichas siguen en el tablero.')) return;
+  S.fichas.forEach(f=>{ f.enIniciativa=false; });
   S.turno={i:0,ronda:1};
-  dibujarFichas(); enviar('estado',S);
+  anotar('El orden de combate queda vacío. Las fichas siguen en el tablero.', false);
+  pintar(); enviar('estado',S);
 };
-$('#fichas').addEventListener('click', e=>{
-  const q=e.target.closest('[data-quitar]');
-  if(q){
-    const f=S.fichas.find(x=>x.id===q.dataset.quitar); if(!f) return;
-    if(!(soyDM || f.nombre===yo || f.dueno===yo || f.jugador===yo)){ alert('Esa ficha no es tuya.'); return; }
-    f.enIniciativa = false;
-    anotar(`<b>${esc(f.nombre)}</b> sale del orden de combate`, false);
-    pintar();
-    soyDM ? enviar('estado',S) : enviar('ficha', f);
-    return;
-  }
-  const b=e.target.closest('[data-h]'); if(!b) return;
-  const f=S.fichas.find(x=>x.id===b.dataset.h); if(!f) return;
-  const antes=f.pv, d=+b.dataset.d;
-  f.pv = Math.max(0, Math.min(f.pvMax, f.pv + d));
-  const real=f.pv-antes;
-  if(real){
-    const txt = real<0 ? `<b>${esc(f.nombre)}</b> recibe ${-real} de daño · ${antes} → ${f.pv} PS`
-                       : `<b>${esc(f.nombre)}</b> recupera ${real} PS · ${antes} → ${f.pv} PS`;
-    const cae = f.pv===0 ? ` · <b style="color:var(--fucsia)">fuera de combate</b>` : '';
-    anotar(txt+cae);
-  }
-  dibujarFichas(); enviar('ficha', f);
-});
-function actualizarAccesoMapa(){
-  $('#verMapaN').hidden = !soyDM && !(S.objetos||[]).includes('mapa');
-}
-function actualizarAccesoObjetos(){
-  const objetos = S.objetos||[];
-  const puedeMapa = soyDM || objetos.includes('mapa');
-  const puedePokedex = soyDM || objetos.includes('pokedex');
-  $('#verMapaN').hidden = !puedeMapa;
-  $('#panelDex').hidden = !puedePokedex;
-  if(!puedeMapa) $('#capaMapaN').classList.remove('ver');
-  if(!puedePokedex && $('#dexDlg').open) $('#dexDlg').close();
-}
-const pintar = ()=>{ dibujarMapa(); dibujarFichas(); dibujarAreas(); listaDuenos();
-  listaCapturables(); pintarObjetos(); actualizarAccesoObjetos();
-  pintarEquipo(); pintarPanelFicha(); pintarNpcs(); };
 
 /* ===================== ANCHO ===================== */
 document.querySelectorAll('[data-z]').forEach(b=>b.onclick=()=>{
@@ -1840,9 +1857,13 @@ $('#dOk').onclick=()=>{
 };
 $('#dDel').onclick=()=>{
   const t=editando; if(!t) return;
-  S.tokens=S.tokens.filter(x=>x.id!==t.id);
-  S.fichas=S.fichas.filter(x=>x.tokenId!==t.id);
-  $('#dlg').close(); pintar(); enviar('estado',S);
+  // Quita la pieza del tablero pero conserva el personaje con su imagen y sus datos
+  S.tokens = S.tokens.filter(x=>x.id!==t.id);
+  const f = S.fichas.find(x=>x.tokenId===t.id);
+  if(f) f.enIniciativa = false;
+  anotar(`<b>${esc(t.nombre)}</b> sale del tablero`, false);
+  $('#dlg').close(); pintar();
+  soyDM ? enviar('estado',S) : enviar('quitarPieza',{tokenId:t.id});
 };
 $('#dCancel').onclick=()=>$('#dlg').close();
 
@@ -2065,22 +2086,25 @@ $('#guardarFicha').onclick=async()=>{
     if(ini!==undefined) $('#fchIni').value=Number(ini)||0;
     datos._nubiaNivel=nivel; datos._nubiaClase=clase; datos._nubiaOrigen=origen;
     info.textContent='Datos importados desde Poke5e. La ficha se publicará en la mesa.';
-    const equipoImportado = extraerPokemon(datos);
-    if(equipoImportado.length){
+    const hallados = await importarEquipoPoke5e(datos);
+    if(hallados.length){
       const e = equipoLeer(yo);
-      const yaHay = p => p && e.eq.concat(e.caja).some(x=>x &&
+      const yaHay = p => e.eq.concat(e.caja).some(x=>x &&
         String(x.especie||'').toLowerCase() === String(p.especie||'').toLowerCase());
-      const nuevos = equipoImportado.filter(p=>!yaHay(p));
+      const nuevos = hallados.filter(p=>!yaHay(p));
+      nuevos.forEach(pk=>{
+        const hueco = e.eq.findIndex(x=>!x);
+        if(hueco >= 0) e.eq[hueco] = pk; else e.caja.push(pk);
+      });
       if(nuevos.length){
-        await adornarPokemon(nuevos);
-        nuevos.forEach(pk=>{
-          const hueco = e.eq.findIndex(x=>!x);
-          if(hueco >= 0) e.eq[hueco] = pk; else e.caja.push(pk);
-        });
         guardarEquipo(yo, e);
         anotar(`<b>${esc(nombre)}</b> importa ${nuevos.length} Pokémon desde Poke5e`);
-        info.textContent = 'Ficha y '+nuevos.length+' Pokémon importados desde Poke5e.';
+        info.textContent = 'Ficha y '+nuevos.length+' Pokémon importados.';
+      } else {
+        info.textContent = 'Ficha importada. Sus Pokémon ya estaban en tu equipo.';
       }
+    } else {
+      info.textContent = 'Ficha importada. No se encontró ningún Pokémon reconocible.';
     }
   }else if(enlace){
     info.textContent='Ficha añadida a la mesa, pero no se importó: '+detalleErrorPoke5e(enlace);
@@ -2390,7 +2414,12 @@ $('#tIniciativa').onclick = ()=>{
   const t=editando; if(!t) return;
   const r=tirarDados(1,20,0,`${t.nombre} · iniciativa`);
   $('#dIni').value=r.total;
-  $('#dIni').dataset.tirada = '1';        // marca que esta ficha entra al orden
+  $('#dIni').dataset.tirada = '1';
+  // entra al orden de inmediato, sin tener que guardar
+  let f = S.fichas.find(x=>x.tokenId===t.id);
+  if(!f && !t.esPk && !t.esNpc){ f={ id:id8(), tokenId:t.id, nombre:t.nombre,
+      especie:t.especie||'', dueno:t.dueno||'', pv:10, pvMax:10 }; S.fichas.push(f); }
+  if(f){ f.ini=r.total; f.enIniciativa=true; pintar(); enviar(soyDM?'estado':'ficha', soyDM?S:f); }
 };
 $('#tDano').onclick       = ()=>{ const t=editando; if(t) tirarFormula($('#dDmg').value, `${t.nombre} · daño`); };
 
@@ -2892,6 +2921,7 @@ function mover(a, b){
 /* ---------- menú de un hueco del equipo ---------- */
 $('#slots').addEventListener('click', e=>{
   const c=e.target.closest('[data-zona]'); if(!c||c.classList.contains('hueco')) return;
+  if(liberando){ intentarLiberar('eq', +c.dataset.i); return; }
   const pk = equipoLeer(yo).eq[+c.dataset.i]; if(!pk) return;
   const r = c.getBoundingClientRect(), m = $('#menuSlot');
   m.innerHTML = `<div class="tit">${esc(pk.nombre.toUpperCase())} · NV ${pk.nivel||1}</div>
@@ -2933,6 +2963,13 @@ $('#menuSlot').addEventListener('click', e=>{
 });
 
 $('#abrirPC').onclick = ()=>{ $('#pcDlg').showModal(); pintarEquipo(); };
+['pcEquipo','pcCaja'].forEach(z=>{
+  $('#'+z).addEventListener('click', e=>{
+    if(!liberando) return;
+    const c=e.target.closest('[data-zona]'); if(!c||c.classList.contains('hueco')) return;
+    intentarLiberar(c.dataset.zona, +c.dataset.i);
+  });
+});
 $('#pcCerrar').onclick = ()=> $('#pcDlg').close();
 conectarArrastre($('#pcEquipo'));
 conectarArrastre($('#pcCaja'));
@@ -2969,6 +3006,7 @@ function pintarPanelFicha(){
       : 'Solo puedes tener una ficha de entrenador. Para crear otra, elimina esta primero.'}</p>`;
   if($('#editarMiFicha')) $('#editarMiFicha').onclick = ()=>{ sel=t.id; abrirDlg(t); };
   if($('#alTablero')) $('#alTablero').onclick = ()=>{
+    if(S.tokens.some(x=>x.id===f.tokenId)) { pintar(); return; }   // ya está puesta
     const nt = { id:id8(), nombre:f.nombre, color:'#c6386b', img:f.img||'', nivel:0, dueno:yo,
                  x:Math.min(2,W()-1), y:Math.min(2,H()-1) };
     S.tokens.push(nt); f.tokenId = nt.id;
@@ -3112,6 +3150,174 @@ $('#npcGuardarSel').onclick = ()=>{
   pintarNpcs(); enviar('estado', S);
 };
 
+
+/* ===================== CONFIRMACIÓN PROPIA ===================== */
+let confResolver = null;
+function confirmarNubia({titulo, texto, si, imagen, color}){
+  $('#confTit').textContent = titulo || 'CONFIRMAR';
+  $('#confTxt').innerHTML = texto || '';
+  $('#confSi').textContent = si || 'SÍ';
+  const av = $('#confAv');
+  if(imagen !== undefined){
+    av.style.display='grid'; av.style.background = color || '#0e7c8b';
+    av.innerHTML = imagen ? `<img src="${imagen}" alt="">` : '';
+  } else av.style.display='none';
+  $('#confirmar').classList.add('ver');
+  return new Promise(r=>{ confResolver = r; });
+}
+function cerrarConf(v){ $('#confirmar').classList.remove('ver'); if(confResolver){ confResolver(v); confResolver=null; } }
+$('#confSi').onclick = ()=>cerrarConf(true);
+$('#confNo').onclick = ()=>cerrarConf(false);
+$('#confirmar').onclick = e=>{ if(e.target.id==='confirmar') cerrarConf(false); };
+
+/* ===================== LIBERAR POKÉMON ===================== */
+let liberando = false;
+$('#modoLiberar').onclick = ()=>{
+  liberando = !liberando;
+  $('#modoLiberar').classList.toggle('on', liberando);
+  $('#modoLiberar').textContent = liberando ? 'CANCELAR' : 'LIBERAR';
+  $('#pcDlg').classList.toggle('liberando', liberando);
+};
+async function intentarLiberar(zona, i){
+  const e = equipoLeer(yo);
+  const pk = zona==='eq' ? e.eq[i] : e.caja[i];
+  if(!pk) return;
+  const ok = await confirmarNubia({
+    titulo:'LIBERAR POKÉMON',
+    texto:`¿Seguro que quieres liberar a <b>${esc(pk.nombre)}</b>?<br>Se irá para siempre: no vuelve al equipo ni a la caja.`,
+    si:'SÍ, LIBERAR', imagen: pk.img || '', color: pk.color
+  });
+  if(!ok) return;
+  if(zona==='eq') e.eq[i] = null; else e.caja.splice(i,1);
+  anotar(`<b>${esc(yo)}</b> libera a <b>${esc(pk.nombre)}</b>. Buen viaje.`);
+  guardarEquipo(yo, e);
+}
+
+/* ===================== PANEL DEL DIRECTOR · PESTAÑAS ===================== */
+let dmTab = 'fichas';
+$('#dmTabs').addEventListener('click', e=>{
+  const b=e.target.closest('[data-dm]'); if(!b) return;
+  dmTab = b.dataset.dm;
+  document.querySelectorAll('#dmTabs button').forEach(x=>x.setAttribute('aria-pressed', x===b));
+  $('#listaNpcs').style.display    = dmTab==='fichas' ? '' : 'none';
+  $('#npcBotones').style.display   = dmTab==='fichas' ? '' : 'none';
+  $('#dmJugadores').style.display  = dmTab==='jugadores' ? 'block' : 'none';
+  pintarJugadores();
+});
+
+let jugAbierto = null;
+function pintarJugadores(){
+  if(!soyDM || !$('#dmJugadores') || dmTab!=='jugadores') return;
+  const nombres = [...new Set([
+    ...presentes,
+    ...S.fichas.filter(f=>!f.especie).map(f=>f.jugador||f.dueno),
+    ...Object.keys(S.equipos||{})
+  ].filter(Boolean).map(n=>String(n)))]
+   .filter(n => claveJug(n) !== claveJug(yo));
+
+  if(!nombres.length){
+    $('#dmJugadores').innerHTML = '<div class="vacio">Nadie más se ha conectado a esta sala todavía.</div>';
+    return;
+  }
+  $('#dmJugadores').innerHTML = nombres.map(n=>{
+    const f = S.fichas.find(x=>!x.especie && claveJug(x.jugador||x.dueno)===claveJug(n));
+    const e = equipoLeer(n);
+    const cuantos = e.eq.filter(Boolean).length + e.caja.length;
+    const conectado = [...presentes].some(p=>claveJug(p)===claveJug(n));
+    const abierto = jugAbierto === n;
+    let det = '';
+    if(abierto){
+      const lista = e.eq.filter(Boolean).map((p,i)=>({p,z:'eq',i}))
+        .concat(e.caja.map((p,i)=>({p,z:'caja',i})).filter(x=>x.p));
+      det = `<div class="jugdet">
+        <h5>DATOS</h5>
+        <div class="jugpk"><b>${f?esc(f.nombre):'Sin ficha de entrenador'}</b>
+          <span style="font-family:'Alegreya Sans',sans-serif;font-size:11px">${f?f.pv+' / '+f.pvMax+' PS · ini '+(f.ini||0):'—'}</span></div>
+        <h5 style="margin-top:10px">POKÉMON · ${cuantos}</h5>
+        ${lista.length ? lista.map(({p,z,i})=>`
+          <div class="jugpk">
+            <div class="mini" style="background:${p.color||'#0e7c8b'}">${p.img?`<img src="${p.img}" alt="">`:''}</div>
+            <b>${esc(p.nombre)} · Nv ${p.nivel||1}</b>
+            <button data-quitapk="${esc(n)}|${z}|${i}">QUITAR</button>
+          </div>`).join('')
+        : '<div class="jugpk"><b>Sin Pokémon registrados</b></div>'}
+      </div>`;
+    }
+    return `<div class="jug" data-jug="${esc(n)}">
+        <b>${esc(n)} ${conectado?'<span style="color:var(--selva)">•</span>':''}</b>
+        <span>${cuantos} Pokémon${f?' · ficha publicada':' · sin ficha'}</span>
+      </div>${det}`;
+  }).join('');
+}
+$('#dmJugadores').addEventListener('click', async e=>{
+  const q = e.target.closest('[data-quitapk]');
+  if(q){
+    const [n, z, i] = q.dataset.quitapk.split('|');
+    const eq = equipoLeer(n);
+    const pk = z==='eq' ? eq.eq[+i] : eq.caja[+i];
+    if(!pk) return;
+    const ok = await confirmarNubia({
+      titulo:'QUITAR POKÉMON',
+      texto:`¿Quitar a <b>${esc(pk.nombre)}</b> del equipo de <b>${esc(n)}</b>?`,
+      si:'SÍ, QUITAR', imagen: pk.img||'', color: pk.color });
+    if(!ok) return;
+    if(z==='eq') eq.eq[+i]=null; else eq.caja.splice(+i,1);
+    equipoEscribir(n, eq);
+    anotar(`El director retira a <b>${esc(pk.nombre)}</b> del equipo de <b>${esc(n)}</b>`);
+    pintarJugadores(); enviar('estado', S);
+    return;
+  }
+  const j = e.target.closest('[data-jug]');
+  if(j){ jugAbierto = (jugAbierto === j.dataset.jug) ? null : j.dataset.jug; pintarJugadores(); }
+});
+
+/* ===================== IMPORTAR POKÉMON DESDE POKE5E ===================== */
+/* Solo lo esencial: nombre de especie, nivel y PS. Cada nombre se valida
+   contra PokéAPI; si no existe la especie, se descarta sin ruido. */
+function nombresPosibles(raiz){
+  const out = new Set();
+  const mirar = v => {
+    if(!v) return;
+    if(Array.isArray(v)) return v.forEach(mirar);
+    if(typeof v !== 'object') return;
+    const n = v.species || v.especie || v.pokemon || v.speciesName || v.dex_name || v.name || v.nombre;
+    if(typeof n === 'string' && /^[A-Za-zÁÉÍÓÚÑáéíóúñ' .-]{3,20}$/.test(n.trim())){
+      out.add(JSON.stringify({
+        n: n.trim(),
+        lv: Number(v.level || v.nivel || v.lvl || 0) || 0,
+        pv: Number(v.hp || v.hit_points || v.pv || v.current_hp || 0) || 0,
+        pvMax: Number(v.max_hp || v.maxHp || v.hit_points_max || 0) || 0
+      }));
+    }
+    Object.values(v).forEach(mirar);
+  };
+  mirar(raiz);
+  return [...out].map(x=>JSON.parse(x)).slice(0, 60);
+}
+async function importarEquipoPoke5e(datos){
+  const cand = nombresPosibles(datos);
+  const hallados = [];
+  await Promise.all(cand.map(async c=>{
+    const clave = c.n.toLowerCase().replace(/\s+/g,'-');
+    try{
+      const r = await fetch('https://pokeapi.co/api/v2/pokemon/'+encodeURIComponent(clave));
+      if(!r.ok) return;                       // no es una especie real: se descarta
+      const j = await r.json();
+      hallados.push({
+        id:id8(),
+        especie: j.name.charAt(0).toUpperCase()+j.name.slice(1),
+        nombre:  j.name.charAt(0).toUpperCase()+j.name.slice(1),
+        nivel: c.lv || 1,
+        pv: c.pv || 0, pvMax: c.pvMax || 0,
+        img: j.sprites?.other?.['official-artwork']?.front_default || j.sprites?.front_default || '',
+        tipos: j.types.map(t=>t.type.name).join(' / '),
+        color: '#0e7c8b'
+      });
+    }catch{}
+  }));
+  return hallados;
+}
+
 /* ===================== SINCRONIZACIÓN ===================== */
 function aligerar(e){
   /* Las imágenes incrustadas no caben en un mensaje de sala: se quitan del envío.
@@ -3168,6 +3374,10 @@ function recibir({tipo,dato,de}){
     pintar(); if(soyDM)enviar('estado',S); return; }
   if(tipo==='ficha'){ const i=S.fichas.findIndex(f=>f.id===dato.id||(f.nombre===dato.nombre&&!f.especie&&!dato.especie));
     i>=0?S.fichas[i]=dato:S.fichas.push(dato); pintar(); if(soyDM)enviar('estado',S); }
+  if(tipo==='quitarPieza'){
+    S.tokens=S.tokens.filter(t=>t.id!==dato.tokenId);
+    const f=S.fichas.find(x=>x.tokenId===dato.tokenId); if(f) f.enIniciativa=false;
+    pintar(); if(soyDM)enviar('estado',S); return; }
   if(tipo==='quitar'){
     S.tokens=S.tokens.filter(t=>t.id!==dato.tokenId);
     S.fichas=S.fichas.filter(f=>f.id!==dato.fichaId);
