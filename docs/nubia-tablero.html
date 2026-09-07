@@ -523,6 +523,7 @@ footer code{background:#1c3a56;padding:2px 5px;color:#cfe0e6}
     <details class="acc" open><summary>TU FICHA DE ENTRENADOR</summary><div class="cnt2">
       <label for="fchPoke">ENLACE DE POKE5E</label>
       <input id="fchPoke" placeholder="https://poke5e.app/trainers/…">
+      <p class="nota" id="fchInfo">Al publicar se intentarán importar nombre, PS e iniciativa desde Poke5e.</p>
       <div class="fila" style="margin-top:8px">
         <div style="flex:1"><label for="fchPv">PS</label><input id="fchPv" type="number" value="10"></div>
         <div style="flex:1"><label for="fchPvMax">MÁX</label><input id="fchPvMax" type="number" value="10"></div>
@@ -536,6 +537,7 @@ footer code{background:#1c3a56;padding:2px 5px;color:#cfe0e6}
         <button class="bt" id="tAnt">◀</button>
         <button class="bt rosa" id="tSig">SIGUIENTE ▶</button>
         <button class="bt" id="tReset">REINICIAR</button>
+        <button class="bt" id="tLimpiar">LIMPIAR ORDEN</button>
       </div>
       <div class="turnos"><span class="ronda" id="ronda">RONDA 1</span>
         <span class="sub" id="quienTurno" style="font-family:'Alegreya Sans',sans-serif;font-size:12px;color:var(--tinta-suave)"></span></div>
@@ -1482,13 +1484,15 @@ function dibujarFichas(){
   c.innerHTML = vis.map(f=>{
     const pct=f.pvMax>0?Math.max(0,Math.min(100,(f.pv/f.pvMax)*100)):0;
     const cl=pct<=25?'bajo':pct<=55?'medio':'';
-    const editable = soyDM || f.nombre===yo || f.dueno===yo;
-    const verPS = soyDM || f.nombre===yo || f.dueno===yo;
+    const esMia = f.jugador===yo || f.nombre===yo;
+    const editable = soyDM || esMia || f.dueno===yo;
+    const verPS = soyDM || esMia || f.dueno===yo;
     const activo = orden.length && orden[t.i%orden.length] && orden[t.i%orden.length].id===f.id;
-    return `<div class="item ${f.nombre===yo?'mia':''} ${f.especie?'poke':''} ${activo?'activo':''}">
+    return `<div class="item ${esMia?'mia':''} ${f.especie?'poke':''} ${activo?'activo':''} ">
       <div class="top"><span class="nom">${esc(f.nombre)}</span><span class="ini">${f.ini??0}</span></div>
       ${f.especie ? `<span class="sub">${esc(f.especie)} · Nv ${f.nivel||1}${f.dueno?' · de '+esc(f.dueno):' · del director'}</span>`
-        : (f.poke5e?`<a href="${esc(f.poke5e)}" target="_blank" rel="noopener">Abrir ficha en poke5e ↗</a>`:'<span class="sub">Sin enlace de ficha</span>')}
+        : `<span class="sub">${f.nivel?'Nv '+esc(f.nivel)+' · ':''}${esc(f.clase||f.origen||'Entrenador')}</span>
+          ${f.poke5e?`<a href="${esc(f.poke5e)}" target="_blank" rel="noopener">Abrir ficha en poke5e ↗</a>`:'<span class="sub">Sin enlace de ficha</span>'}`}
       ${verPS?`<div class="pv"><i class="${cl}" style="width:${pct}%"></i></div>
       <div class="pvtxt">${f.pv} / ${f.pvMax} PS</div>`
       :`<div class="pvtxt" style="color:${pct<=25?'var(--fucsia)':pct<=55?'var(--oro)':'var(--selva)'}">${
@@ -1517,6 +1521,12 @@ function pasoTurno(d){
 $('#tSig').onclick=()=>pasoTurno(1);
 $('#tAnt').onclick=()=>pasoTurno(-1);
 $('#tReset').onclick=()=>{ S.turno={i:0,ronda:1}; dibujarFichas(); enviar('estado',S); };
+$('#tLimpiar').onclick=()=>{
+  if(!soyDM) return;
+  S.fichas.forEach(f=>{ f.ini=0; });
+  S.turno={i:0,ronda:1};
+  dibujarFichas(); enviar('estado',S);
+};
 $('#fichas').addEventListener('click', e=>{
   const b=e.target.closest('[data-h]'); if(!b) return;
   const f=S.fichas.find(x=>x.id===b.dataset.h); if(!f) return;
@@ -1726,13 +1736,80 @@ $('#borrarSel').onclick=()=>{
   S.fichas=S.fichas.filter(x=>x.tokenId!==t.id);
   sel=null; pintar(); enviar('estado',S);
 };
-$('#guardarFicha').onclick=()=>{
+function extraerIdPoke5e(valor){
+  try{
+    const u=new URL(valor), partes=u.pathname.split('/').filter(Boolean);
+    const i=partes.findIndex(x=>x.toLowerCase()==='trainers');
+    return i>=0 ? partes[i+1]||'' : partes.at(-1)||'';
+  }catch{return '';}
+}
+function buscarDato(obj, nombres){
+  if(!obj || typeof obj!=='object') return undefined;
+  for(const n of nombres){
+    if(obj[n]!==undefined && obj[n]!==null && obj[n]!=='') return obj[n];
+  }
+  for(const v of Object.values(obj)){
+    const encontrado=buscarDato(v,nombres);
+    if(encontrado!==undefined) return encontrado;
+  }
+  return undefined;
+}
+function encontrarObjeto(valor){
+  if(!valor || typeof valor!=='object') return null;
+  if(['name','nombre','hit_points','hp','max_hp','level','nivel','initiative','iniciativa']
+    .some(k=>Object.prototype.hasOwnProperty.call(valor,k))) return valor;
+  for(const v of Object.values(valor)){
+    const encontrado=encontrarObjeto(v);
+    if(encontrado) return encontrado;
+  }
+  return null;
+}
+async function importarFichaPoke5e(valor){
+  const id=extraerIdPoke5e(valor); if(!id) return null;
+  const u=new URL(valor);
+  const rutas=[
+    `${u.origin}/api/trainers/${encodeURIComponent(id)}`,
+    `${u.origin}${u.pathname.replace(/\/$/,'')}/__data.json`
+  ];
+  for(const ruta of rutas){
+    try{
+      const r=await fetch(ruta,{headers:{accept:'application/json'},credentials:'omit'});
+      if(!r.ok) continue;
+      const dato=encontrarObjeto(await r.json());
+      if(dato) return dato;
+    }catch{}
+  }
+  return null;
+}
+$('#guardarFicha').onclick=async()=>{
   if(!yo){ alert('Escribe tu nombre arriba antes de publicar la ficha.'); return; }
-  let f=S.fichas.find(x=>x.nombre===yo && !x.especie);
+  const b=$('#guardarFicha'), info=$('#fchInfo'), enlace=$('#fchPoke').value.trim();
+  b.disabled=true; b.textContent='IMPORTANDO…';
+  const datos=enlace?await importarFichaPoke5e(enlace):null;
+  let nombre=yo;
+  if(datos){
+    nombre=buscarDato(datos,['name','nombre','displayName','display_name'])||nombre;
+    const pv=buscarDato(datos,['hit_points','hitPoints','hp','pv','health']);
+    const pvMax=buscarDato(datos,['max_hit_points','maxHitPoints','max_hp','pvMax','health_max']);
+    const ini=buscarDato(datos,['initiative','iniciativa','initiative_bonus','initiativeBonus']);
+    const nivel=buscarDato(datos,['level','nivel']);
+    const clase=buscarDato(datos,['class','clase','trainer_class','trainerClass']);
+    const origen=buscarDato(datos,['origin','origen','background']);
+    if(pv!==undefined) $('#fchPv').value=Number(pv)||0;
+    if(pvMax!==undefined) $('#fchPvMax').value=Number(pvMax)||Number(pv)||0;
+    if(ini!==undefined) $('#fchIni').value=Number(ini)||0;
+    datos._nubiaNivel=nivel; datos._nubiaClase=clase; datos._nubiaOrigen=origen;
+    info.textContent='Datos importados desde Poke5e. La ficha se publicará en la mesa.';
+  }else if(enlace){
+    info.textContent='No se pudo leer Poke5e; se publicará el enlace y los datos escritos.';
+  }
+  let f=S.fichas.find(x=>(x.jugador===yo || x.nombre===yo) && !x.especie);
   if(!f){ f={id:id8(), nombre:yo}; S.fichas.push(f); }
-  f.poke5e=$('#fchPoke').value.trim(); f.pv=+$('#fchPv').value||0;
+  f.jugador=yo; f.nombre=nombre; f.poke5e=enlace; f.pv=+$('#fchPv').value||0;
   f.pvMax=+$('#fchPvMax').value||0; f.ini=+$('#fchIni').value||0;
+  if(datos){ f.nivel=datos._nubiaNivel; f.clase=datos._nubiaClase; f.origen=datos._nubiaOrigen; }
   dibujarFichas(); enviar('ficha',f);
+  b.disabled=false; b.textContent='PUBLICAR EN LA MESA';
 };
 
 /* ===================== NIEBLA ===================== */
