@@ -1746,6 +1746,13 @@ function extraerIdPoke5e(valor){
     return i>=0 ? partes[i+1]||'' : partes.at(-1)||'';
   }catch{return '';}
 }
+function detalleErrorPoke5e(valor){
+  try{
+    const u=new URL(valor);
+    if(!u.searchParams.get('id') && !u.pathname.match(/\/trainers\/[^/]+/i)) return 'El enlace no contiene un id de entrenador.';
+    return 'Poke5e no devolvió una ficha para ese id. Copia el enlace público completo desde Poke5e.';
+  }catch{return 'El enlace de Poke5e no es válido.';}
+}
 function buscarDato(obj, nombres){
   if(!obj || typeof obj!=='object') return undefined;
   for(const n of nombres){
@@ -1805,7 +1812,7 @@ $('#guardarFicha').onclick=async()=>{
     datos._nubiaNivel=nivel; datos._nubiaClase=clase; datos._nubiaOrigen=origen;
     info.textContent='Datos importados desde Poke5e. La ficha se publicará en la mesa.';
   }else if(enlace){
-    info.textContent='Ficha añadida a la mesa. Poke5e no expone sus datos para importarlos automáticamente; completa PS e iniciativa aquí.';
+    info.textContent='Ficha añadida a la mesa, pero no se importó: '+detalleErrorPoke5e(enlace);
   }
   let f=S.fichas.find(x=>(x.jugador===yo || x.nombre===yo) && !x.especie);
   if(!f){ f={id:id8(), nombre:yo}; S.fichas.push(f); }
