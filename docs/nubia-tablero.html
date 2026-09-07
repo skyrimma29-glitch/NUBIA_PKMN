@@ -173,8 +173,7 @@ body.enfoque main{padding-top:10px}
 .mapaN .cab b{font-family:'Silkscreen',monospace;font-size:13px}
 .mapaN .cab span{font-family:'Alegreya Sans',sans-serif;font-size:13px;color:#8fc8d3}
 .mapaN svg{display:block;width:100%;height:auto}
-.faro{animation:faro 1.15s ease-in-out infinite}
-@keyframes faro{0%,100%{r:11;opacity:1}50%{r:26;opacity:.25}}
+.faroTxt{font-family:'Silkscreen',monospace;font-size:13px;fill:#12283f}
 .faroTxt{font-family:'Silkscreen',monospace;font-size:13px;fill:#12283f}
 
 /* ------------- pokédex ------------- */
@@ -1385,7 +1384,7 @@ const MAPAS_IMG = {
 
 /* ===================== ESTADO ===================== */
 let S = { nombreMapa:'Pueblo Fundación', filas:MAPAS.Localidades['Pueblo Fundación'],
-          img:'', tileset:'', tokens:[], niebla:[], fichas:[], areas:[], objetos:[], turno:{i:0,ronda:1} };
+          img:'', tileset:'', tokens:[], niebla:[], fichas:[], areas:[], objetos:[], imgs:{}, turno:{i:0,ronda:1} };
 let soyDM=false, yo='', canal=null, sel=null, pincel=0, tamPincel=1;
 let presentes = new Set();
 let filtro='todos', herramienta='', trazo=null;
@@ -1500,6 +1499,7 @@ function dibujarFichas(){
       ${editable?`<div class="mini">
         <button data-h="${f.id}" data-d="-5">−5</button><button data-h="${f.id}" data-d="-1">−1</button>
         <button data-h="${f.id}" data-d="1">+1</button><button data-h="${f.id}" data-d="5">+5</button>
+        <button data-quitar="${f.id}" title="Quitar de la mesa" style="margin-left:auto;color:var(--fucsia);border-color:var(--fucsia)">✕</button>
       </div>`:''}
     </div>`;
   }).join('');
@@ -1528,6 +1528,18 @@ $('#tLimpiar').onclick=()=>{
   dibujarFichas(); enviar('estado',S);
 };
 $('#fichas').addEventListener('click', e=>{
+  const q=e.target.closest('[data-quitar]');
+  if(q){
+    const f=S.fichas.find(x=>x.id===q.dataset.quitar); if(!f) return;
+    if(!(soyDM || f.nombre===yo || f.dueno===yo || f.jugador===yo)){ alert('Esa ficha no es tuya.'); return; }
+    if(!confirm('¿Quitar a '+f.nombre+' de la mesa? También se borra su pieza del tablero.')) return;
+    S.tokens=S.tokens.filter(t=>t.id!==f.tokenId);
+    S.fichas=S.fichas.filter(x=>x.id!==f.id);
+    anotar(`<b>${esc(f.nombre)}</b> sale de la mesa`);
+    pintar();
+    soyDM ? enviar('estado',S) : enviar('quitar',{tokenId:f.tokenId, fichaId:f.id});
+    return;
+  }
   const b=e.target.closest('[data-h]'); if(!b) return;
   const f=S.fichas.find(x=>x.id===b.dataset.h); if(!f) return;
   const antes=f.pv, d=+b.dataset.d;
@@ -1598,7 +1610,7 @@ $('#capaTokens').addEventListener('pointerup', ()=>{
   const t = drag.t;
   if(movido){ t.x=d.x; t.y=d.y; enviar('mover',{id:t.id,x:t.x,y:t.y}); }
   drag=null; dibujarTokens(); dibujarAreas();
-  if(!movido){ if(escaneando && t.especie) abrirPokedex(t); else abrirDlg(t); }   // un toque sin desplazamiento abre el editor
+  if(!movido){ if(escaneando) abrirPokedex(t); else abrirDlg(t); }   // un toque sin desplazamiento abre el editor
 });
 $('#capaTokens').addEventListener('contextmenu', e=>{
   const n=e.target.closest('.tk'); if(!n) return;
@@ -1816,10 +1828,22 @@ $('#guardarFicha').onclick=async()=>{
   }
   let f=S.fichas.find(x=>(x.jugador===yo || x.nombre===yo) && !x.especie);
   if(!f){ f={id:id8(), nombre:yo}; S.fichas.push(f); }
-  f.jugador=yo; f.nombre=nombre; f.poke5e=enlace; f.pv=+$('#fchPv').value||0;
+  f.jugador=yo; f.dueno=yo; f.nombre=nombre; f.poke5e=enlace; f.pv=+$('#fchPv').value||0;
   f.pvMax=+$('#fchPvMax').value||0; f.ini=+$('#fchIni').value||0;
   if(datos){ f.nivel=datos._nubiaNivel; f.clase=datos._nubiaClase; f.origen=datos._nubiaOrigen; }
-  dibujarFichas(); enviar('ficha',f);
+
+  // Si la ficha aún no tiene una pieza en el tablero, se le crea
+  let t = S.tokens.find(x=>x.id===f.tokenId)
+       || S.tokens.find(x=>x.dueno===yo && !x.especie);
+  if(!t){
+    t = { id:id8(), nombre:nombre, color:'#c6386b', img:'',
+          x:Math.min(2,W()-1), y:Math.min(2,H()-1), nivel:0, dueno:yo };
+    S.tokens.push(t);
+    enviar('token', t);
+    anotar(`<b>${esc(nombre)}</b> entra al tablero`);
+  } else { t.nombre = nombre; }
+  f.tokenId = t.id;
+  pintar(); enviar('ficha',f);
   b.disabled=false; b.textContent='PUBLICAR EN LA MESA';
 };
 
@@ -1854,36 +1878,50 @@ $('#revelar').onclick=()=>{ S.niebla=[]; pintar(); enviar('estado',S); };
 
 $('#cargarMapa').onclick=()=>{
   const n=$('#selMapa').value, m=buscarMapa(n); if(!m) return;
-  S.nombreMapa=n; S.filas=m; S.img=MAPAS_IMG[n]||''; S.niebla=[];
+  S.imgs=S.imgs||{};
+  S.nombreMapa=n; S.filas=m; S.img=S.imgs[n]||MAPAS_IMG[n]||''; S.niebla=[];
   S.tokens.forEach(t=>{ t.x=Math.min(t.x,m[0].length-1); t.y=Math.min(t.y,m.length-1); });
   pintar(); enviar('estado',S);
   if((S.objetos||[]).includes('mapa')) abrirMapaN(true);
 };
 $('#ponerImg').onclick=async()=>{
   const f=$('#imgArch').files[0], u=$('#urlImg').value.trim();
+  S.imgs = S.imgs || {};
+  let destino = '';
   if(f){
-    const dato=await new Promise(r=>{ const fr=new FileReader();
-      fr.onload=()=>r(fr.result); fr.onerror=()=>r(''); fr.readAsDataURL(f); });
-    if(!dato) return;
     const url = await subirImagen(f, 'mapas');
     if(url){
-      S.img=url; S.nombreMapa=f.name.replace(/\.[^.]+$/,'');
-      $('#imgInfo').textContent='Imagen guardada en la nube · queda disponible en próximas sesiones.';
+      destino = url;
+      $('#imgInfo').textContent='Imagen guardada en la nube y fijada a «'+S.nombreMapa+'».';
     } else {
+      const dato=await new Promise(r=>{ const fr=new FileReader();
+        fr.onload=()=>r(fr.result); fr.onerror=()=>r(''); fr.readAsDataURL(f); });
+      if(!dato) return;
       const kb=Math.round(dato.length/1400);
       if(kb>180){
         $('#imgInfo').innerHTML='Pesa unos '+kb+' kB y no cabe en un mensaje de sala. '
           + 'Entra con tu cuenta para guardarla en la nube, o redúcela.';
         return;
       }
-      S.img=dato; S.nombreMapa=f.name.replace(/\.[^.]+$/,'');
-      $('#imgInfo').textContent='Imagen cargada solo para esta sesión · unos '+kb+' kB.';
+      destino = dato;
+      $('#imgInfo').textContent='Imagen fijada a «'+S.nombreMapa+'» solo para esta sesión · '+kb+' kB.';
     }
-  } else if(u){ S.img=u; S.nombreMapa='Imagen propia'; }
-  else return;
+  } else if(u){
+    destino = u;
+    $('#imgInfo').textContent='Imagen fijada a «'+S.nombreMapa+'».';
+  } else return;
+
+  S.img = destino;
+  S.imgs[S.nombreMapa] = destino;   // queda pegada a este esquema para siempre
+  $('#imgArch').value='';
   pintar(); enviar('estado',S);
 };
-$('#quitarImg').onclick=()=>{ S.img=''; $('#imgArch').value=''; pintar(); enviar('estado',S); };
+$('#quitarImg').onclick=()=>{
+  S.imgs=S.imgs||{}; delete S.imgs[S.nombreMapa];
+  S.img=''; $('#imgArch').value='';
+  $('#imgInfo').textContent='«'+S.nombreMapa+'» vuelve a mostrar su esquema de casillas.';
+  pintar(); enviar('estado',S);
+};
 $('#guardarLib').onclick=async()=>{
   if(!S.img){ $('#imgInfo').textContent='Carga primero una imagen.'; return; }
   const linea = `  '${S.nombreMapa}': '${S.img}',`;
@@ -2284,8 +2322,17 @@ function svgNubia(){
         <text class="faroTxt" x="${x}" y="${y-21}" text-anchor="middle">${n.replace(/^(Ciudad|Pueblo|Isla) /,'')}</text>`;
   });
   if(u){
-    g+=`<circle class="faro" cx="${u[0]}" cy="${u[1]}" r="11" fill="none" stroke="#e0951c" stroke-width="5"/>
-        <circle cx="${u[0]}" cy="${u[1]}" r="6" fill="#e0951c" stroke="#12283f" stroke-width="2.5"/>`;
+    g+=`<circle cx="${u[0]}" cy="${u[1]}" r="12" fill="none" stroke="#e0951c" stroke-width="5">
+          <animate attributeName="r" values="10;30;10" dur="1.6s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" values="1;0.15;1" dur="1.6s" repeatCount="indefinite"/>
+        </circle>
+        <circle cx="${u[0]}" cy="${u[1]}" r="9" fill="none" stroke="#e0951c" stroke-width="3">
+          <animate attributeName="r" values="7;20;7" dur="1.6s" begin="0.5s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" values="0.9;0;0.9" dur="1.6s" begin="0.5s" repeatCount="indefinite"/>
+        </circle>
+        <circle cx="${u[0]}" cy="${u[1]}" r="7" fill="#e0951c" stroke="#12283f" stroke-width="3"/>`;
+  } else {
+    g+=`<text class="faroTxt" x="500" y="756" text-anchor="middle" font-size="15" fill="#c6386b">Zona sin ubicar en el mapa regional</text>`;
   }
   return g+'</svg>';
 }
@@ -2326,7 +2373,7 @@ async function cargarPartida(){
   fijarRol(data.director === cuenta.id);
   if(data.estado && Object.keys(data.estado).length){
     S = Object.assign(S, data.estado);
-    S.areas = S.areas||[]; S.objetos = S.objetos||[]; S.turno = S.turno||{i:0,ronda:1};
+    S.areas = S.areas||[]; S.objetos = S.objetos||[]; S.imgs = S.imgs||{}; S.turno = S.turno||{i:0,ronda:1};
     pintar();
     anotar(`<b>Mesa restaurada</b> · ${esc(data.nombre)}`, false);
   }
@@ -2381,13 +2428,15 @@ $('#escanear').onclick = ()=>{
 };
 
 async function abrirPokedex(t){
-  if(!t.especie){ return; }
-  const clave = t.especie.toLowerCase().replace(/\s+/g,'-');
+  const especie = (t.especie || t.nombre || '').trim();
+  if(!especie) return;
+  const clave = especie.toLowerCase().replace(/\s+/g,'-');
   const c = $('#dexCuerpo');
   c.innerHTML = '<div style="padding:30px" class="dexnom">CONSULTANDO…</div>';
   $('#dexDlg').showModal();
 
   let genero = '', texto = '', tipos = (t.tipos||'').split(' / ').filter(Boolean);
+  let ilustra = t.img || '';
   try{
     const r = await fetch('https://pokeapi.co/api/v2/pokemon-species/'+encodeURIComponent(clave));
     if(r.ok){
@@ -2398,11 +2447,20 @@ async function abrirPokedex(t){
              || j.flavor_text_entries?.find(x=>x.language.name==='en');
       texto = f ? f.flavor_text.replace(/[\n\f\r]/g,' ') : '';
     }
+    // Si la ficha no traía ilustración ni tipos, se piden a PokéAPI
+    if(!ilustra || !tipos.length){
+      const r2 = await fetch('https://pokeapi.co/api/v2/pokemon/'+encodeURIComponent(clave));
+      if(r2.ok){
+        const j2 = await r2.json();
+        ilustra = ilustra || j2.sprites?.other?.['official-artwork']?.front_default || j2.sprites?.front_default || '';
+        if(!tipos.length) tipos = j2.types.map(x=>x.type.name);
+      }
+    }
   }catch{}
 
   c.innerHTML = `
-    ${t.img?`<img src="${t.img}" alt="">`:''}
-    <div class="dexnom">${esc(t.especie.toUpperCase())}</div>
+    ${ilustra?`<img src="${ilustra}" alt="">`:''}
+    <div class="dexnom">${esc(especie.toUpperCase())}</div>
     <div class="dexgen">${esc(genero || 'Especie sin clasificar')}</div>
     ${tipos.length?`<div class="dextipos">${tipos.map(x=>`<span>${esc(x)}</span>`).join('')}</div>`:''}
     <div class="dextxt">${esc(texto || 'La Pokédex de Nubia todavía no tiene una entrada para esta especie. Escribe tú la primera: es tu región.')}</div>
@@ -2410,13 +2468,13 @@ async function abrirPokedex(t){
 
   if(sb && cuenta && partida && !dexSet.has(clave)){
     const { error } = await sb.from('pokedex').insert({
-      partida: partida.id, jugador: cuenta.id, especie: clave, nombre: t.especie
+      partida: partida.id, jugador: cuenta.id, especie: clave, nombre: especie
     });
     if(!error){
       dexSet.add(clave);
       const n = dexSet.size;
       $('#dexNuevo').innerHTML = `<div class="dexmeta"><b>NUEVO REGISTRO</b>Llevas ${n} de ${CFG.POKEDEX_TOTAL||151} especies.</div>`;
-      anotar(`<b>${esc(yo||'Entrenador')}</b> registra a <b>${esc(t.especie)}</b> en la Pokédex · ${n} especies`);
+      anotar(`<b>${esc(yo||'Entrenador')}</b> registra a <b>${esc(especie)}</b> en la Pokédex · ${n} especies`);
       const meta = (CFG.METAS||[]).find(m=>m[0]===n);
       if(meta){
         $('#dexNuevo').innerHTML += `<div class="dexmeta"><b>META ALCANZADA · ${esc(meta[1]).toUpperCase()}</b>${esc(meta[2])}</div>`;
@@ -2439,7 +2497,7 @@ function recibir({tipo,dato,de}){
   if(tipo==='hola'){ if(soyDM) enviar('estado',S); return; }
   if(tipo==='estado'){ if(!soyDM){
       const cambio = S.nombreMapa !== dato.nombreMapa;
-      S=dato; S.areas=S.areas||[]; S.objetos=S.objetos||[]; pintar();
+      S=dato; S.areas=S.areas||[]; S.objetos=S.objetos||[]; S.imgs=S.imgs||{}; pintar();
       if(cambio && (S.objetos||[]).includes('mapa')) abrirMapaN(true);
     } return; }
   if(tipo==='tirada'){ verTirada(dato,false); return; }
@@ -2462,6 +2520,10 @@ function recibir({tipo,dato,de}){
     dibujarTokens(); if(soyDM)enviar('estado',S); return; }
   if(tipo==='ficha'){ const i=S.fichas.findIndex(f=>f.id===dato.id||(f.nombre===dato.nombre&&!f.especie&&!dato.especie));
     i>=0?S.fichas[i]=dato:S.fichas.push(dato); dibujarFichas(); if(soyDM)enviar('estado',S); }
+  if(tipo==='quitar'){
+    S.tokens=S.tokens.filter(t=>t.id!==dato.tokenId);
+    S.fichas=S.fichas.filter(f=>f.id!==dato.fichaId);
+    pintar(); if(soyDM)enviar('estado',S); return; }
 }
 function conectar(){
   const sala=$('#sala').value.trim().toUpperCase(), est=$('#estado');
