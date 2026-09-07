@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Códice de Nubia — Pokémon 5E</title>
+<link rel="icon" href="logo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=Alegreya:ital,wght@0,400;0,500;0,700;1,400&family=Alegreya+Sans:wght@400;500;700&display=swap" rel="stylesheet">
@@ -155,6 +156,12 @@ p.lead{margin:0 0 24px;color:var(--tinta-suave);max-width:70ch}
 footer{background:var(--tinta);color:#a8c2ce;padding:26px 0;font-family:'Alegreya Sans',sans-serif;font-size:14px}
 footer b{color:var(--arena-hueso)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+.logo{width:34px;height:34px;image-rendering:pixelated;display:block;flex:0 0 auto}
+.logo-grande{width:104px;height:104px;image-rendering:pixelated;display:block;margin:0 auto 6px;
+  filter:drop-shadow(0 8px 18px rgba(0,0,0,.45));animation:brotar .45s ease both}
+header h1,.hero h1{display:flex;align-items:center;gap:12px}
+.hero h1{display:block}
 </style>
 
 <style>
@@ -179,7 +186,7 @@ tr,.punto,.npc{transition:background .14s}
 <header>
   <div class="wrap">
     <p class="eyeb">Guía del director · Pokémon 5E</p>
-    <h1>Región de <span>Nubia</span></h1>
+    <h1><img src="logo.png" alt="" class="logo">Región de <span>Nubia</span></h1>
     <p>Ocho ciudades, tres pueblos y una montaña nevada que nace al borde del mar. Aquí está el mapa, el esquema de cada localidad, quién vive en ella y qué te dirá si te le acercas.</p>
   </div>
 </header>

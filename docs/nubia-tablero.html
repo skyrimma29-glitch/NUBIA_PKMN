@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Tablero — Nubia</title>
+<link rel="icon" href="logo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=Alegreya:wght@400;700&family=Alegreya+Sans:wght@400;500;700&display=swap" rel="stylesheet">
@@ -25,8 +26,9 @@ h1,h2,h3{font-family:'Silkscreen','Courier New',monospace;line-height:1.3}
   repeating-linear-gradient(45deg,var(--tinta) 0 7px,var(--arena-hueso) 7px 14px)}
 
 header{background:var(--tinta);color:var(--arena-hueso);padding:16px 0;flex:0 0 auto}
+.logo{width:34px;height:34px;image-rendering:pixelated;display:block}
 header .f{display:flex;justify-content:space-between;align-items:baseline;gap:18px;flex-wrap:wrap}
-header h1{margin:0;font-size:clamp(18px,2.6vw,25px);color:var(--arena-hueso)}
+header h1{margin:0;display:flex;align-items:center;gap:11px;font-size:clamp(18px,2.6vw,25px);color:var(--arena-hueso)}
 header h1 span{color:var(--oro)}
 header a{color:#8fc8d3;font-family:'Alegreya Sans',sans-serif;font-size:14px;text-decoration:none;border-bottom:1px solid #4d7183}
 header a:hover{color:var(--arena-hueso)}
@@ -87,6 +89,11 @@ dialog[open]{animation:brotar .16s ease both}
 #capaAreas svg{width:100%;height:100%;display:block;overflow:visible}
 #capaAreas.activa{pointer-events:auto;cursor:crosshair}
 #capaPings{position:absolute;inset:0;pointer-events:none;z-index:40}
+body.escaneando #tablero{outline:4px solid #e0524f;outline-offset:3px}
+body.escaneando #capaTokens{cursor:crosshair}
+body.escaneando #tablero::after{content:'ESCÁNER DE POKÉDEX ACTIVO · TOCA UN POKÉMON O PULSA ESCAPE';
+  position:absolute;left:0;right:0;top:0;z-index:60;text-align:center;
+  font-family:'Silkscreen',monospace;font-size:10px;background:#e0524f;color:#fff;padding:6px}
 .ping{position:absolute;transform:translate(-50%,-50%)}
 .ping i{position:absolute;inset:-18px;border:3px solid var(--fucsia);border-radius:50%;
   animation:latido 1.5s ease-out infinite;display:block}
@@ -401,7 +408,7 @@ footer code{background:#1c3a56;padding:2px 5px;color:#cfe0e6}
 <body>
 
 <header><div class="wrap f">
-  <h1>Tablero de <span>Nubia</span></h1>
+  <h1><img src="logo.png" alt="" class="logo">Tablero de <span>Nubia</span></h1>
   <a href="index.html">← Volver al menú</a>
 </div></header>
 <div class="vueltiao"></div>
@@ -2634,13 +2641,21 @@ function pintarDex(filas){
         `<div class="reg"><b>${esc(r.nombre||r.especie)}</b><span>${r.atrapado?'atrapado':'visto'}</span></div>`).join('')
     : '<div class="reg"><span>Todavía no has registrado nada.</span></div>';
 }
-$('#escanear').onclick = ()=>{
-  escaneando = !escaneando;
-  $('#escanear').classList.toggle('on', escaneando);
-  $('#escanear').textContent = escaneando ? 'ESCÁNER ACTIVO · TOCA UN POKÉMON' : 'ESCANEAR CON LA POKÉDEX';
-};
+function modoEscaner(activo){
+  escaneando = !!activo;
+  const b = $('#escanear');
+  if(b){
+    b.classList.toggle('on', escaneando);
+    b.textContent = escaneando ? 'ESCÁNER ACTIVO · TOCA UN POKÉMON' : 'ESCANEAR CON LA POKÉDEX';
+  }
+  document.body.classList.toggle('escaneando', escaneando);
+}
+$('#escanear').onclick = ()=> modoEscaner(!escaneando);
+// Escape cancela el escáner sin tener que buscar el botón
+addEventListener('keydown', e=>{ if(e.key==='Escape' && escaneando) modoEscaner(false); });
 
 async function abrirPokedex(t){
+  modoEscaner(false);              // un escaneo, un uso: no se queda encendido
   const especie = (t.especie || t.nombre || '').trim();
   if(!especie) return;
   const clave = especie.toLowerCase().replace(/\s+/g,'-');

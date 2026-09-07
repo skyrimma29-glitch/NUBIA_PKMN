@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Atlas de Rutas — Nubia</title>
+<link rel="icon" href="logo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=Alegreya:ital,wght@0,400;0,700;1,400&family=Alegreya+Sans:wght@400;500;700&display=swap" rel="stylesheet">
@@ -91,6 +92,12 @@ main{padding:32px 0 70px}
 
 footer{background:var(--tinta);color:#a8c2ce;padding:24px 0;font-family:'Alegreya Sans',sans-serif;font-size:14px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+.logo{width:34px;height:34px;image-rendering:pixelated;display:block;flex:0 0 auto}
+.logo-grande{width:104px;height:104px;image-rendering:pixelated;display:block;margin:0 auto 6px;
+  filter:drop-shadow(0 8px 18px rgba(0,0,0,.45));animation:brotar .45s ease both}
+header h1,.hero h1{display:flex;align-items:center;gap:12px}
+.hero h1{display:block}
 </style>
 
 <style>
@@ -115,7 +122,7 @@ tr,.punto,.npc{transition:background .14s}
 <header>
   <div class="wrap">
     <div class="fila">
-      <h1>Atlas de <span>Rutas</span></h1>
+      <h1><img src="logo.png" alt="" class="logo">Atlas de <span>Rutas</span></h1>
       <a href="index.html">← Volver al menú</a>
     </div>
     <p>Cómo debe verse cada ruta, en cuántos mapas se parte, dónde va la hierba alta y quién te espera en el camino. Termina en el Camino Victoria y la Liga Nubia.</p>
