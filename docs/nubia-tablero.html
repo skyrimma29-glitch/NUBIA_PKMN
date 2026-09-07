@@ -222,7 +222,9 @@ body.enfoque main{padding-top:10px}
 .slot.encima{border-color:var(--fucsia);box-shadow:0 0 0 4px rgba(198,56,107,.25)}
 .slots{padding-bottom:16px}
 
-#pcDlg{max-width:820px;width:94%}
+#pcDlg{max-width:860px;width:95%;border-color:var(--oro)}
+#pcDlg::backdrop{background:rgba(10,20,32,.62);backdrop-filter:blur(2px)}
+#pcDlg .pc{background:var(--arena-hueso)}
 .pc{display:grid;grid-template-columns:250px minmax(0,1fr);gap:0}
 @media(max-width:720px){.pc{grid-template-columns:1fr}}
 .pc .lado{padding:16px}
@@ -604,7 +606,7 @@ footer code{background:#1c3a56;padding:2px 5px;color:#cfe0e6}
 
     <details class="acc" id="panelEquipo" open><summary>EQUIPO POKÉMON</summary><div class="cnt2">
       <div class="slots" id="slots"></div>
-      <div class="fila" style="margin-top:10px"><button class="bt" id="abrirPC">ABRIR PC BOX</button></div>
+      <div class="fila" style="margin-top:10px"><button class="bt rosa" id="abrirPC" style="width:100%">ABRIR EQUIPO Y PC BOX</button></div>
       <p class="nota">Toca un Pokémon del equipo para ponerlo en el tablero o ver su ficha. En la caja puedes arrastrarlos entre huecos.</p>
     </div></details>
 
@@ -616,7 +618,7 @@ footer code{background:#1c3a56;padding:2px 5px;color:#cfe0e6}
       <p class="nota">Con el escáner activo, toca cualquier Pokémon del tablero para registrarlo. Los que captures se marcan solos.</p>
     </div></details>
 
-    <details class="acc solodm"><summary>CAPTURA</summary><div class="cnt2">
+    <details class="acc"><summary>CAPTURA</summary><div class="cnt2">
       <label for="capObj">POKÉMON OBJETIVO</label>
       <select id="capObj"></select>
       <div class="fila" style="margin-top:8px">
@@ -685,6 +687,7 @@ footer code{background:#1c3a56;padding:2px 5px;color:#cfe0e6}
     <div class="lado">
       <h4>CAJA</h4>
       <div class="caja" id="pcCaja"></div>
+      <p class="pcpie" id="pcVacia" style="display:none;color:var(--fucsia)">Todavía no tienes ningún Pokémon. El director te asigna uno desde el editor de la ficha, o lo consigues capturándolo.</p>
       <p class="pcpie">Arrastra entre la caja y el equipo. Si sueltas encima de un hueco ocupado, los dos intercambian su sitio.</p>
     </div>
   </div>
@@ -2249,12 +2252,15 @@ $('#tDano').onclick       = ()=>{ const t=editando; if(t) tirarFormula($('#dDmg'
 
 /* ---------- captura ---------- */
 function listaCapturables(){
-  const ops=S.tokens.filter(t=>t.especie).map(t=>{
+  if(!$('#capObj')) return;
+  const ops=S.tokens.filter(t=>t.especie && !t.dueno).map(t=>{
     const f=S.fichas.find(x=>x.tokenId===t.id);
     const pct=f&&f.pvMax?Math.round(f.pv/f.pvMax*100):100;
     return `<option value="${t.id}">${esc(t.nombre)} · Nv ${t.nivel||1} · ${pct}% PS</option>`;
   });
-  $('#capObj').innerHTML = ops.length?ops.join(''):'<option value="">Sin Pokémon en el tablero</option>';
+  $('#capObj').innerHTML = ops.length ? ops.join('')
+    : '<option value="">Ningún Pokémon libre en el tablero</option>';
+  $('#capTirar').disabled = !ops.length;
 }
 function datosCaptura(){
   const t=S.tokens.find(x=>x.id===$('#capObj').value);
@@ -2283,7 +2289,12 @@ $('#capTirar').onclick=()=>{
   $('#capRes').innerHTML=`<div class="cd">CD ${d.cd} · ${d.detalle.join(' · ')} · bono +${bono}</div>
     <div class="ver ${exito?'si':'no'}">${r.total} · ${exito?'¡CAPTURADO!':'SE ESCAPÓ'}</div>`;
   anotar(`<b>${esc(yo||'Entrenador')}</b> lanza una ball a <b>${esc(d.t.nombre)}</b>: ${r.total} contra CD ${d.cd} · ${exito?'capturado':'se escapó'}`);
-  if(exito){ d.t.dueno = yo; if(d.f) d.f.dueno = yo; alEquipo(yo, pkDesdeToken(d.t)); pintar(); enviar('estado',S); }
+  if(exito){
+    d.t.dueno = yo; if(d.f) d.f.dueno = yo;
+    alEquipo(yo, pkDesdeToken(d.t));
+    pintar();
+    soyDM ? enviar('estado',S) : enviar('dueno',{ tokenId:d.t.id, dueno:yo });
+  }
 };
 
 /* ---------- modo enfoque ---------- */
@@ -2456,6 +2467,7 @@ async function iniciarCuenta(){
   }
   await cargarPartida();
   await cargarPokedex();
+  await cargarEquipoNube();
 }
 
 async function cargarPartida(){
@@ -2474,6 +2486,24 @@ async function cargarPartida(){
   }
 }
 
+async function guardarEquipoNube(){
+  if(!sb || !cuenta || !partida) return;
+  const e = equipoLeer(yo);
+  await sb.from('pokedex').upsert({
+    partida: partida.id, jugador: cuenta.id, especie:'__equipo__',
+    nombre: JSON.stringify(e), atrapado: false
+  }, { onConflict:'partida,jugador,especie' });
+}
+async function cargarEquipoNube(){
+  if(!sb || !cuenta || !partida) return;
+  const { data } = await sb.from('pokedex').select('nombre')
+    .eq('partida', partida.id).eq('jugador', cuenta.id).eq('especie','__equipo__').maybeSingle();
+  if(!data || !data.nombre) return;
+  try{
+    const e = JSON.parse(data.nombre);
+    if(e && e.eq){ equipoEscribir(yo, e); pintarEquipo(); }
+  }catch{}
+}
 function guardarPartida(){
   if(!sb || !partida || !soyDM) return;
   clearTimeout(guardando);
@@ -2503,8 +2533,9 @@ async function cargarPokedex(){
   const { data } = await sb.from('pokedex')
     .select('especie,nombre,atrapado')
     .eq('partida', partida.id).eq('jugador', cuenta.id);
-  dexSet = new Set((data||[]).map(r=>r.especie));
-  pintarDex(data||[]);
+  const filas = (data||[]).filter(r=>r.especie !== '__equipo__');
+  dexSet = new Set(filas.map(r=>r.especie));
+  pintarDex(filas);
 }
 function pintarDex(filas){
   const tot = CFG.POKEDEX_TOTAL || 151;
@@ -2584,27 +2615,38 @@ $('#dexCerrar').onclick = ()=> $('#dexDlg').close();
 
 
 /* ===================== EQUIPO POKÉMON Y PC BOX ===================== */
-function equipoDe(n){
-  S.equipos = S.equipos || {};
-  if(!S.equipos[n]) S.equipos[n] = { eq:[null,null,null,null,null,null], caja:[] };
-  const e = S.equipos[n];
-  while(e.eq.length < 6) e.eq.push(null);
-  return e;
+const claveJug = n => String(n||'').trim().toLowerCase();
+
+/* Lectura pura: nunca escribe en el estado. Ese era el fallo que borraba equipos. */
+function equipoLeer(n){
+  const e = (S.equipos||{})[claveJug(n)];
+  if(!e) return { eq:[null,null,null,null,null,null], caja:[] };
+  const eq = (e.eq||[]).slice(0,6);
+  while(eq.length < 6) eq.push(null);
+  return { eq, caja: e.caja || [] };
 }
-function guardarEquipo(n){
-  const e = equipoDe(n);
+/* Escritura explícita: solo se llama cuando algo cambia de verdad. */
+function equipoEscribir(n, datos){
+  S.equipos = S.equipos || {};
+  S.equipos[claveJug(n)] = datos;
+  return datos;
+}
+function guardarEquipo(n, datos){
+  equipoEscribir(n, datos);
   pintarEquipo();
-  soyDM ? enviar('estado', S) : enviar('equipo', { jugador:n, datos:e });
+  soyDM ? enviar('estado', S) : enviar('equipo', { jugador:claveJug(n), datos });
+  if(claveJug(n) === claveJug(yo)) guardarEquipoNube();
 }
 function alEquipo(jugador, pk){
   if(!jugador || !pk) return;
-  const e = equipoDe(jugador);
-  const clave = (pk.especie||pk.nombre||'').toLowerCase();
-  if(e.eq.some(p=>p&&p.id===pk.id) || e.caja.some(p=>p.id===pk.id)) return;
+  const e = equipoLeer(jugador);
+  const yaEsta = p => p && (p.id===pk.id ||
+    String(p.especie||'').toLowerCase() === String(pk.especie||'').toLowerCase());
+  if(e.eq.some(yaEsta) || e.caja.some(yaEsta)) return;
   const hueco = e.eq.findIndex(p=>!p);
   if(hueco >= 0) e.eq[hueco] = pk; else e.caja.push(pk);
   anotar(`<b>${esc(pk.nombre)}</b> se une al equipo de <b>${esc(jugador)}</b>`);
-  guardarEquipo(jugador);
+  guardarEquipo(jugador, e);
 }
 function pkDesdeToken(t){
   return { id:id8(), especie:t.especie||t.nombre, nombre:t.nombre, nivel:t.nivel||1,
@@ -2621,12 +2663,14 @@ function celda(pk, zona, i, clase){
   </div>`;
 }
 function pintarEquipo(){
-  const e = equipoDe(yo || 'Entrenador');
+  if(!$('#slots')) return;
+  const e = equipoLeer(yo || 'Entrenador');
   const html = e.eq.map((p,i)=>celda(p,'eq',i,'slot')).join('');
   $('#slots').innerHTML = html;
   if($('#pcDlg').open){
     $('#pcEquipo').innerHTML = html;
     const huecos = Math.max(30, Math.ceil((e.caja.length+1)/6)*6);
+    $('#pcVacia').style.display = (e.eq.some(Boolean)||e.caja.length) ? 'none' : 'block';
     $('#pcCaja').innerHTML = Array.from({length:huecos},(_,i)=>celda(e.caja[i],'caja',i,'cel')).join('');
   }
 }
@@ -2660,7 +2704,7 @@ function conectarArrastre(cont){
 }
 function mover(a, b){
   if(a.zona===b.zona && a.i===b.i) return;
-  const e = equipoDe(yo);
+  const e = equipoLeer(yo);
   const leer  = z => z.zona==='eq' ? e.eq[z.i] : (e.caja[z.i]||null);
   const pa = leer(a), pb = leer(b);
   const poner = (z, v) => {
@@ -2669,13 +2713,13 @@ function mover(a, b){
   };
   poner(b, pa); poner(a, pb);            // intercambio limpio
   while(e.caja.length && e.caja[e.caja.length-1]==null) e.caja.pop();
-  guardarEquipo(yo);
+  guardarEquipo(yo, e);
 }
 
 /* ---------- menú de un hueco del equipo ---------- */
 $('#slots').addEventListener('click', e=>{
   const c=e.target.closest('[data-zona]'); if(!c||c.classList.contains('hueco')) return;
-  const pk = equipoDe(yo).eq[+c.dataset.i]; if(!pk) return;
+  const pk = equipoLeer(yo).eq[+c.dataset.i]; if(!pk) return;
   const r = c.getBoundingClientRect(), m = $('#menuSlot');
   m.innerHTML = `<div class="tit">${esc(pk.nombre.toUpperCase())} · NV ${pk.nivel||1}</div>
     <button data-acc="tablero">PONER EN EL TABLERO</button>
@@ -2691,7 +2735,7 @@ addEventListener('pointerdown', e=>{
 });
 $('#menuSlot').addEventListener('click', e=>{
   const b=e.target.closest('[data-acc]'); if(!b) return;
-  const e2 = equipoDe(yo), i = +$('#menuSlot').dataset.i, pk = e2.eq[i];
+  const e2 = equipoLeer(yo), i = +$('#menuSlot').dataset.i, pk = e2.eq[i];
   $('#menuSlot').classList.remove('ver');
   if(!pk) return;
   if(b.dataset.acc==='tablero'){
@@ -2708,7 +2752,7 @@ $('#menuSlot').addEventListener('click', e=>{
     anotar(`<b>${esc(pk.nombre)}</b> sale de su Poké Ball`);
   }
   if(b.dataset.acc==='ficha') abrirPokedex(pk);
-  if(b.dataset.acc==='caja'){ e2.caja.push(pk); e2.eq[i]=null; guardarEquipo(yo); }
+  if(b.dataset.acc==='caja'){ e2.caja.push(pk); e2.eq[i]=null; guardarEquipo(yo, e2); }
 });
 
 $('#abrirPC').onclick = ()=>{ $('#pcDlg').showModal(); pintarEquipo(); };
@@ -2724,13 +2768,13 @@ function pintarPanelFicha(){
   const f = miFicha(), c = $('#panelFichaJug');
   if(!c) return;
   const crear = $('#panelCrearFicha');
-  if(soyDM || !f){
+  if(!f){
     c.innerHTML=''; c.style.display='none';
     if(crear) crear.style.display='block';
     return;
   }
   c.style.display='block';
-  if(crear) crear.style.display='none';
+  if(crear) crear.style.display = soyDM ? 'block' : 'none';
   const t = S.tokens.find(x=>x.id===f.tokenId);
   const ini=(f.nombre||'?').slice(0,2).toUpperCase();
   c.innerHTML = `
@@ -2739,10 +2783,14 @@ function pintarPanelFicha(){
       <div><b>${esc(f.nombre)}</b><span>${f.pv} / ${f.pvMax} PS · iniciativa ${f.ini||0}</span></div>
     </div>
     <div class="fila" style="margin-top:9px">
-      ${t?'':'<button class="bt rosa" id="alTablero">PONER EN EL TABLERO</button>'}
+      ${t?'<button class="bt" id="editarMiFicha">EDITAR</button>'
+         :'<button class="bt rosa" id="alTablero">PONER EN EL TABLERO</button>'}
       <button class="bt" id="borrarMiFicha" style="border-color:var(--fucsia);color:var(--fucsia)">ELIMINAR FICHA</button>
     </div>
-    <p class="nota">Solo puedes tener una ficha de entrenador. Su imagen y sus estadísticas se cambian tocándola en el tablero.</p>`;
+    <p class="nota">${soyDM
+      ? 'Esta es tu propia ficha. Abajo puedes seguir creando fichas de NPC y enemigos.'
+      : 'Solo puedes tener una ficha de entrenador. Para crear otra, elimina esta primero.'}</p>`;
+  if($('#editarMiFicha')) $('#editarMiFicha').onclick = ()=>{ sel=t.id; abrirDlg(t); };
   if($('#alTablero')) $('#alTablero').onclick = ()=>{
     const nt = { id:id8(), nombre:f.nombre, color:'#c6386b', img:'', nivel:0, dueno:yo,
                  x:Math.min(2,W()-1), y:Math.min(2,H()-1) };
@@ -2776,7 +2824,11 @@ function recibir({tipo,dato,de}){
   if(tipo==='tirada'){ verTirada(dato,false); return; }
   if(tipo==='ping'){ ponerPing(dato.p, dato.txt, dato.de); return; }
   if(tipo==='nota'){ anotar(dato, false); return; }
-  if(tipo==='equipo'){ S.equipos=S.equipos||{}; S.equipos[dato.jugador]=dato.datos;
+  if(tipo==='dueno'){
+    const t=S.tokens.find(x=>x.id===dato.tokenId);
+    if(t){ t.dueno=dato.dueno; const f=S.fichas.find(x=>x.tokenId===t.id); if(f) f.dueno=dato.dueno; }
+    pintar(); if(soyDM)enviar('estado',S); return; }
+  if(tipo==='equipo'){ equipoEscribir(dato.jugador, dato.datos);
     pintarEquipo(); if(soyDM)enviar('estado',S); return; }
   if(tipo==='objeto'){
     S.objetos=S.objetos||[];
