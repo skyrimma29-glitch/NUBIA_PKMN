@@ -328,6 +328,32 @@ body.enfoque main{padding-top:10px}
 .jugpk b{font-family:'Silkscreen',monospace;font-size:9px;flex:1}
 .jugpk button{font-size:8px;padding:4px 6px;border:2px solid var(--fucsia);background:#fff;color:var(--fucsia)}
 
+/* ------------- barra lateral del director ------------- */
+#abrirLateral{position:fixed;right:0;top:38%;z-index:100;display:none;
+  background:var(--tinta);color:var(--oro);border:3px solid var(--oro);border-right:0;
+  font-family:'Silkscreen',monospace;font-size:15px;padding:14px 10px;cursor:pointer;
+  box-shadow:-4px 4px 0 rgba(0,0,0,.3);transition:background .14s,padding .14s}
+body.dm #abrirLateral{display:block}
+#abrirLateral:hover{background:#1b3a58;padding-right:14px}
+body.lateral-abierto #abrirLateral{display:none}
+
+#lateral{position:fixed;top:0;right:0;bottom:0;width:min(360px,92vw);z-index:110;
+  background:var(--arena-hueso);border-left:4px solid var(--tinta);
+  box-shadow:-14px 0 40px rgba(0,0,0,.36);display:none;flex-direction:column;
+  transform:translateX(100%);transition:transform .26s cubic-bezier(.2,.8,.3,1)}
+body.dm #lateral{display:flex}
+body.lateral-abierto #lateral{transform:none}
+#lateral header{background:var(--tinta);color:var(--arena-hueso);padding:13px 15px;
+  display:flex;align-items:center;gap:10px;flex:0 0 auto}
+#lateral header span{font-family:'Silkscreen',monospace;font-size:12px;flex:1}
+#lateral header .logo{width:26px;height:26px}
+#lateral header button{background:none;border:2px solid var(--oro);color:var(--oro);
+  font-family:'Silkscreen',monospace;font-size:11px;padding:5px 8px;cursor:pointer}
+#lateral header button:hover{background:var(--oro);color:var(--tinta)}
+.lat-cnt{padding:15px;overflow-y:auto;flex:1 1 auto}
+.lat-cnt .npcs{max-height:none}
+@media(max-width:900px){#lateral{width:100vw}}
+
 /* ------------- acordeones ------------- */
 .acc{background:var(--arena-hueso);border:3px solid var(--tinta);box-shadow:5px 5px 0 var(--sombra);margin-bottom:13px}
 .acc>summary{list-style:none;cursor:pointer;font-family:'Silkscreen',monospace;font-size:11px;
@@ -663,19 +689,7 @@ footer code{background:#1c3a56;padding:2px 5px;color:#cfe0e6}
       <div class="lista" id="fichas"><div class="vacio">Nadie ha publicado su ficha todavía.</div></div>
     </div></details>
 
-    <details class="acc solodm" id="panelNpcs" open><summary>PANEL DEL DIRECTOR</summary><div class="cnt2">
-      <div class="subtabs" id="dmTabs">
-        <button data-dm="fichas" aria-pressed="true">FICHAS</button>
-        <button data-dm="jugadores" aria-pressed="false">JUGADORES</button>
-      </div>
-      <div id="dmJugadores" style="display:none"></div>
-      <div class="npcs" id="listaNpcs"></div>
-      <div class="fila" style="margin-top:9px" id="npcBotones">
-        <button class="bt rosa" id="npcNueva">NUEVA FICHA</button>
-        <button class="bt" id="npcGuardarSel">GUARDAR LA SELECCIONADA</button>
-      </div>
-      <p class="nota">Arrastra un nombre al tablero para colocarlo, o pulsa PONER. Las fichas de aquí se guardan en la partida y no se pierden al cambiar de escenario.</p>
-    </div></details>
+    
 
     <details class="acc" id="panelEquipo" open><summary>EQUIPO POKÉMON</summary><div class="cnt2">
       <div class="slots" id="slots"></div>
@@ -767,6 +781,29 @@ footer code{background:#1c3a56;padding:2px 5px;color:#cfe0e6}
     </div>
   </div>
 </dialog>
+
+
+<button id="abrirLateral" class="solodm" aria-label="Abrir el panel del director">☰</button>
+<aside id="lateral" class="solodm" aria-label="Panel del director">
+  <header>
+    <img src="logo.png" alt="" class="logo">
+    <span>PANEL DEL DIRECTOR</span>
+    <button id="cerrarLateral" aria-label="Cerrar">✕</button>
+  </header>
+  <div class="lat-cnt">
+    <div class="subtabs" id="dmTabs">
+      <button data-dm="fichas" aria-pressed="true">FICHAS</button>
+      <button data-dm="jugadores" aria-pressed="false">JUGADORES</button>
+    </div>
+    <div id="dmJugadores" style="display:none"></div>
+    <div class="npcs" id="listaNpcs"></div>
+    <div class="fila" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px" id="npcBotones">
+      <button class="bt rosa" id="npcNueva">NUEVA FICHA</button>
+      <button class="bt" id="npcGuardarSel">GUARDAR LA SELECCIONADA</button>
+    </div>
+    <p class="nota">Arrastra un nombre al tablero para colocarlo. Las fichas de aquí se guardan en la partida y no se pierden al cambiar de escenario.</p>
+  </div>
+</aside>
 
 <div class="menuslot" id="menuSlot"></div>
 
@@ -1343,6 +1380,20 @@ const MAPAS = {
   '^############=###########^',
   '^^^^^^^^^^^^^E^^^^^^^^^^^^']
 },
+'Interiores':{
+ 'Laboratorio Ceiba':['################','#==============#','#=###=LLLL=###=#','#=###=LLLL=###=#','#=###======###=#','#=======1======#','#==2========3==#','#=###======###=#','#=###======###=#','#=###===4==###=#','#==============#','########E#######'],
+ 'Gimnasio Tambora':['##################','#================#','#=====GGGGGG=====#','#=====GGG1GG=====#','#=====GGGGGG=====#','#================#','#==LLL======LLL==#','#==L2L=LLLL=L3L==#','#==LLL=LLLL=LLL==#','#======LL4L======#','#======LL=L======#','#================#','#================#','#########E########'],
+ 'Torre Café Dorado':['################','#==============#','#====DDDDDD====#','#====DDD1DD====#','#====DDDDDD====#','#==============#','#==============#','#=####====####=#','#=####====####=#','#=##2#====#3##=#','#=####====####=#','#==============#','#=======4======#','########E#######'],
+ 'Fuerte y túneles':['######################','######################','##==================##','##===^^=========^^==##','##===^^===^^^===^^==##','##=======GGGG=======##','##=======GG1G=======##','##==================##','###########=##########','###########=##########','##ooooooooo=oooooooo##','##oooooooooooooooooo##','##oooooooooooooooooo##','##ooo2oooooooooo3ooo##','##ooooooooo=oooooooo##','##ooooooooo=oooooooo##','###########4##########','###########E##########'],
+ 'Bodega Mayor':['####################','#==================#','#===============DDD#','#==##===##===##=DDD#','#==##===##===##=D3D#','#==##===##===##=DDD#','#==##===##===##====#','#==##=1=##=2=##====#','#==##===##===##====#','#==##===##===##====#','#==##===##===##=xxx#','#===============xxx#','#===============x4x#','#===============xxx#','#==================#','######E#############'],
+ 'Gimnasio Retoño':['hhhhhhhhhhhhhhhhhhhh','h..................h','h..................h','h...hh...hh...hh...h','h...hh...hh...hh...h','h...hh.2.hh...hh...h','h...hh...hh...hhGGGh','h...hh...hh...hhGGGh','h.1.hh...hh...hhG4Gh','h...hh...hh...hhGGGh','h...hh...hh...hh...h','h...hh...hh.3.hh...h','h...hh...hh...hh...h','h..................h','h..................h','hhEhhhhhhhhhhhhhhhhh'],
+ 'Gimnasio Riel':['####################','####################','##================##','##================##','##====^^^2========##','##====^^^======GGG##','##=============GGG##','##=========^^^=G4G##','##=========^^^=GGG##','##==1========3====##','##================##','##================##','####=###############','####E###############'],
+ 'Museo del Oro':['##################','#================#','#================#','#==##========##==#','#==##========##==#','#======LLLL======#','#===2==LLLL===3==#','#======LL1L======#','#======LLLL======#','#==##========##==#','#==##========##==#','#========4=======#','#================#','#########E########'],
+ 'Gimnasio Escarcha':['^^^^^^^^^^^^^^^^^^','^iiiiiiiiiiiiiiii^','^iiiiiiGGGGiiiiii^','^iiiiiiGGGGiiiiii^','^iiii^^ii1iiiiiii^','^iiii^^iiiiiiiiii^','^iiiiiiiiii^^iiii^','^iiiiiiiiii^^iiii^','^iiiiiiiiiiiiiiii^','^iii2iiiiiiiii3ii^','^iiiiii^^iiiiiiii^','^iiiiii^^iiiiiiii^','^iiiiiiiiiiiiiiii^','^iiiiiiii4iiiiiii^','^iiiiiiiiiiiiiiii^','^^^^^^^^^E^^^^^^^^'],
+ 'Gimnasio Brasa':['################','#==============#','#=======4======#','#==============#','#===1======2===#','#=GGGG====GGGG=#','#=GGGG=LL=GGGG=#','#=GGGG=LL=GGGG=#','#=GGGG====GGGG=#','#==============#','#=======3======#','#==============#','#==============#','########E#######'],
+ 'Gimnasio Brisa':['^^^^^^^^^^^^^^^^^^','^^^^^^^^^^^^^^^^^^','^^^====^^^^^^^^^^^','^^^====^^^^^^^^^^^','^^^==1=^^^^^^^^^^^','^^^====^^^^====^^^','^^^^^^^^^^^====^^^','^^^^^^^^^^^==2=^^^','^^^^^^^^^^^====^^^','^^^^====^^^^^^^^^^','^^^^====^^^^^^^^^^','^^^^==3=^^^^^^^^^^','^^^^====^^====^^^^','^^^^^^^^^^====^^^^','^^^^^^^^^^==4=^^^^','^^^^^^^^^^====^^^^','^^^^^^GGG^GG^^^^^^','^^^^^^GGG^GG^^^^^^','^^^^^^GGG^GG^^^^^^','^^^^^^^^^E^^^^^^^^'],
+ 'Gimnasio Marea':['~~~~~~~~~~~~~~~~~~~~~~','~~~~~~~~~~~~~~~~~~~~~~','~~==================~~','~~==================~~','~~===1==========2===~~','~~==================~~','~~~~~~~~~~PPP~~~~~~~~~','~~~~~~~~~~PPP~~~~~~~~~','~~~~~~~~~~PPP~~~~~~~~~','~~==================~~','~~==============GGGG~~','~~====3=========GG4G~~','~~==============GGGG~~','~~~~~~~~~~~=~~~~~~~~~~','~~~~~~~~~~~=~~~~~~~~~~','~~~~~~~~~~~E~~~~~~~~~~']
+},
 'Zonas legendarias':{
  'Caverna del Cauca I · Boca sumergida':['~~~~E~~~~~~~~~~~~~',
   '~~~~,~~~~~~~~~~~~~',
@@ -1519,6 +1570,18 @@ const MAPAS = {
    Al cargar el esquema desde el desplegable, su imagen entra sola.
    ===================================================================== */
 const MAPAS_IMG = {
+  'Laboratorio Ceiba': '',
+  'Gimnasio Tambora': '',
+  'Torre Café Dorado': '',
+  'Fuerte y túneles': '',
+  'Bodega Mayor': '',
+  'Gimnasio Retoño': '',
+  'Gimnasio Riel': '',
+  'Museo del Oro': '',
+  'Gimnasio Escarcha': '',
+  'Gimnasio Brasa': '',
+  'Gimnasio Brisa': '',
+  'Gimnasio Marea': '',
   'Pueblo Fundación': '',
   'Ciudad Cumbia': '',
   'Ciudad Muralla': '',
@@ -1592,6 +1655,7 @@ $('#selMapa').innerHTML = Object.entries(MAPAS).map(([g,ms])=>
 const buscarMapa = n => { for(const g of Object.values(MAPAS)) if(g[n]) return g[n]; return null; };
 
 function dibujarMapa(){
+  if(!Array.isArray(S.filas) || !S.filas.length) S.filas = MAPAS.Localidades['Pueblo Fundación'];
   const w=W(), h=H();
   const filas = S.filas.map(f=>f.padEnd(w, f[f.length-1]||'.'));
   $('#capaMapa').style.gridTemplateColumns = `repeat(${w},1fr)`;
@@ -1946,9 +2010,12 @@ $('#borrarSel').onclick=()=>{
   const t=S.tokens.find(x=>x.id===sel);
   if(!t){ alert('Toca primero una ficha del tablero para seleccionarla.'); return; }
   if(!soyDM && t.dueno!==yo){ alert('Esa ficha no es tuya.'); return; }
-  S.tokens=S.tokens.filter(x=>x.id!==t.id);
-  S.fichas=S.fichas.filter(x=>x.tokenId!==t.id);
-  sel=null; pintar(); enviar('estado',S);
+  S.tokens = S.tokens.filter(x=>x.id!==t.id);
+  const f = S.fichas.find(x=>x.tokenId===t.id);
+  if(f) f.enIniciativa = false;          // el personaje se conserva con su imagen
+  anotar(`<b>${esc(t.nombre)}</b> sale del tablero`, false);
+  sel=null; pintar();
+  soyDM ? enviar('estado',S) : enviar('quitarPieza',{tokenId:t.id});
 };
 function extraerIdPoke5e(valor){
   try{
@@ -2556,6 +2623,18 @@ function mostrarObjeto(k){
 
 /* ---------- mapa emergente de la región ---------- */
 const UBIC = {
+ 'Laboratorio Ceiba':[540,270],
+ 'Gimnasio Tambora':[400,270],
+ 'Torre Café Dorado':[400,270],
+ 'Fuerte y túneles':[255,335],
+ 'Bodega Mayor':[430,500],
+ 'Gimnasio Retoño':[330,690],
+ 'Gimnasio Riel':[180,560],
+ 'Museo del Oro':[500,640],
+ 'Gimnasio Escarcha':[500,640],
+ 'Gimnasio Brasa':[700,400],
+ 'Gimnasio Brisa':[660,180],
+ 'Gimnasio Marea':[110,130],
  'Pueblo Fundación':[540,270],'Ciudad Cumbia':[400,270],'Ciudad Muralla':[255,335],
  'Pueblo Sabanal':[230,430],'Puerto Bermejo':[430,500],'Ciudad Cañaveral':[330,690],
  'Ciudad Orquídea':[180,560],'Ciudad Páramo':[500,640],'Ciudad Vallenar':[700,400],
@@ -3195,6 +3274,10 @@ async function intentarLiberar(zona, i){
 
 /* ===================== PANEL DEL DIRECTOR · PESTAÑAS ===================== */
 let dmTab = 'fichas';
+$('#abrirLateral').onclick = ()=>{ document.body.classList.add('lateral-abierto'); pintarJugadores(); };
+$('#cerrarLateral').onclick = ()=> document.body.classList.remove('lateral-abierto');
+addEventListener('keydown', e=>{ if(e.key==='Escape') document.body.classList.remove('lateral-abierto'); });
+
 $('#dmTabs').addEventListener('click', e=>{
   const b=e.target.closest('[data-dm]'); if(!b) return;
   dmTab = b.dataset.dm;
@@ -3328,16 +3411,36 @@ function aligerar(e){
     for(const k in e.imgs) if(!String(e.imgs[k]).startsWith('data:')) c.imgs[k] = e.imgs[k];
   }
   if(String(c.img||'').startsWith('data:')) c.img = '';
+  if(String(c.tileset||'').startsWith('data:')) c.tileset='';
+  delete c.piezas;
   if(c.tokens) c.tokens = c.tokens.map(t=>
     String(t.img||'').startsWith('data:') ? Object.assign({}, t, {img:''}) : t);
   return c;
 }
 function enviar(tipo,dato){
-  if(canal){
-    const carga = (tipo==='estado') ? aligerar(dato) : dato;
-    canal.send({type:'broadcast',event:'op',payload:{tipo,dato:carga,de:yo}});
+  if(tipo==='estado'){
+    guardarPartida();
+    // Con partida guardada basta un aviso: cada quien relee la fila.
+    // Así el mensaje nunca crece de más y nadie se queda sin mapa.
+    if(canal) canal.send({type:'broadcast', event:'op',
+      payload: (sb && partida) ? {tipo:'sync', dato:null, de:yo}
+                               : {tipo:'estado', dato:aligerar(dato), de:yo}});
+    return;
   }
-  if(tipo==='estado') guardarPartida();
+  if(canal) canal.send({type:'broadcast',event:'op',payload:{tipo,dato,de:yo}});
+}
+
+async function recargarEstado(){
+  if(!sb || !partida || soyDM) return;
+  const { data } = await sb.from('partidas').select('estado').eq('id', partida.id).maybeSingle();
+  if(!data || !data.estado || !Object.keys(data.estado).length) return;
+  const antes = S.nombreMapa;
+  S = Object.assign({}, S, data.estado);
+  S.areas=S.areas||[]; S.objetos=S.objetos||[]; S.imgs=S.imgs||{};
+  S.piezas=S.piezas||{}; S.equipos=S.equipos||{}; S.npcs=S.npcs||[];
+  if(!Array.isArray(S.filas) || !S.filas.length) S.filas = MAPAS.Localidades['Pueblo Fundación'];
+  pintar();
+  if(S.nombreMapa !== antes && (S.objetos||[]).includes('mapa')) abrirMapaN(true);
 }
 function recibir({tipo,dato,de}){
   const reenviar = () => { if(soyDM) { pintar(); enviar('estado', S); } };
@@ -3350,6 +3453,7 @@ function recibir({tipo,dato,de}){
     } return; }
   if(tipo==='tirada'){ verTirada(dato,false); return; }
   if(tipo==='ping'){ ponerPing(dato.p, dato.txt, dato.de); return; }
+  if(tipo==='sync'){ recargarEstado(); return; }
   if(tipo==='nota'){ anotar(dato, false); return; }
   if(tipo==='dueno'){
     const t=S.tokens.find(x=>x.id===dato.tokenId);
