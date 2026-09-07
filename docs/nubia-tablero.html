@@ -547,7 +547,7 @@ footer code{background:#1c3a56;padding:2px 5px;color:#cfe0e6}
       <div class="lista" id="fichas"><div class="vacio">Nadie ha publicado su ficha todavía.</div></div>
     </div></details>
 
-    <details class="acc" id="panelDex" style="display:none"><summary>POKÉDEX DE NUBIA</summary><div class="cnt2">
+    <details class="acc" id="panelDex" hidden><summary>POKÉDEX DE NUBIA</summary><div class="cnt2">
       <div class="contador"><b id="dexN">0</b><span>/ <span id="dexT">151</span> REGISTRADOS</span></div>
       <div class="barrap"><i id="dexBar" style="width:0%"></i></div>
       <div class="fila"><button class="bt" id="escanear">ESCANEAR CON LA POKÉDEX</button></div>
@@ -1539,7 +1539,7 @@ function actualizarAccesoObjetos(){
   const puedeMapa = soyDM || objetos.includes('mapa');
   const puedePokedex = soyDM || objetos.includes('pokedex');
   $('#verMapaN').hidden = !puedeMapa;
-  $('#panelDex').style.display = puedePokedex ? 'block' : 'none';
+  $('#panelDex').hidden = !puedePokedex;
   if(!puedeMapa) $('#capaMapaN').classList.remove('ver');
   if(!puedePokedex && $('#dexDlg').open) $('#dexDlg').close();
 }
