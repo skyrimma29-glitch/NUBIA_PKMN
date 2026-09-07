@@ -162,6 +162,14 @@ footer b{color:var(--arena-hueso)}
   filter:drop-shadow(0 8px 18px rgba(0,0,0,.45));animation:brotar .45s ease both}
 header h1,.hero h1{display:flex;align-items:center;gap:12px}
 .hero h1{display:block}
+
+.atras{display:inline-grid;place-items:center;width:40px;height:40px;color:var(--oro);
+  border:3px solid var(--oro);background:transparent;text-decoration:none;flex:0 0 auto;
+  transition:background .14s,color .14s,transform .1s}
+.atras svg{width:22px;height:22px;display:block}
+.atras:hover{background:var(--oro);color:var(--tinta)}
+.atras:active{transform:translateX(-2px)}
+.atras:focus-visible{outline:3px solid var(--fucsia);outline-offset:3px}
 </style>
 
 <style>
@@ -185,8 +193,13 @@ tr,.punto,.npc{transition:background .14s}
 
 <header>
   <div class="wrap">
-    <p class="eyeb">Guía del director · Pokémon 5E</p>
-    <h1><img src="logo.png" alt="" class="logo">Región de <span>Nubia</span></h1>
+    <div style="display:flex;align-items:center;gap:14px">
+      <a href="index.html" class="atras" aria-label="Volver"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 5 L7 12 L14 19" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="square" stroke-linejoin="miter"/></svg></a>
+      <div>
+        <p class="eyeb" style="margin:0">Guía del director · Pokémon 5E</p>
+        <h1><img src="logo.png" alt="" class="logo">Región de <span>Nubia</span></h1>
+      </div>
+    </div>
     <p>Ocho ciudades, tres pueblos y una montaña nevada que nace al borde del mar. Aquí está el mapa, el esquema de cada localidad, quién vive en ella y qué te dirá si te le acercas.</p>
   </div>
 </header>
