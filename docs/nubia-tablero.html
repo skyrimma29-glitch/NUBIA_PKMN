@@ -1534,7 +1534,16 @@ $('#fichas').addEventListener('click', e=>{
 function actualizarAccesoMapa(){
   $('#verMapaN').hidden = !soyDM && !(S.objetos||[]).includes('mapa');
 }
-const pintar = ()=>{ dibujarMapa(); dibujarFichas(); dibujarAreas(); listaDuenos(); listaCapturables(); pintarObjetos(); actualizarAccesoMapa(); };
+function actualizarAccesoObjetos(){
+  const objetos = S.objetos||[];
+  const puedeMapa = soyDM || objetos.includes('mapa');
+  const puedePokedex = soyDM || objetos.includes('pokedex');
+  $('#verMapaN').hidden = !puedeMapa;
+  $('#panelDex').style.display = puedePokedex ? 'block' : 'none';
+  if(!puedeMapa) $('#capaMapaN').classList.remove('ver');
+  if(!puedePokedex && $('#dexDlg').open) $('#dexDlg').close();
+}
+const pintar = ()=>{ dibujarMapa(); dibujarFichas(); dibujarAreas(); listaDuenos(); listaCapturables(); pintarObjetos(); actualizarAccesoObjetos(); };
 
 /* ===================== ANCHO ===================== */
 document.querySelectorAll('[data-z]').forEach(b=>b.onclick=()=>{
@@ -2259,7 +2268,7 @@ async function subirImagen(file, carpeta){
 /* ---------- pokédex ---------- */
 async function cargarPokedex(){
   if(!sb || !cuenta || !partida) return;
-  $('#panelDex').style.display = 'block';
+  actualizarAccesoObjetos();
   $('#dexT').textContent = CFG.POKEDEX_TOTAL || 151;
   const { data } = await sb.from('pokedex')
     .select('especie,nombre,atrapado')
@@ -2350,8 +2359,8 @@ function recibir({tipo,dato,de}){
   if(tipo==='nota'){ anotar(dato, false); return; }
   if(tipo==='objeto'){
     S.objetos=S.objetos||[];
-    if(dato==='mapa' && !S.objetos.includes('mapa')) S.objetos.push('mapa');
-    actualizarAccesoMapa();
+    if(!S.objetos.includes(dato)) S.objetos.push(dato);
+    actualizarAccesoObjetos();
     mostrarObjeto(dato);
     if(dato==='mapa') abrirMapaN(false);
     return;
