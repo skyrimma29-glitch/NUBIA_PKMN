@@ -178,6 +178,19 @@ end $$;
 
 grant execute on function unirse_partida(text) to authenticated;
 
+
+-- ============================================ TIEMPO REAL
+-- Permite que los jugadores vean los cambios del director sin recargar.
+do $$
+begin
+  alter publication supabase_realtime add table partidas;
+exception
+  when duplicate_object then null;
+  when undefined_object then null;
+end $$;
+
+alter table partidas replica identity full;
+
 -- ============================================ ALMACENAMIENTO
 -- Mapas y fichas. Lectura pública, escritura solo de identificados.
 insert into storage.buckets (id, name, public)

@@ -452,24 +452,15 @@ footer code{background:#1c3a56;padding:2px 5px;color:#cfe0e6}
       <p class="nota">PS sugeridos = nivel × promedio del dado. Puedes reasignar el dueño después tocando el token.</p>
     </div></details>
 
-    <details class="acc solodm"><summary>MAPA</summary><div class="cnt2">
-      <label for="selMapa">ESQUEMA INTEGRADO</label>
+    <details class="acc solodm" open><summary>MAPA</summary><div class="cnt2">
+      <label for="selMapa">ESCENARIO</label>
       <select id="selMapa"></select>
-      <div class="fila" style="margin-top:8px"><button class="bt" id="cargarMapa">CARGAR</button></div>
-      <label for="imgArch" style="margin-top:4px">O IMAGEN DESDE TU EQUIPO</label>
+      <p class="nota" id="imgInfo">Al elegir un escenario, la mesa entera cambia sola. Las fichas que dejes en cada uno se quedan ahí.</p>
+      <label for="imgArch" style="margin-top:10px">IMAGEN DE ESTE ESCENARIO</label>
       <input id="imgArch" type="file" accept="image/png,image/webp,image/jpeg" style="padding:4px">
-      <label for="urlImg" style="margin-top:8px">O IMAGEN POR URL / RUTA</label>
-      <input id="urlImg" placeholder="mapas/fundacion.png">
-      <div class="fila" style="margin-top:6px">
-        <button class="bt" id="ponerImg">USAR IMAGEN</button>
-        <button class="bt" id="quitarImg">QUITAR</button>
+      <div class="fila" style="margin-top:8px">
+        <button class="bt" id="quitarImg">QUITAR IMAGEN</button>
       </div>
-      <p class="nota" id="imgInfo">Si eliges un archivo, viaja a la sala y todos lo ven sin subirlo a ningún lado. Límite práctico: unos 180 kB.</p>
-      <div class="fila" style="margin-top:8px"><button class="bt" id="guardarLib">GUARDAR EN LA BIBLIOTECA</button></div>
-      <textarea id="libSalida" rows="3" readonly style="display:none;margin-top:6px;font-family:ui-monospace,monospace;font-size:10px"></textarea>
-      <label for="propio" style="margin-top:4px">O PEGA TU PROPIO ESQUEMA</label>
-      <textarea id="propio" rows="4" placeholder="Una fila por línea&#10;TTTTTT&#10;T,,,,T" style="font-family:ui-monospace,monospace;font-size:11px"></textarea>
-      <div class="fila" style="margin-top:6px"><button class="bt" id="usarPropio">USAR ESQUEMA</button></div>
     </div></details>
 
     <details class="acc solodm"><summary>TILESET</summary><div class="cnt2">
@@ -1467,7 +1458,7 @@ const MAPAS_IMG = {
 
 /* ===================== ESTADO ===================== */
 let S = { nombreMapa:'Pueblo Fundación', filas:MAPAS.Localidades['Pueblo Fundación'],
-          img:'', tileset:'', tokens:[], niebla:[], fichas:[], areas:[], objetos:[], imgs:{}, equipos:{}, turno:{i:0,ronda:1} };
+          img:'', tileset:'', tokens:[], niebla:[], fichas:[], areas:[], objetos:[], imgs:{}, piezas:{}, equipos:{}, turno:{i:0,ronda:1} };
 let soyDM=false, yo='', canal=null, sel=null, pincel=0, tamPincel=1;
 let presentes = new Set();
 let filtro='todos', herramienta='', trazo=null;
@@ -1529,6 +1520,7 @@ function dibujarMapa(){
   cn.innerHTML=html;
 
   $('#nomMapa').textContent = S.nombreMapa;
+  if($('#selMapa') && $('#selMapa').value !== S.nombreMapa) $('#selMapa').value = S.nombreMapa;
   $('#infoMapa').textContent = `${w} × ${h} casillas · 1 casilla = 5 m`;
   dibujarTokens();
 }
@@ -1586,6 +1578,7 @@ function dibujarFichas(){
       </div>`:''}
     </div>`;
   }).join('');
+  if(typeof pintarPanelFicha === 'function') pintarPanelFicha();
 }
 $('#filtro').addEventListener('click',e=>{
   const b=e.target.closest('[data-f]'); if(!b) return;
@@ -1648,7 +1641,9 @@ function actualizarAccesoObjetos(){
   if(!puedeMapa) $('#capaMapaN').classList.remove('ver');
   if(!puedePokedex && $('#dexDlg').open) $('#dexDlg').close();
 }
-const pintar = ()=>{ dibujarMapa(); dibujarFichas(); dibujarAreas(); listaDuenos(); listaCapturables(); pintarObjetos(); actualizarAccesoObjetos(); };
+const pintar = ()=>{ dibujarMapa(); dibujarFichas(); dibujarAreas(); listaDuenos();
+  listaCapturables(); pintarObjetos(); actualizarAccesoObjetos();
+  pintarEquipo(); pintarPanelFicha(); };
 
 /* ===================== ANCHO ===================== */
 document.querySelectorAll('[data-z]').forEach(b=>b.onclick=()=>{
@@ -1974,60 +1969,45 @@ $('#cubrir').onclick=()=>{ const s=[];
   S.niebla=s; pintar(); enviar('estado',S); };
 $('#revelar').onclick=()=>{ S.niebla=[]; pintar(); enviar('estado',S); };
 
-$('#cargarMapa').onclick=()=>{
-  const n=$('#selMapa').value, m=buscarMapa(n); if(!m) return;
-  S.imgs=S.imgs||{};
-  S.nombreMapa=n; S.filas=m; S.img=S.imgs[n]||MAPAS_IMG[n]||''; S.niebla=[];
-  S.tokens.forEach(t=>{ t.x=Math.min(t.x,m[0].length-1); t.y=Math.min(t.y,m.length-1); });
+function irAlEscenario(n){
+  const m = buscarMapa(n); if(!m) return;
+  S.piezas = S.piezas || {}; S.imgs = S.imgs || {};
+  S.piezas[S.nombreMapa] = S.tokens;        // guarda lo que había en el escenario anterior
+  S.nombreMapa = n;
+  S.filas = m;
+  S.img = S.imgs[n] || MAPAS_IMG[n] || '';
+  S.tokens = S.piezas[n] || [];             // recupera lo que ya estaba puesto aquí
+  S.niebla = [];
+  const an = m[0].length, al = m.length;
+  S.tokens.forEach(t=>{ t.x=Math.min(t.x,an-1); t.y=Math.min(t.y,al-1); });
   pintar(); enviar('estado',S);
   if((S.objetos||[]).includes('mapa')) abrirMapaN(true);
-};
-$('#ponerImg').onclick=async()=>{
-  const f=$('#imgArch').files[0], u=$('#urlImg').value.trim();
-  S.imgs = S.imgs || {};
-  let destino = '';
-  if(f){
-    const url = await subirImagen(f, 'mapas');
-    if(url){
-      destino = url;
-      $('#imgInfo').textContent='Imagen guardada en la nube y fijada a «'+S.nombreMapa+'».';
-    } else {
-      const dato=await new Promise(r=>{ const fr=new FileReader();
-        fr.onload=()=>r(fr.result); fr.onerror=()=>r(''); fr.readAsDataURL(f); });
-      if(!dato) return;
-      const kb=Math.round(dato.length/1400);
-      if(kb>180){
-        $('#imgInfo').innerHTML='Pesa unos '+kb+' kB y no cabe en un mensaje de sala. '
-          + 'Entra con tu cuenta para guardarla en la nube, o redúcela.';
-        return;
-      }
-      destino = dato;
-      $('#imgInfo').textContent='Imagen fijada a «'+S.nombreMapa+'» solo para esta sesión · '+kb+' kB.';
-    }
-  } else if(u){
-    destino = u;
-    $('#imgInfo').textContent='Imagen fijada a «'+S.nombreMapa+'».';
-  } else return;
+}
+$('#selMapa').onchange = ()=> irAlEscenario($('#selMapa').value);
 
-  S.img = destino;
-  S.imgs[S.nombreMapa] = destino;   // queda pegada a este esquema para siempre
+$('#imgArch').onchange = async ()=>{
+  const f=$('#imgArch').files[0]; if(!f) return;
+  S.imgs = S.imgs || {};
+  $('#imgInfo').textContent='Subiendo…';
+  const url = await subirImagen(f, 'mapas');
+  if(url){
+    S.img = url; S.imgs[S.nombreMapa] = url;
+    $('#imgInfo').textContent='Imagen guardada. Queda fijada a «'+S.nombreMapa+'» para siempre.';
+  } else {
+    const dato = await new Promise(r=>{ const fr=new FileReader();
+      fr.onload=()=>r(fr.result); fr.onerror=()=>r(''); fr.readAsDataURL(f); });
+    if(!dato){ $('#imgInfo').textContent='No se pudo leer el archivo.'; return; }
+    S.img = dato; S.imgs[S.nombreMapa] = dato;
+    $('#imgInfo').textContent='Cargada solo para esta sesión. Entra con tu cuenta para guardarla.';
+  }
   $('#imgArch').value='';
   pintar(); enviar('estado',S);
 };
 $('#quitarImg').onclick=()=>{
   S.imgs=S.imgs||{}; delete S.imgs[S.nombreMapa];
   S.img=''; $('#imgArch').value='';
-  $('#imgInfo').textContent='«'+S.nombreMapa+'» vuelve a mostrar su esquema de casillas.';
+  $('#imgInfo').textContent='«'+S.nombreMapa+'» vuelve a su esquema de casillas.';
   pintar(); enviar('estado',S);
-};
-$('#guardarLib').onclick=async()=>{
-  if(!S.img){ $('#imgInfo').textContent='Carga primero una imagen.'; return; }
-  const linea = `  '${S.nombreMapa}': '${S.img}',`;
-  const t=$('#libSalida'); t.style.display='block'; t.value=linea;
-  try{ await navigator.clipboard.writeText(linea); $('#guardarLib').textContent='LÍNEA COPIADA'; }
-  catch{ t.select(); $('#guardarLib').textContent='COPIA MANUAL ↓'; }
-  $('#imgInfo').textContent='Pega esta línea dentro de MAPAS_IMG, al inicio del script, reemplazando la del mismo nombre.';
-  setTimeout(()=>$('#guardarLib').textContent='GUARDAR EN LA BIBLIOTECA', 3200);
 };
 $('#tsPoner').onclick=async()=>{
   const f=$('#tsArch').files[0], u=$('#tsUrl').value.trim();
@@ -2043,12 +2023,6 @@ $('#tsPoner').onclick=async()=>{
   pintar(); enviar('estado',S);
 };
 $('#tsQuitar').onclick=()=>{ S.tileset=''; $('#tsArch').value=''; pintar(); enviar('estado',S); };
-$('#usarPropio').onclick=()=>{
-  const f=$('#propio').value.split('\n').map(l=>l.replace(/\s+$/,'')).filter(l=>l.length);
-  if(!f.length) return;
-  S.filas=f; S.img=''; S.nombreMapa='Esquema propio'; S.niebla=[];
-  pintar(); enviar('estado',S);
-};
 
 /* ===================== DADOS ===================== */
 const CARAS=[2,3,4,6,8,10,12,20,100];
@@ -2466,6 +2440,7 @@ async function iniciarCuenta(){
     yo = $('#nombre').value; hash();
   }
   await cargarPartida();
+  escucharPartida();
   await cargarPokedex();
   await cargarEquipoNube();
 }
@@ -2480,7 +2455,7 @@ async function cargarPartida(){
   fijarRol(data.director === cuenta.id);
   if(data.estado && Object.keys(data.estado).length){
     S = Object.assign(S, data.estado);
-    S.areas = S.areas||[]; S.objetos = S.objetos||[]; S.imgs = S.imgs||{}; S.equipos = S.equipos||{}; S.turno = S.turno||{i:0,ronda:1};
+    S.areas = S.areas||[]; S.objetos = S.objetos||[]; S.imgs = S.imgs||{}; S.piezas = S.piezas||{}; S.equipos = S.equipos||{}; S.turno = S.turno||{i:0,ronda:1};
     pintar();
     anotar(`<b>Mesa restaurada</b> · ${esc(data.nombre)}`, false);
   }
@@ -2504,6 +2479,26 @@ async function cargarEquipoNube(){
     if(e && e.eq){ equipoEscribir(yo, e); pintarEquipo(); }
   }catch{}
 }
+/* Los cambios grandes viajan por la base de datos, no por el canal:
+   así no hay límite de tamaño y el jugador no tiene que recargar. */
+let canalPartida = null;
+function escucharPartida(){
+  if(!sb || !partida || canalPartida) return;
+  canalPartida = sb.channel('fila-'+partida.id)
+    .on('postgres_changes',
+        { event:'UPDATE', schema:'public', table:'partidas', filter:'id=eq.'+partida.id },
+        ({ new: fila }) => {
+          if(soyDM || !fila || !fila.estado) return;
+          const antes = S.nombreMapa;
+          S = Object.assign({}, S, fila.estado);
+          S.areas=S.areas||[]; S.objetos=S.objetos||[]; S.imgs=S.imgs||{};
+          S.piezas=S.piezas||{}; S.equipos=S.equipos||{};
+          pintar();
+          if(S.nombreMapa !== antes && (S.objetos||[]).includes('mapa')) abrirMapaN(true);
+        })
+    .subscribe();
+}
+
 function guardarPartida(){
   if(!sb || !partida || !soyDM) return;
   clearTimeout(guardando);
@@ -2511,7 +2506,7 @@ function guardarPartida(){
     await sb.from('partidas')
       .update({ estado: S, actualizado: new Date().toISOString() })
       .eq('id', partida.id);
-  }, 1500);
+  }, 700);
 }
 
 /* ---------- imágenes en el almacenamiento ---------- */
@@ -2809,8 +2804,24 @@ function pintarPanelFicha(){
 }
 
 /* ===================== SINCRONIZACIÓN ===================== */
+function aligerar(e){
+  /* Las imágenes incrustadas no caben en un mensaje de sala: se quitan del envío.
+     Viajan por la base de datos, que no tiene ese límite. */
+  const c = Object.assign({}, e);
+  if(c.imgs){
+    c.imgs = {};
+    for(const k in e.imgs) if(!String(e.imgs[k]).startsWith('data:')) c.imgs[k] = e.imgs[k];
+  }
+  if(String(c.img||'').startsWith('data:')) c.img = '';
+  if(c.tokens) c.tokens = c.tokens.map(t=>
+    String(t.img||'').startsWith('data:') ? Object.assign({}, t, {img:''}) : t);
+  return c;
+}
 function enviar(tipo,dato){
-  if(canal) canal.send({type:'broadcast',event:'op',payload:{tipo,dato,de:yo}});
+  if(canal){
+    const carga = (tipo==='estado') ? aligerar(dato) : dato;
+    canal.send({type:'broadcast',event:'op',payload:{tipo,dato:carga,de:yo}});
+  }
   if(tipo==='estado') guardarPartida();
 }
 function recibir({tipo,dato,de}){
@@ -2818,7 +2829,7 @@ function recibir({tipo,dato,de}){
   if(tipo==='hola'){ if(soyDM) enviar('estado',S); return; }
   if(tipo==='estado'){ if(!soyDM){
       const cambio = S.nombreMapa !== dato.nombreMapa;
-      S=dato; S.areas=S.areas||[]; S.objetos=S.objetos||[]; S.imgs=S.imgs||{}; S.equipos=S.equipos||{}; pintar();
+      S=dato; S.areas=S.areas||[]; S.objetos=S.objetos||[]; S.imgs=S.imgs||{}; S.piezas=S.piezas||{}; S.equipos=S.equipos||{}; pintar();
       if(cambio && (S.objetos||[]).includes('mapa')) abrirMapaN(true);
     } return; }
   if(tipo==='tirada'){ verTirada(dato,false); return; }
