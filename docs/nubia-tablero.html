@@ -297,10 +297,10 @@ body.enfoque main{padding-top:10px}
 #modoLiberar.on{background:var(--fucsia);color:#fff;border-color:var(--fucsia)}
 
 /* ------------- confirmación propia ------------- */
-#confirmar{position:fixed;inset:0;z-index:140;display:none;place-items:center;
-  background:rgba(10,20,32,.6);backdrop-filter:blur(2px)}
-#confirmar.ver{display:grid;animation:brotar .18s ease both}
-.confcaja{background:var(--arena-hueso);border:4px solid var(--fucsia);max-width:380px;width:92%;
+#confirmar{border:0;padding:0;background:transparent;max-width:380px;width:92%;overflow:visible}
+#confirmar::backdrop{background:rgba(10,20,32,.66);backdrop-filter:blur(2px)}
+#confirmar[open]{animation:brotar .18s ease both}
+.confcaja{background:var(--arena-hueso);border:4px solid var(--fucsia);width:100%;
   box-shadow:0 16px 44px rgba(0,0,0,.5)}
 .confcaja .cab{background:var(--fucsia);color:#fff;padding:11px 15px;
   font-family:'Silkscreen',monospace;font-size:12px}
@@ -818,7 +818,7 @@ footer code{background:#1c3a56;padding:2px 5px;color:#cfe0e6}
 
 <div class="menuslot" id="menuSlot"></div>
 
-<div id="confirmar"><div class="confcaja">
+<dialog id="confirmar"><div class="confcaja">
   <div class="cab" id="confTit">CONFIRMAR</div>
   <div class="cnt">
     <div class="av" id="confAv" style="display:none"></div>
@@ -1393,17 +1393,17 @@ const MAPAS = {
 },
 'Interiores':{
  'Laboratorio Ceiba':['################','#==============#','#=###=LLLL=###=#','#=###=LLLL=###=#','#=###======###=#','#=======1======#','#==2========3==#','#=###======###=#','#=###======###=#','#=###===4==###=#','#==============#','########E#######'],
- 'Gimnasio Tambora':['##################','#================#','#=====GGGGGG=====#','#=====GGG1GG=====#','#=====GGGGGG=====#','#================#','#==LLL======LLL==#','#==L2L=LLLL=L3L==#','#==LLL=LLLL=LLL==#','#======LL4L======#','#======LL=L======#','#================#','#================#','#########E########'],
+ 'Gimnasio 1 · Tambora · Eléctrico':['##################','#================#','#=====GGGGGG=====#','#=====GGG1GG=====#','#=====GGGGGG=====#','#================#','#==LLL======LLL==#','#==L2L=LLLL=L3L==#','#==LLL=LLLL=LLL==#','#======LL4L======#','#======LL=L======#','#================#','#================#','#########E########'],
  'Torre Café Dorado':['################','#==============#','#====DDDDDD====#','#====DDD1DD====#','#====DDDDDD====#','#==============#','#==============#','#=####====####=#','#=####====####=#','#=##2#====#3##=#','#=####====####=#','#==============#','#=======4======#','########E#######'],
- 'Fuerte y túneles':['######################','######################','##==================##','##===^^=========^^==##','##===^^===^^^===^^==##','##=======GGGG=======##','##=======GG1G=======##','##==================##','###########=##########','###########=##########','##ooooooooo=oooooooo##','##oooooooooooooooooo##','##oooooooooooooooooo##','##ooo2oooooooooo3ooo##','##ooooooooo=oooooooo##','##ooooooooo=oooooooo##','###########4##########','###########E##########'],
+ 'Gimnasio 2 · Baluarte · Roca':['######################','######################','##==================##','##===^^=========^^==##','##===^^===^^^===^^==##','##=======GGGG=======##','##=======GG1G=======##','##==================##','###########=##########','###########=##########','##ooooooooo=oooooooo##','##oooooooooooooooooo##','##oooooooooooooooooo##','##ooo2oooooooooo3ooo##','##ooooooooo=oooooooo##','##ooooooooo=oooooooo##','###########4##########','###########E##########'],
  'Bodega Mayor':['####################','#==================#','#===============DDD#','#==##===##===##=DDD#','#==##===##===##=D3D#','#==##===##===##=DDD#','#==##===##===##====#','#==##=1=##=2=##====#','#==##===##===##====#','#==##===##===##====#','#==##===##===##=xxx#','#===============xxx#','#===============x4x#','#===============xxx#','#==================#','######E#############'],
- 'Gimnasio Retoño':['hhhhhhhhhhhhhhhhhhhh','h..................h','h..................h','h...hh...hh...hh...h','h...hh...hh...hh...h','h...hh.2.hh...hh...h','h...hh...hh...hhGGGh','h...hh...hh...hhGGGh','h.1.hh...hh...hhG4Gh','h...hh...hh...hhGGGh','h...hh...hh...hh...h','h...hh...hh.3.hh...h','h...hh...hh...hh...h','h..................h','h..................h','hhEhhhhhhhhhhhhhhhhh'],
- 'Gimnasio Riel':['####################','####################','##================##','##================##','##====^^^2========##','##====^^^======GGG##','##=============GGG##','##=========^^^=G4G##','##=========^^^=GGG##','##==1========3====##','##================##','##================##','####=###############','####E###############'],
+ 'Gimnasio 3 · Retoño · Planta':['hhhhhhhhhhhhhhhhhhhh','h..................h','h..................h','h...hh...hh...hh...h','h...hh...hh...hh...h','h...hh.2.hh...hh...h','h...hh...hh...hhGGGh','h...hh...hh...hhGGGh','h.1.hh...hh...hhG4Gh','h...hh...hh...hhGGGh','h...hh...hh...hh...h','h...hh...hh.3.hh...h','h...hh...hh...hh...h','h..................h','h..................h','hhEhhhhhhhhhhhhhhhhh'],
+ 'Gimnasio 4 · Riel · Acero':['####################','####################','##================##','##================##','##====^^^2========##','##====^^^======GGG##','##=============GGG##','##=========^^^=G4G##','##=========^^^=GGG##','##==1========3====##','##================##','##================##','####=###############','####E###############'],
  'Museo del Oro':['##################','#================#','#================#','#==##========##==#','#==##========##==#','#======LLLL======#','#===2==LLLL===3==#','#======LL1L======#','#======LLLL======#','#==##========##==#','#==##========##==#','#========4=======#','#================#','#########E########'],
- 'Gimnasio Escarcha':['^^^^^^^^^^^^^^^^^^','^iiiiiiiiiiiiiiii^','^iiiiiiGGGGiiiiii^','^iiiiiiGGGGiiiiii^','^iiii^^ii1iiiiiii^','^iiii^^iiiiiiiiii^','^iiiiiiiiii^^iiii^','^iiiiiiiiii^^iiii^','^iiiiiiiiiiiiiiii^','^iii2iiiiiiiii3ii^','^iiiiii^^iiiiiiii^','^iiiiii^^iiiiiiii^','^iiiiiiiiiiiiiiii^','^iiiiiiii4iiiiiii^','^iiiiiiiiiiiiiiii^','^^^^^^^^^E^^^^^^^^'],
- 'Gimnasio Brasa':['################','#==============#','#=======4======#','#==============#','#===1======2===#','#=GGGG====GGGG=#','#=GGGG=LL=GGGG=#','#=GGGG=LL=GGGG=#','#=GGGG====GGGG=#','#==============#','#=======3======#','#==============#','#==============#','########E#######'],
- 'Gimnasio Brisa':['^^^^^^^^^^^^^^^^^^','^^^^^^^^^^^^^^^^^^','^^^====^^^^^^^^^^^','^^^====^^^^^^^^^^^','^^^==1=^^^^^^^^^^^','^^^====^^^^====^^^','^^^^^^^^^^^====^^^','^^^^^^^^^^^==2=^^^','^^^^^^^^^^^====^^^','^^^^====^^^^^^^^^^','^^^^====^^^^^^^^^^','^^^^==3=^^^^^^^^^^','^^^^====^^====^^^^','^^^^^^^^^^====^^^^','^^^^^^^^^^==4=^^^^','^^^^^^^^^^====^^^^','^^^^^^GGG^GG^^^^^^','^^^^^^GGG^GG^^^^^^','^^^^^^GGG^GG^^^^^^','^^^^^^^^^E^^^^^^^^'],
- 'Gimnasio Marea':['~~~~~~~~~~~~~~~~~~~~~~','~~~~~~~~~~~~~~~~~~~~~~','~~==================~~','~~==================~~','~~===1==========2===~~','~~==================~~','~~~~~~~~~~PPP~~~~~~~~~','~~~~~~~~~~PPP~~~~~~~~~','~~~~~~~~~~PPP~~~~~~~~~','~~==================~~','~~==============GGGG~~','~~====3=========GG4G~~','~~==============GGGG~~','~~~~~~~~~~~=~~~~~~~~~~','~~~~~~~~~~~=~~~~~~~~~~','~~~~~~~~~~~E~~~~~~~~~~']
+ 'Gimnasio 5 · Escarcha · Hielo':['^^^^^^^^^^^^^^^^^^','^iiiiiiiiiiiiiiii^','^iiiiiiGGGGiiiiii^','^iiiiiiGGGGiiiiii^','^iiii^^ii1iiiiiii^','^iiii^^iiiiiiiiii^','^iiiiiiiiii^^iiii^','^iiiiiiiiii^^iiii^','^iiiiiiiiiiiiiiii^','^iii2iiiiiiiii3ii^','^iiiiii^^iiiiiiii^','^iiiiii^^iiiiiiii^','^iiiiiiiiiiiiiiii^','^iiiiiiii4iiiiiii^','^iiiiiiiiiiiiiiii^','^^^^^^^^^E^^^^^^^^'],
+ 'Gimnasio 6 · Brasa · Fuego':['################','#==============#','#=======4======#','#==============#','#===1======2===#','#=GGGG====GGGG=#','#=GGGG=LL=GGGG=#','#=GGGG=LL=GGGG=#','#=GGGG====GGGG=#','#==============#','#=======3======#','#==============#','#==============#','########E#######'],
+ 'Gimnasio 7 · Brisa · Volador':['^^^^^^^^^^^^^^^^^^','^^^^^^^^^^^^^^^^^^','^^^====^^^^^^^^^^^','^^^====^^^^^^^^^^^','^^^==1=^^^^^^^^^^^','^^^====^^^^====^^^','^^^^^^^^^^^====^^^','^^^^^^^^^^^==2=^^^','^^^^^^^^^^^====^^^','^^^^====^^^^^^^^^^','^^^^====^^^^^^^^^^','^^^^==3=^^^^^^^^^^','^^^^====^^====^^^^','^^^^^^^^^^====^^^^','^^^^^^^^^^==4=^^^^','^^^^^^^^^^====^^^^','^^^^^^GGG^GG^^^^^^','^^^^^^GGG^GG^^^^^^','^^^^^^GGG^GG^^^^^^','^^^^^^^^^E^^^^^^^^'],
+ 'Gimnasio 8 · Marea · Agua':['~~~~~~~~~~~~~~~~~~~~~~','~~~~~~~~~~~~~~~~~~~~~~','~~==================~~','~~==================~~','~~===1==========2===~~','~~==================~~','~~~~~~~~~~PPP~~~~~~~~~','~~~~~~~~~~PPP~~~~~~~~~','~~~~~~~~~~PPP~~~~~~~~~','~~==================~~','~~==============GGGG~~','~~====3=========GG4G~~','~~==============GGGG~~','~~~~~~~~~~~=~~~~~~~~~~','~~~~~~~~~~~=~~~~~~~~~~','~~~~~~~~~~~E~~~~~~~~~~']
 },
 'Zonas legendarias':{
  'Caverna del Cauca I · Boca sumergida':['~~~~E~~~~~~~~~~~~~',
@@ -1582,17 +1582,17 @@ const MAPAS = {
    ===================================================================== */
 const MAPAS_IMG = {
   'Laboratorio Ceiba': '',
-  'Gimnasio Tambora': '',
+  'Gimnasio 1 · Tambora · Eléctrico': '',
   'Torre Café Dorado': '',
-  'Fuerte y túneles': '',
+  'Gimnasio 2 · Baluarte · Roca': '',
   'Bodega Mayor': '',
-  'Gimnasio Retoño': '',
-  'Gimnasio Riel': '',
+  'Gimnasio 3 · Retoño · Planta': '',
+  'Gimnasio 4 · Riel · Acero': '',
   'Museo del Oro': '',
-  'Gimnasio Escarcha': '',
-  'Gimnasio Brasa': '',
-  'Gimnasio Brisa': '',
-  'Gimnasio Marea': '',
+  'Gimnasio 5 · Escarcha · Hielo': '',
+  'Gimnasio 6 · Brasa · Fuego': '',
+  'Gimnasio 7 · Brisa · Volador': '',
+  'Gimnasio 8 · Marea · Agua': '',
   'Pueblo Fundación': '',
   'Ciudad Cumbia': '',
   'Ciudad Muralla': '',
@@ -1665,35 +1665,49 @@ $('#selMapa').innerHTML = Object.entries(MAPAS).map(([g,ms])=>
   `<optgroup label="${g}">${Object.keys(ms).map(n=>`<option>${n}</option>`).join('')}</optgroup>`).join('');
 const buscarMapa = n => { for(const g of Object.values(MAPAS)) if(g[n]) return g[n]; return null; };
 
+let cacheMapa = null, cacheNiebla = null;
 function dibujarMapa(){
   if(!Array.isArray(S.filas) || !S.filas.length) S.filas = MAPAS.Localidades['Pueblo Fundación'];
   const w=W(), h=H();
-  const filas = S.filas.map(f=>f.padEnd(w, f[f.length-1]||'.'));
-  $('#capaMapa').style.gridTemplateColumns = `repeat(${w},1fr)`;
-  $('#capaMapa').innerHTML = filas.map(f=>[...f].map(ch=>{
-    const i = S.tileset ? ORDEN.indexOf(ch) : -1;
-    if(i >= 0){
-      const cx = i % COLS, cy = Math.floor(i / COLS);
-      const px = COLS > 1 ? (cx / (COLS - 1)) * 100 : 0;
-      const py = FILAS_TS > 1 ? (cy / (FILAS_TS - 1)) * 100 : 0;
-      return `<div class="c ts" style="background-image:url('${S.tileset}');`
-        + `background-size:${COLS*100}% ${FILAS_TS*100}%;background-position:${px}% ${py}%"></div>`;
-    }
-    return `<div class="c" style="background:${COLORES[ch]||'#7ec46b'}"></div>`;
-  }).join('')).join('');
 
-  const fi=$('#fondoImg');
-  if(S.img){ fi.style.display='block'; fi.style.backgroundImage=`url("${S.img}")`; $('#capaMapa').style.visibility='hidden'; }
-  else { fi.style.display='none'; $('#capaMapa').style.visibility='visible'; }
+  // Reconstruir 300 casillas en cada cambio era lo que hacía parpadear la mesa.
+  // Ahora solo se rehace cuando el escenario cambia de verdad.
+  const claveMapa = [S.nombreMapa, S.img||'', S.tileset||'', S.filas.join('|')].join('§');
+  if(claveMapa !== cacheMapa){
+    const filas = S.filas.map(f=>f.padEnd(w, f[f.length-1]||'.'));
+    $('#capaMapa').style.gridTemplateColumns = `repeat(${w},1fr)`;
+    $('#capaMapa').innerHTML = filas.map(f=>[...f].map(ch=>{
+      const i = S.tileset ? ORDEN.indexOf(ch) : -1;
+      if(i >= 0){
+        const cx = i % COLS, cy = Math.floor(i / COLS);
+        const px = COLS > 1 ? (cx / (COLS - 1)) * 100 : 0;
+        const py = FILAS_TS > 1 ? (cy / (FILAS_TS - 1)) * 100 : 0;
+        return `<div class="c ts" style="background-image:url('${S.tileset}');`
+          + `background-size:${COLS*100}% ${FILAS_TS*100}%;background-position:${px}% ${py}%"></div>`;
+      }
+      return `<div class="c" style="background:${COLORES[ch]||'#7ec46b'}"></div>`;
+    }).join('')).join('');
 
-  const cn=$('#capaNiebla');
-  cn.style.gridTemplateColumns=`repeat(${w},1fr)`;
-  cn.classList.toggle('dm', soyDM);
-  const oc=new Set(S.niebla);
-  let html='';
-  for(let y=0;y<h;y++) for(let x=0;x<w;x++)
-    html += `<div class="n ${oc.has(x+','+y)?'oculta':''}" data-x="${x}" data-y="${y}"></div>`;
-  cn.innerHTML=html;
+    const fi=$('#fondoImg');
+    if(S.img){ fi.style.display='block'; fi.style.backgroundImage=`url("${S.img}")`; $('#capaMapa').style.visibility='hidden'; }
+    else { fi.style.display='none'; $('#capaMapa').style.visibility='visible'; }
+
+    cacheMapa = claveMapa;
+    cacheNiebla = null;                 // la niebla depende del tamaño del mapa
+  }
+
+  const claveNiebla = [w, h, soyDM, (S.niebla||[]).join(',')].join('§');
+  if(claveNiebla !== cacheNiebla){
+    const cn=$('#capaNiebla');
+    cn.style.gridTemplateColumns=`repeat(${w},1fr)`;
+    cn.classList.toggle('dm', soyDM);
+    const oc=new Set(S.niebla);
+    let html='';
+    for(let y=0;y<h;y++) for(let x=0;x<w;x++)
+      html += `<div class="n ${oc.has(x+','+y)?'oculta':''}" data-x="${x}" data-y="${y}"></div>`;
+    cn.innerHTML=html;
+    cacheNiebla = claveNiebla;
+  }
 
   $('#nomMapa').textContent = S.nombreMapa;
   if($('#selMapa') && $('#selMapa').value !== S.nombreMapa) $('#selMapa').value = S.nombreMapa;
@@ -1701,22 +1715,42 @@ function dibujarMapa(){
   dibujarTokens();
 }
 
+let cacheTokens = null;
 function dibujarTokens(){
   const w=W(), h=H(), oc=new Set(S.niebla);
-  $('#capaTokens').innerHTML = S.tokens.map(t=>{
-    if(!soyDM && oc.has(t.x+','+t.y) && t.dueno!==yo) return '';
-    const mio = soyDM || t.dueno===yo;
-    const ini = (t.nombre||'?').slice(0,2).toUpperCase();
-    const cond = t.cond||[];
-    const anillo = cond.length ? `;box-shadow:0 0 0 3px ${COLCOND[cond[0]]||'#fff'},0 2px 0 rgba(0,0,0,.35)` : '';
-    return `<div class="tk ${mio?'mio':''} ${sel===t.id?'sel':''}" data-id="${t.id}"
-      style="left:${(t.x/w)*100}%;top:${(t.y/h)*100}%;width:${(1/w)*100}%;height:${(1/h)*100}%;background:${t.color}${anillo}">
-      <span class="rd">${t.img?`<img src="${t.img}" alt="">`:esc(ini)}</span>
-      ${cond.length?`<span class="cnd">${cond.map(c=>`<i style="background:${COLCOND[c]||'#fff'}" title="${c}"></i>`).join('')}</span>`:''}
-      ${t.nivel?`<span class="lv">${t.nivel}</span>`:''}
-      <span class="nm">${esc(t.nombre)}</span>
-    </div>`;
-  }).join('');
+  const capa = $('#capaTokens');
+  const visibles = S.tokens.filter(t => soyDM || !oc.has(t.x+','+t.y) || t.dueno===yo);
+
+  // La firma no incluye la posición: mover una ficha no rehace el HTML,
+  // solo desplaza la que ya está en pantalla. Adiós al parpadeo.
+  const firma = visibles.map(t=>[t.id, t.color, t.img, t.nivel, t.nombre,
+    (t.cond||[]).join(''), sel===t.id, soyDM||t.dueno===yo].join('~')).join('|');
+
+  if(firma !== cacheTokens){
+    capa.innerHTML = visibles.map(t=>{
+      const mio = soyDM || t.dueno===yo;
+      const ini = (t.nombre||'?').slice(0,2).toUpperCase();
+      const cond = t.cond||[];
+      const anillo = cond.length ? `;box-shadow:0 0 0 3px ${COLCOND[cond[0]]||'#fff'},0 2px 0 rgba(0,0,0,.35)` : '';
+      return `<div class="tk ${mio?'mio':''} ${sel===t.id?'sel':''}" data-id="${t.id}"
+        style="width:${(1/w)*100}%;height:${(1/h)*100}%;background:${t.color}${anillo}">
+        <span class="rd">${t.img?`<img src="${t.img}" alt="">`:esc(ini)}</span>
+        ${cond.length?`<span class="cnd">${cond.map(c=>`<i style="background:${COLCOND[c]||'#fff'}" title="${c}"></i>`).join('')}</span>`:''}
+        ${t.nivel?`<span class="lv">${t.nivel}</span>`:''}
+        <span class="nm">${esc(t.nombre)}</span>
+      </div>`;
+    }).join('');
+    cacheTokens = firma;
+  }
+
+  visibles.forEach(t=>{
+    const n = capa.querySelector(`[data-id="${t.id}"]`);
+    if(!n) return;
+    n.style.left = (t.x/w)*100 + '%';
+    n.style.top  = (t.y/h)*100 + '%';
+    n.style.width  = (1/w)*100 + '%';
+    n.style.height = (1/h)*100 + '%';
+  });
 }
 
 function ordenIniciativa(){
@@ -1893,6 +1927,7 @@ $('#capaTokens').addEventListener('pointerup', ()=>{
   const t = drag.t, drag2movible = drag.movible;
   if(movido){ t.x=d.x; t.y=d.y; enviar('mover',{id:t.id,x:t.x,y:t.y}); }
   drag=null; dibujarTokens(); dibujarAreas();
+  if(syncEsperando){ syncEsperando=false; setTimeout(recargarEstado, 120); }
   if(!movido){
     if(escaneando) abrirPokedex(t);
     else if(drag2movible) abrirDlg(t);
@@ -2693,17 +2728,17 @@ function mostrarObjeto(k){
 /* ---------- mapa emergente de la región ---------- */
 const UBIC = {
  'Laboratorio Ceiba':[540,270],
- 'Gimnasio Tambora':[400,270],
+ 'Gimnasio 1 · Tambora · Eléctrico':[400,270],
  'Torre Café Dorado':[400,270],
- 'Fuerte y túneles':[255,335],
+ 'Gimnasio 2 · Baluarte · Roca':[255,335],
  'Bodega Mayor':[430,500],
- 'Gimnasio Retoño':[330,690],
- 'Gimnasio Riel':[180,560],
+ 'Gimnasio 3 · Retoño · Planta':[330,690],
+ 'Gimnasio 4 · Riel · Acero':[180,560],
  'Museo del Oro':[500,640],
- 'Gimnasio Escarcha':[500,640],
- 'Gimnasio Brasa':[700,400],
- 'Gimnasio Brisa':[660,180],
- 'Gimnasio Marea':[110,130],
+ 'Gimnasio 5 · Escarcha · Hielo':[500,640],
+ 'Gimnasio 6 · Brasa · Fuego':[700,400],
+ 'Gimnasio 7 · Brisa · Volador':[660,180],
+ 'Gimnasio 8 · Marea · Agua':[110,130],
  'Pueblo Fundación':[540,270],'Ciudad Cumbia':[400,270],'Ciudad Muralla':[255,335],
  'Pueblo Sabanal':[230,430],'Puerto Bermejo':[430,500],'Ciudad Cañaveral':[330,690],
  'Ciudad Orquídea':[180,560],'Ciudad Páramo':[500,640],'Ciudad Vallenar':[700,400],
@@ -2793,12 +2828,17 @@ async function iniciarCuenta(){
   anunciarme();
 }
 
-async function cargarPartida(){
+async function cargarPartida(reintento){
   const cod = $('#sala').value.trim().toUpperCase();
   if(!cod || !cuenta) return;
   const { data, error } = await sb.from('partidas')
     .select('id,codigo,nombre,director,estado').eq('codigo', cod).maybeSingle();
-  if(error || !data) return;
+  if(error || !data){
+    if(!reintento){ await new Promise(r=>setTimeout(r,900)); return cargarPartida(true); }
+    $('#estado').className='estado mala';
+    $('#estado').textContent='No se encontró la partida «'+cod+'» en tu cuenta';
+    return;
+  }
   partida = data;
   fijarRol(data.director === cuenta.id);
   if(data.estado && Object.keys(data.estado).length){
@@ -3311,13 +3351,15 @@ function confirmarNubia({titulo, texto, si, imagen, color}){
     av.style.display='grid'; av.style.background = color || '#0e7c8b';
     av.innerHTML = imagen ? `<img src="${imagen}" alt="">` : '';
   } else av.style.display='none';
-  $('#confirmar').classList.add('ver');
+  $('#confirmar').showModal();
   return new Promise(r=>{ confResolver = r; });
 }
-function cerrarConf(v){ $('#confirmar').classList.remove('ver'); if(confResolver){ confResolver(v); confResolver=null; } }
+function cerrarConf(v){ if($('#confirmar').open) $('#confirmar').close();
+  if(confResolver){ confResolver(v); confResolver=null; } }
 $('#confSi').onclick = ()=>cerrarConf(true);
 $('#confNo').onclick = ()=>cerrarConf(false);
-$('#confirmar').onclick = e=>{ if(e.target.id==='confirmar') cerrarConf(false); };
+$('#confirmar').addEventListener('cancel', e=>{ e.preventDefault(); cerrarConf(false); });
+$('#confirmar').addEventListener('click', e=>{ if(e.target.id==='confirmar') cerrarConf(false); });
 
 /* ===================== LIBERAR POKÉMON ===================== */
 let liberando = false;
@@ -3506,8 +3548,15 @@ function enviar(tipo,dato){
   if(canal) canal.send({type:'broadcast',event:'op',payload:{tipo,dato,de:yo}});
 }
 
+let syncPendiente = null, syncEsperando = false;
 async function recargarEstado(){
   if(!sb || !partida || soyDM) return;
+  if(drag){ syncEsperando = true; return; }        // no interrumpir un arrastre
+  if(syncPendiente) return;                        // una recarga cada vez
+  syncPendiente = true;
+  try{ await leerFila(); } finally { syncPendiente = false; }
+}
+async function leerFila(){
   const { data } = await sb.from('partidas').select('estado').eq('id', partida.id).maybeSingle();
   if(!data || !data.estado || !Object.keys(data.estado).length) return;
   const antes = S.nombreMapa;
@@ -3624,6 +3673,11 @@ pintaDados(); formu(); pintar();
 if(SUPABASE_URL && SUPABASE_KEY && window.supabase){
   sb = window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
   // Primero la cuenta y la partida, después la sala: así nadie se anuncia sin nombre
+  // La sesión de Google puede tardar un instante en resolverse tras el redirigido.
+  // Si llega después, se vuelve a montar todo sin que el usuario recargue.
+  sb.auth.onAuthStateChange((_e, ses)=>{
+    if(ses?.user && !cuenta) iniciarCuenta().then(conectar).catch(()=>{});
+  });
   iniciarCuenta().then(conectar).catch(conectar);
 } else {
   conectar();

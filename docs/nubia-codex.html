@@ -98,9 +98,9 @@ p.lead{margin:0 0 24px;color:var(--tinta-suave);max-width:70ch}
 .desc{margin:0 0 20px}
 
 /* ---------- rejilla de tiles ---------- */
-.tilewrap{border:3px solid var(--tinta);background:var(--tinta);box-shadow:6px 6px 0 var(--sombra);overflow:hidden}
-.tiles{display:grid;gap:0;image-rendering:pixelated;width:100%}
-.t{aspect-ratio:1;position:relative}
+.tilewrap{border:3px solid var(--tinta);background:var(--tinta);box-shadow:6px 6px 0 var(--sombra);overflow:auto;max-width:100%}
+.tiles{display:grid;gap:0;image-rendering:pixelated;width:100%;max-width:100%}
+.t{aspect-ratio:1;position:relative;min-width:0;overflow:visible}
 .t.npc{cursor:pointer}
 .t.npc::after{
   content:attr(data-n);position:absolute;inset:14%;border-radius:50%;
