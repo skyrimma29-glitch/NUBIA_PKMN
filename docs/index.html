@@ -233,6 +233,11 @@ function vistaMesas(){
 }
 
 async function clicMesa(e){
+  const borrar = e.target.closest('[data-borrar]');
+  if(borrar){
+    await eliminarPartida(borrar.dataset.borrar, borrar.dataset.nombre);
+    return;
+  }
   const en = e.target.closest('[data-entrar]');
   if(en){
     location.href = 'nubia-tablero.html#sala=' + en.dataset.entrar + (en.dataset.dm==='1' ? '&dm=1' : '');
@@ -272,7 +277,8 @@ async function listarMesas(){
         <div class="meta">Última sesión el ${cuando}</div>
       </div>
       <div class="btns">
-        ${dm?`<button class="bt" data-copiar="${esc(p.codigo)}">COPIAR CÓDIGO</button>`:''}
+        ${dm?`<button class="bt" data-copiar="${esc(p.codigo)}">COPIAR CÓDIGO</button>
+        <button class="bt" data-borrar="${esc(p.id)}" data-nombre="${esc(p.nombre)}">ELIMINAR</button>`:''}
         <button class="bt solido" data-entrar="${esc(p.codigo)}" data-dm="${dm?1:0}">ENTRAR</button>
       </div>
     </div>`;
@@ -287,6 +293,16 @@ async function listarMesas(){
       <a href="nubia-encuentros.html"><b>ENCUENTROS</b><span>Tablas por zona</span></a>
       <a href="nubia-dados.html"><b>MESA DE DADOS</b><span>Tirador aparte</span></a>
     </div>` : '';
+}
+
+async function eliminarPartida(id, nombre){
+  if(!confirm('¿Eliminar la mesa "'+nombre+'"? Esta acción no se puede deshacer.')) return;
+  const { error } = await sb.from('partidas').delete().eq('id', id);
+  if(error){
+    $('#app').insertAdjacentHTML('afterbegin', aviso('<b>No se pudo eliminar la mesa.</b> '+esc(error.message)));
+    return;
+  }
+  listarMesas();
 }
 
 function codigoNuevo(){
