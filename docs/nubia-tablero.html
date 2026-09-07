@@ -463,7 +463,7 @@ footer code{background:#1c3a56;padding:2px 5px;color:#cfe0e6}
         <button class="bt" data-z="0">COMPLETO</button>
         <button class="bt" data-z="-1" title="Ajusta el ancho a un múltiplo exacto del mapa">1:1 NÍTIDO</button>
         <button class="bt" id="enfoque" title="Tecla F">ENFOQUE</button>
-        <button class="bt solodm" id="verMapaN" style="border-color:var(--fucsia);color:var(--fucsia)">MAPA DE NUBIA</button>
+        <button class="bt" id="verMapaN" style="border-color:var(--fucsia);color:var(--fucsia)">MAPA DE NUBIA</button>
       </div>
     </div>
 
@@ -1531,7 +1531,10 @@ $('#fichas').addEventListener('click', e=>{
   }
   dibujarFichas(); enviar('ficha', f);
 });
-const pintar = ()=>{ dibujarMapa(); dibujarFichas(); dibujarAreas(); listaDuenos(); listaCapturables(); pintarObjetos(); };
+function actualizarAccesoMapa(){
+  $('#verMapaN').hidden = !soyDM && !(S.objetos||[]).includes('mapa');
+}
+const pintar = ()=>{ dibujarMapa(); dibujarFichas(); dibujarAreas(); listaDuenos(); listaCapturables(); pintarObjetos(); actualizarAccesoMapa(); };
 
 /* ===================== ANCHO ===================== */
 document.querySelectorAll('[data-z]').forEach(b=>b.onclick=()=>{
@@ -2195,7 +2198,7 @@ function abrirMapaN(auto){
   $('#capaMapaN').classList.add('ver');
   if(auto) setTimeout(()=>$('#capaMapaN').classList.remove('ver'), 3800);
 }
-$('#verMapaN').onclick = ()=>{ abrirMapaN(false); enviar('mapaN', S.nombreMapa); };
+$('#verMapaN').onclick = ()=>{ abrirMapaN(false); if(soyDM) enviar('mapaN', S.nombreMapa); };
 $('#capaMapaN').onclick = e=>{ if(e.target.id==='capaMapaN') $('#capaMapaN').classList.remove('ver'); };
 addEventListener('keydown', e=>{ if(e.key==='Escape') $('#capaMapaN').classList.remove('ver'); });
 
@@ -2345,7 +2348,14 @@ function recibir({tipo,dato,de}){
   if(tipo==='tirada'){ verTirada(dato,false); return; }
   if(tipo==='ping'){ ponerPing(dato.p, dato.txt, dato.de); return; }
   if(tipo==='nota'){ anotar(dato, false); return; }
-  if(tipo==='objeto'){ mostrarObjeto(dato); return; }
+  if(tipo==='objeto'){
+    S.objetos=S.objetos||[];
+    if(dato==='mapa' && !S.objetos.includes('mapa')) S.objetos.push('mapa');
+    actualizarAccesoMapa();
+    mostrarObjeto(dato);
+    if(dato==='mapa') abrirMapaN(false);
+    return;
+  }
   if(tipo==='mapaN'){ abrirMapaN(false); return; }
   if(tipo==='area'){ if(!S.areas.some(a=>a.id===dato.id)) S.areas.push(dato);
     dibujarAreas(); if(soyDM) enviar('estado',S); return; }
