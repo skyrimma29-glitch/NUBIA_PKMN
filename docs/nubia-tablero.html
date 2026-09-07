@@ -1769,21 +1769,21 @@ function encontrarObjeto(valor){
 }
 async function importarFichaPoke5e(valor){
   const id=extraerIdPoke5e(valor); if(!id) return null;
-  const u=new URL(valor);
-  const rutas=[
-    `${u.origin}/api/trainers/${encodeURIComponent(id)}`,
-    `${u.origin}/api/trainer/${encodeURIComponent(id)}`,
-    `${u.origin}${u.pathname.replace(/\/$/,'')}/__data.json`
-  ];
-  for(const ruta of rutas){
-    try{
-      const r=await fetch(ruta,{headers:{accept:'application/json'},credentials:'omit'});
-      if(!r.ok) continue;
-      const dato=encontrarObjeto(await r.json());
-      if(dato) return dato;
-    }catch{}
+  const proyecto='https://logncbjjfmnvbfrjdxmg.supabase.co';
+  const anon='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxvZ25jYmpqZm1udmJmcmpkeG1nIiwicm9sZSI6ImFub24iLCJpYXQiOjE2Njk1ODY2MzEsImV4cCI6MTk4NTE2MjYzMX0.RXw9pfN-4qOR2AbqPoM6GMzjDGRwYnClF9LEiI2VE5k';
+  try{
+    const r=await fetch(proyecto+'/rest/v1/rpc/get_trainer',{
+      method:'POST',
+      headers:{apikey:anon,Authorization:'Bearer '+anon,Accept:'application/json','Content-Type':'application/json'},
+      body:JSON.stringify({_read_key:id})
+    });
+    if(!r.ok) return null;
+    const respuesta=await r.json();
+    const fila=Array.isArray(respuesta)?respuesta[0]:respuesta;
+    return encontrarObjeto(fila);
+  }catch{
+    return null;
   }
-  return null;
 }
 $('#guardarFicha').onclick=async()=>{
   if(!yo){ alert('Escribe tu nombre arriba antes de publicar la ficha.'); return; }
