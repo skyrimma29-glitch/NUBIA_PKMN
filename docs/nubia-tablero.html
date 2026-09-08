@@ -1812,6 +1812,9 @@ function colocarToken(t){
   n.style.top  = (t.y/H())*100 + '%';
 }
 function dibujarTokens(){
+  // Reconstruir la capa durante un arrastre destruye el nodo que tiene
+  // capturado el puntero, y el gesto se queda pegado. Por eso se aplaza.
+  if(drag){ redibujoPendiente = true; return; }
   const w=W(), h=H(), oc=new Set(S.niebla);
   const capa = $('#capaTokens');
   const visibles = S.tokens.filter(t => soyDM || !oc.has(t.x+','+t.y) || t.dueno===yo);
@@ -1947,12 +1950,15 @@ $('#fichas').addEventListener('click', e=>{
 });
 
 /* ---------- permisos según los objetos entregados ---------- */
+function tienePokedex(){ return soyDM || (S.objetos||[]).includes('pokedex'); }
 function actualizarAccesoObjetos(){
   const objetos = S.objetos||[];
   const puedeMapa    = soyDM || objetos.includes('mapa');
-  const puedePokedex = soyDM || objetos.includes('pokedex');
-  if($('#verMapaN')) $('#verMapaN').hidden = !puedeMapa;
-  if($('#panelDex')) $('#panelDex').hidden = !puedePokedex;
+  const puedePokedex = tienePokedex();
+  if($('#verMapaN')) $('#verMapaN').style.display = puedeMapa ? '' : 'none';
+  // Se usa display y no hidden: cargarPokedex pone un display en línea que ganaba a hidden.
+  if($('#panelDex')) $('#panelDex').style.display = puedePokedex ? 'block' : 'none';
+  if(!puedePokedex && escaneando) modoEscaner(false);
   if(!puedeMapa && $('#capaMapaN')) $('#capaMapaN').classList.remove('ver');
   if(!puedePokedex && $('#dexDlg') && $('#dexDlg').open) $('#dexDlg').close();
 }
@@ -1996,7 +2002,7 @@ document.querySelectorAll('[data-z]').forEach(b=>b.onclick=()=>{
 });
 
 /* ===================== ARRASTRE Y DOBLE CLIC ===================== */
-let drag=null;
+let drag=null, redibujoPendiente=false;
 $('#capaTokens').addEventListener('pointerdown', e=>{
   const n=e.target.closest('.tk'); if(!n) return;
   const t=S.tokens.find(x=>x.id===n.dataset.id); if(!t) return;
@@ -2017,7 +2023,7 @@ $('#capaTokens').addEventListener('pointermove', e=>{
     o:{x:o.x+.5,y:o.y+.5}, d:{x:x+.5,y:y+.5},
     cas:Math.max(Math.abs(x-o.x),Math.abs(y-o.y))});
 });
-$('#capaTokens').addEventListener('pointerup', ()=>{
+function terminarArrastre(){
   if(!drag) return;
   drag.n.classList.remove('arrastrando');
   const d = drag.destino;
@@ -2028,14 +2034,23 @@ $('#capaTokens').addEventListener('pointerup', ()=>{
     recienMovidos.set(t.id, {t:Date.now(), x:t.x, y:t.y});
     enviar('mover',{id:t.id,x:t.x,y:t.y});
   }
-  drag=null; dibujarTokens(); dibujarAreas();
+  drag=null;
+  if(redibujoPendiente){ redibujoPendiente=false; pintar(); } else dibujarTokens();
+  dibujarAreas();
   if(syncEsperando){ syncEsperando=false; setTimeout(recargarEstado, 120); }
   if(!movido){
     if(escaneando) abrirPokedex(t);
     else if(drag2movible) abrirDlg(t);
     else abrirPokedex(t);          // ficha ajena: se puede consultar, no editar
-  }   // un toque sin desplazamiento abre el editor
-});
+  }
+}
+// Se escucha en toda la ventana: si sueltas fuera del tablero, el gesto igual acaba.
+$('#capaTokens').addEventListener('pointerup', terminarArrastre);
+$('#capaTokens').addEventListener('pointercancel', terminarArrastre);
+$('#capaTokens').addEventListener('lostpointercapture', terminarArrastre);
+addEventListener('pointerup', terminarArrastre);
+addEventListener('pointercancel', terminarArrastre);
+addEventListener('blur', terminarArrastre);
 $('#capaTokens').addEventListener('contextmenu', e=>{
   const n=e.target.closest('.tk'); if(!n) return;
   const t=S.tokens.find(x=>x.id===n.dataset.id); if(!t) return;
@@ -3057,6 +3072,7 @@ $('#escanear').onclick = ()=> modoEscaner(!escaneando);
 addEventListener('keydown', e=>{ if(e.key==='Escape' && escaneando) modoEscaner(false); });
 
 async function abrirPokedex(t){
+  const escaneaba = escaneando;    // solo se registra si el escáner estaba encendido
   modoEscaner(false);              // un escaneo, un uso: no se queda encendido
   const especie = (t.especie || t.nombre || '').trim();
   if(!especie) return;
@@ -3096,7 +3112,7 @@ async function abrirPokedex(t){
     <div class="dextxt">${esc(texto || 'La Pokédex de Nubia todavía no tiene una entrada para esta especie. Escribe tú la primera: es tu región.')}</div>
     <div id="dexNuevo"></div>`;
 
-  if(sb && cuenta && partida && !dexSet.has(clave)){
+  if(escaneaba && tienePokedex() && sb && cuenta && partida && !dexSet.has(clave)){
     const { error } = await sb.from('pokedex').insert({
       partida: partida.id, jugador: cuenta.id, especie: clave, nombre: especie
     });
@@ -3519,12 +3535,17 @@ $('#dmTabs').addEventListener('click', e=>{
 let jugAbierto = null;
 function pintarJugadores(){
   if(!soyDM || !$('#dmJugadores') || dmTab!=='jugadores') return;
-  const nombres = [...new Set([
-    ...presentes,
-    ...S.fichas.filter(f=>!f.especie).map(f=>f.jugador||f.dueno),
-    ...Object.keys(S.equipos||{})
-  ].filter(Boolean).map(n=>String(n)))]
-   .filter(n => claveJug(n) !== claveJug(yo));
+  // Se agrupa por clave normalizada: «Maleja» y «maleja» son la misma persona.
+  const porClave = new Map();
+  const sumar = n => {
+    const c = claveJug(n);
+    if(!c || c === claveJug(yo)) return;
+    // se queda con la versión mejor escrita del nombre
+    if(!porClave.has(c) || n.length > porClave.get(c).length) porClave.set(c, String(n));
+  };
+  [...presentes].forEach(sumar);
+  S.fichas.filter(f=>!f.especie).forEach(f=> sumar(f.jugador || f.dueno || ''));
+  const nombres = [...porClave.values()];
 
   if(!nombres.length){
     $('#dmJugadores').innerHTML = '<div class="vacio">Nadie más se ha conectado a esta sala todavía.</div>';
