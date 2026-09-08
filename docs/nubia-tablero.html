@@ -3007,6 +3007,7 @@ async function iniciarCuenta(){
   await cargarPokedex();
   await cargarEquipoNube();
   anunciarme();
+  vigilarEstado();
 }
 
 async function cargarPartida(reintento){
@@ -3052,7 +3053,8 @@ async function cargarEquipoNube(){
    así no hay límite de tamaño y el jugador no tiene que recargar. */
 let canalPartida = null;
 function escucharPartida(){
-  if(!sb || !partida || canalPartida) return;
+  if(!sb || canalPartida) return;
+  if(!partida){ setTimeout(escucharPartida, 1200); return; }   // aún no cargó: se reintenta
   canalPartida = sb.channel('fila-'+partida.id)
     .on('postgres_changes',
         { event:'UPDATE', schema:'public', table:'partidas', filter:'id=eq.'+partida.id },
@@ -3061,7 +3063,7 @@ function escucharPartida(){
           const huella = JSON.stringify(fila.estado);
           if(huella === huellaEstado) return;
           if(drag){ setTimeout(recargarEstado, 350); return; }
-          huellaEstado = huella;
+          huellaEstado = huella; ultimoAviso = Date.now();
           const antes = S.nombreMapa;
           S = Object.assign({}, S, fila.estado);
           S.areas=S.areas||[]; S.objetos=S.objetos||[]; S.imgs=S.imgs||{};
@@ -3070,7 +3072,13 @@ function escucharPartida(){
           pintar();
           if(S.nombreMapa !== antes && (S.objetos||[]).includes('mapa')) abrirMapaN(true);
         })
-    .subscribe();
+    .subscribe(st=>{
+      if(st==='CHANNEL_ERROR' || st==='TIMED_OUT' || st==='CLOSED'){
+        try{ canalPartida.unsubscribe(); }catch{}
+        canalPartida = null;
+        setTimeout(escucharPartida, 2000);       // se vuelve a enganchar sola
+      }
+    });
 }
 
 function guardarPartida(){
@@ -3080,9 +3088,14 @@ function guardarPartida(){
     const { error } = await sb.from('partidas')
       .update({ estado: S, actualizado: new Date().toISOString() })
       .eq('id', partida.id);
-    // Solo cuando la fila ya está escrita se avisa: así nadie lee un estado viejo
-    if(!error && canal) canal.send({type:'broadcast', event:'op',
-      payload:{tipo:'sync', dato:null, de:yo}});
+    if(error || !canal) return;
+    // Aviso para quien pueda leer la fila…
+    canal.send({type:'broadcast', event:'op', payload:{tipo:'sync', dato:null, de:yo}});
+    // …y el estado en directo para quien entró por enlace y no es miembro de la partida.
+    const ligero = aligerar(S);
+    const bytes = JSON.stringify(ligero).length;
+    if(bytes < 120000)
+      canal.send({type:'broadcast', event:'op', payload:{tipo:'estado', dato:ligero, de:yo}});
   }, 450);
 }
 
@@ -4528,7 +4541,7 @@ function recibir({tipo,dato,de}){
     if(!dato || !dato.eco) anunciarme(true);   // devuelvo el saludo una sola vez
     return;
   }
-  if(tipo==='sync'){ recargarEstado(); return; }
+  if(tipo==='sync'){ ultimoAviso = Date.now(); recargarEstado(); return; }
   if(tipo==='mochila'){ S.mochilas=S.mochilas||{}; S.mochilas[dato.jugador]=dato.datos;
     pintarMochila(); if(soyDM) enviar('estado',S); return; }
   if(tipo==='nota'){ anotar(dato, false); return; }
