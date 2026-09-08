@@ -412,6 +412,31 @@ body.herr-abierta #cajonHerr{display:flex;transform:none}
   font-family:'Silkscreen',monospace;font-size:11px;padding:5px 8px;cursor:pointer}
 #cajonHerr .cnt{padding:15px;overflow-y:auto;flex:1}
 
+/* ------------- tienda y cartera ------------- */
+.cartera{display:flex;justify-content:space-between;align-items:center;background:var(--tinta);
+  color:var(--oro);padding:9px 12px;margin-bottom:10px;font-family:'Silkscreen',monospace}
+.cartera span{font-size:9px;color:#8fc8d3} .cartera b{font-size:16px}
+.saldos{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:11px}
+.saldo{font-family:'Silkscreen',monospace;font-size:9px;background:var(--tinta);color:var(--oro);padding:5px 7px}
+.catgrp{border:2px solid var(--tinta);margin-bottom:7px;background:var(--arena-hueso)}
+.catgrp>summary{cursor:pointer;list-style:none;font-family:'Silkscreen',monospace;font-size:10px;
+  padding:9px 11px;display:flex;justify-content:space-between;align-items:center;color:var(--mar)}
+.catgrp>summary::-webkit-details-marker{display:none}
+.catgrp>summary b{font-size:9px;background:var(--tinta);color:var(--oro);padding:3px 6px}
+.catgrp>summary:hover{background:#fff6df}
+.catgrp[open]>summary{border-bottom:2px solid #e2d5b4}
+.cat{grid-template-columns:1fr auto auto!important}
+.precio{font-family:'Silkscreen',monospace;font-size:10px;color:var(--fucsia);white-space:nowrap}
+#railDinero{font-family:'Silkscreen',monospace;font-size:10px;background:var(--tinta);color:var(--oro);
+  border:3px solid var(--oro);padding:8px 10px;text-align:center;box-shadow:0 4px 0 var(--sombra)}
+
+.premio{font-family:'Silkscreen',monospace;font-size:23px;background:var(--tinta);color:var(--oro);
+  padding:14px;text-align:center;margin-top:11px}
+#dmPremios label{display:block;font-family:'Silkscreen',monospace;font-size:9px;
+  color:var(--tinta-suave);margin:0 0 3px}
+#dmPremios select,#dmPremios input{width:100%}
+#dmPremios select:disabled{opacity:.45}
+
 /* ------------- acordeones ------------- */
 .acc{background:var(--arena-hueso);border:3px solid var(--tinta);box-shadow:5px 5px 0 var(--sombra);margin-bottom:13px}
 .acc>summary{list-style:none;cursor:pointer;font-family:'Silkscreen',monospace;font-size:11px;
@@ -759,6 +784,7 @@ footer code{background:#1c3a56;padding:2px 5px;color:#cfe0e6}
     
 
     <details class="acc" id="panelMochila"><summary>MOCHILA</summary><div class="cnt2">
+      <div class="cartera"><span>CARTERA</span><b id="miDinero">2000 ₽</b></div>
       <div class="objs" id="listaObjs"></div>
       <div class="fila" style="display:flex;gap:6px;margin-top:9px;flex-wrap:wrap">
         <input id="objNom" placeholder="Poción" style="flex:1;min-width:110px">
@@ -882,9 +908,11 @@ footer code{background:#1c3a56;padding:2px 5px;color:#cfe0e6}
       <button data-dm="fichas" aria-pressed="true">FICHAS</button>
       <button data-dm="jugadores" aria-pressed="false">JUGADORES</button>
       <button data-dm="objetos" aria-pressed="false">OBJETOS</button>
+      <button data-dm="premios" aria-pressed="false">PREMIOS</button>
     </div>
     <div id="dmJugadores" style="display:none"></div>
     <div id="dmObjetos" style="display:none"></div>
+    <div id="dmPremios" style="display:none"></div>
     <div class="npcs" id="listaNpcs"></div>
     <div class="fila" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px" id="npcBotones">
       <button class="bt rosa" id="npcNueva">NUEVA FICHA</button>
@@ -902,6 +930,20 @@ footer code{background:#1c3a56;padding:2px 5px;color:#cfe0e6}
     <button id="cerrarHerr">✕</button></header>
   <div class="cnt" id="herrCnt"></div>
 </div>
+
+<dialog id="cantDlg"><div class="confcaja" style="border-color:var(--oro)">
+  <div class="cab" style="background:var(--oro);color:var(--tinta)" id="cantTit">CANTIDAD</div>
+  <div class="cnt">
+    <p id="cantTxt"></p>
+    <input id="cantN" type="number" min="1" value="1"
+      style="width:110px;text-align:center;font-family:Silkscreen,monospace;font-size:17px;margin:0 auto 10px;display:block">
+    <p id="cantTotal" style="font-family:Silkscreen,monospace;font-size:12px;color:var(--mar)"></p>
+    <div class="fila">
+      <button class="bt rosa" id="cantOk">CONFIRMAR</button>
+      <button class="bt" id="cantNo">CANCELAR</button>
+    </div>
+  </div>
+</div></dialog>
 
 <div class="menuslot" id="menuSlot"></div>
 
@@ -1720,7 +1762,7 @@ const MAPAS_IMG = {
 
 /* ===================== ESTADO ===================== */
 let S = { nombreMapa:'Pueblo Fundación', filas:MAPAS.Localidades['Pueblo Fundación'],
-          img:'', tileset:'', tokens:[], niebla:[], fichas:[], areas:[], objetos:[], imgs:{}, piezas:{}, equipos:{}, npcs:[], mochilas:{}, turno:{i:0,ronda:1} };
+          img:'', tileset:'', tokens:[], niebla:[], fichas:[], areas:[], objetos:[], imgs:{}, piezas:{}, equipos:{}, npcs:[], mochilas:{}, dinero:{}, turno:{i:0,ronda:1} };
 let soyDM=false, yo='', canal=null, sel=null, pincel=0, tamPincel=1;
 let presentes = new Set();
 let filtro='todos', herramienta='', trazo=null;
@@ -1982,6 +2024,7 @@ function pintar(){
   pintarPanelFicha();
   pintarNpcs();
   pintarJugadores();
+  pintarPremios();
   pintarMochila();
   pintarCatalogo();
   pintarRailes();
@@ -2015,7 +2058,7 @@ $('#capaTokens').addEventListener('pointerdown', e=>{
 $('#capaTokens').addEventListener('pointermove', e=>{
   if(!drag) return;
   // Ratón sin botón pulsado: el gesto ya acabó aunque no llegara el aviso.
-  if(e.pointerType === 'mouse' && e.buttons === 0){ terminarArrastre(); return; }
+  if(e.buttons === 0){ terminarArrastre(); return; }
   if(!drag.movible) return;
   const r=$('#tablero').getBoundingClientRect(), w=W(), h=H();
   const x=Math.max(0,Math.min(w-1,Math.floor(((e.clientX-r.left)/r.width)*w)));
@@ -2034,6 +2077,7 @@ function terminarArrastre(){
   const g = drag;
   drag = null;
   try{ g.n.classList.remove('arrastrando'); }catch{}
+  try{ dibujarAreas(); }catch{}          // fuera la línea de medición, sí o sí
   try{ if(g.pid !== undefined && g.n.hasPointerCapture && g.n.hasPointerCapture(g.pid))
          g.n.releasePointerCapture(g.pid); }catch{}
 
@@ -2061,9 +2105,7 @@ $('#capaTokens').addEventListener('lostpointercapture', terminarArrastre);
 addEventListener('pointerup', terminarArrastre);
 addEventListener('pointercancel', terminarArrastre);
 addEventListener('blur', terminarArrastre);
-addEventListener('pointermove', e=>{
-  if(drag && e.pointerType === 'mouse' && e.buttons === 0) terminarArrastre();
-});
+addEventListener('pointermove', e=>{ if(drag && e.buttons === 0) terminarArrastre(); });
 document.addEventListener('visibilitychange', terminarArrastre);
 $('#capaTokens').addEventListener('contextmenu', e=>{
   const n=e.target.closest('.tk'); if(!n) return;
@@ -2978,7 +3020,7 @@ async function cargarPartida(reintento){
   fijarRol(data.director === cuenta.id);
   if(data.estado && Object.keys(data.estado).length){
     S = Object.assign(S, data.estado);
-    S.areas = S.areas||[]; S.objetos = S.objetos||[]; S.imgs = S.imgs||{}; S.piezas = S.piezas||{}; S.equipos = S.equipos||{}; S.npcs = S.npcs||[]; S.mochilas = S.mochilas||{}; S.turno = S.turno||{i:0,ronda:1};
+    S.areas = S.areas||[]; S.objetos = S.objetos||[]; S.imgs = S.imgs||{}; S.piezas = S.piezas||{}; S.equipos = S.equipos||{}; S.npcs = S.npcs||[]; S.mochilas = S.mochilas||{}; S.dinero = S.dinero||{}; S.turno = S.turno||{i:0,ronda:1};
     pintar();
     anotar(`<b>Mesa restaurada</b> · ${esc(data.nombre)}`, false);
   }
@@ -3019,7 +3061,7 @@ function escucharPartida(){
           const antes = S.nombreMapa;
           S = Object.assign({}, S, fila.estado);
           S.areas=S.areas||[]; S.objetos=S.objetos||[]; S.imgs=S.imgs||{};
-          S.piezas=S.piezas||{}; S.equipos=S.equipos||{}; S.npcs=S.npcs||[]; S.mochilas=S.mochilas||{};
+          S.piezas=S.piezas||{}; S.equipos=S.equipos||{}; S.npcs=S.npcs||[]; S.mochilas=S.mochilas||{}; S.dinero=S.dinero||{};
           anclarLocal();
           pintar();
           if(S.nombreMapa !== antes && (S.objetos||[]).includes('mapa')) abrirMapaN(true);
@@ -3572,7 +3614,8 @@ $('#dmTabs').addEventListener('click', e=>{
   $('#npcBotones').style.display   = dmTab==='fichas' ? '' : 'none';
   $('#dmJugadores').style.display  = dmTab==='jugadores' ? 'block' : 'none';
   $('#dmObjetos').style.display    = dmTab==='objetos' ? 'block' : 'none';
-  pintarJugadores(); pintarCatalogo();
+  $('#dmPremios').style.display    = dmTab==='premios' ? 'block' : 'none';
+  pintarJugadores(); pintarCatalogo(); pintarPremios();
 });
 
 let jugAbierto = null;
@@ -3735,6 +3778,7 @@ function guardarMochila(n, lista){
 function pintarMochila(){
   if(!$('#listaObjs')) return;
   const L = mochilaDe(yo);
+  if($('#miDinero')) $('#miDinero').textContent = dineroDe(yo) + ' ₽';
   $('#listaObjs').innerHTML = L.length ? L.map((o,i)=>`
     <div class="obj">
       <div><b>${esc(o.nombre)}</b>${o.desc?`<small>${esc(o.desc)}</small>`:''}</div>
@@ -3768,57 +3812,530 @@ $('#listaObjs').addEventListener('click', e=>{
 });
 
 /* ---------- catálogo del director ---------- */
-const CATALOGO = [
-  ['Poké Ball','200','Dispositivo de captura básico.'],
-  ['Super Ball','600','Captura con más facilidad que la Poké Ball.'],
-  ['Ultra Ball','1200','La mejor ball de venta libre.'],
-  ['Poción','300','Restaura unos pocos PS a un Pokémon.'],
-  ['Superpoción','700','Restaura una cantidad media de PS.'],
-  ['Hiperpoción','1200','Restaura una gran cantidad de PS.'],
-  ['Restaurar Todo','2500','Cura por completo y quita estados alterados.'],
-  ['Antídoto','100','Cura el envenenamiento.'],
-  ['Antiquemar','250','Cura las quemaduras.'],
-  ['Antiparalizador','200','Cura la parálisis.'],
-  ['Despertar','250','Despierta a un Pokémon dormido.'],
-  ['Antihielo','250','Descongela a un Pokémon.'],
-  ['Revivir','1500','Reanima a un Pokémon debilitado con la mitad de sus PS.'],
-  ['Repelente','350','Ahuyenta a los Pokémon salvajes durante un rato.'],
-  ['Cuerda Huida','550','Devuelve al grupo a la entrada de una cueva o edificio.'],
-  ['Caña de Pescar','—','Permite pescar en aguas abiertas.'],
-  ['Linterna de Minero','—','Ilumina cuevas y túneles sin luz.'],
-  ['Carta Náutica','—','Abre el acceso a la Caverna del Cauca.'],
-  ['Muestra de la Veta','—','Abre el acceso al Ojo del Cañón.']
-];
+const CATALOGO = {
+ 'Poké Balls': [
+  ['Poké Ball',250,'La ball básica. Sirve para casi cualquier captura de rutina.'],
+  ['Great Ball',500,'Captura con más facilidad que la Poké Ball.'],
+  ['Ultra Ball',1000,'La mejor ball de venta libre.'],
+  ['Master Ball',0,'Captura sin fallar. No se vende: se gana.'],
+  ['Safari Ball',800,'Ball de caña reservada a las zonas safari.'],
+  ['Fast Ball',600,'Muy eficaz contra Pokémon que huyen.'],
+  ['Level Ball',400,'Mejor cuanto más alto sea el nivel de tu Pokémon.'],
+  ['Lure Ball',800,'Pensada para Pokémon pescados.'],
+  ['Heavy Ball',800,'Mejor contra Pokémon muy pesados.'],
+  ['Love Ball',800,'Eficaz si comparten especie y son de sexo opuesto.'],
+  ['Friend Ball',800,'El Pokémon capturado empieza más encariñado.'],
+  ['Moon Ball',800,'Eficaz contra los que evolucionan con Piedra Lunar.'],
+  ['Sport Ball',800,'Ball del concurso de captura de bichos.'],
+  ['Net Ball',800,'Pensada para Pokémon de agua y bicho.'],
+  ['Dive Ball',800,'Funciona mejor bajo el agua.'],
+  ['Nest Ball',400,'Más eficaz contra Pokémon de nivel bajo.'],
+  ['Repeat Ball',800,'Eficaz contra especies que ya registraste.'],
+  ['Timer Ball',600,'Mejora con cada turno que dura el combate.'],
+  ['Luxury Ball',800,'Cómoda y acogedora: el Pokémon se encariña antes.'],
+  ['Premier Ball',2000,'Ball conmemorativa. Funciona como una Poké Ball.'],
+  ['Dusk Ball',800,'Mejor de noche o dentro de cuevas.'],
+  ['Heal Ball',1000,'Cura por completo al Pokémon capturado.'],
+  ['Quick Ball',1000,'Muy eficaz en el primer turno del encuentro.'],
+  ['Dream Ball',500,'Solo funciona con Pokémon dormidos.']
+ ],
+ 'Medicinas': [
+  ['Potion',200,'Restaura unos pocos puntos de salud.'],
+  ['Super Potion',500,'Restaura una cantidad media de salud.'],
+  ['Hyper Potion',800,'Restaura una gran cantidad de salud.'],
+  ['Antidote',200,'Cura el envenenamiento.'],
+  ['Burn Heal',200,'Cura las quemaduras.'],
+  ['Ice Heal',200,'Descongela a un Pokémon.'],
+  ['Awakening',200,'Despierta a un Pokémon dormido.'],
+  ['Paralyze Heal',200,'Cura la parálisis.'],
+  ['Max Potion',2500,'Devuelve toda la salud a un Pokémon.'],
+  ['Full Heal',450,'Quita cualquier estado alterado.'],
+  ['Full Restore',3000,'Cura del todo y quita los estados alterados.'],
+  ['Revive',3000,'Reanima a un debilitado con la mitad de su salud.'],
+  ['Max Revive',5000,'Reanima a un debilitado con toda su salud.'],
+  ['Fresh Water',200,'Agua de manantial. Restaura poca salud.'],
+  ['Soda Pop',275,'Bebida con gas. Restaura algo más que el agua.'],
+  ['Berry Juice',500,'Zumo de bayas. Restaura salud modestamente.'],
+  ['Lemonade',650,'Bebida ácida. Buena recuperación por su precio.'],
+  ['Moomoo Milk',1200,'Leche espesa que restaura bastante salud.'],
+  ['Energy Powder',300,'Polvo amargo que restaura salud. A los Pokémon no les gusta.'],
+  ['Energy Root',700,'Raíz amarga muy eficaz, pero baja el ánimo.'],
+  ['Heal Powder',300,'Polvo amargo que quita estados alterados.'],
+  ['Revival Herb',4200,'Hierba amarguísima que revive por completo.'],
+  ['Ether',500,'Recupera los usos de un movimiento.'],
+  ['Max Ether',1800,'Recupera todos los usos de un movimiento.'],
+  ['Elixir',900,'Recupera usos de todos los movimientos.'],
+  ['Max Elixir',3200,'Recupera del todo los usos de todos los movimientos.'],
+  ['Sacred Ash',10000,'Revive y cura por completo a todo el equipo.'],
+  ['HP Up',8800,'Sube permanentemente los puntos de salud.'],
+  ['Protein',4900,'Sube permanentemente el ataque.'],
+  ['Iron',4900,'Sube permanentemente la defensa.'],
+  ['Carbos',4900,'Sube permanentemente la velocidad.'],
+  ['Calcium',4900,'Sube permanentemente el ataque especial.'],
+  ['Zinc',4900,'Sube permanentemente la defensa especial.'],
+  ['PP Up',8800,'Amplía los usos máximos de un movimiento.'],
+  ['Ability Capsule',5000,'Cambia la habilidad del Pokémon por su alternativa.'],
+  ['Guard Spec',700,'Impide que bajen las características este combate.'],
+  ['Dire Hit',400,'Aumenta mucho la probabilidad de golpe crítico.'],
+  ['X Attack',350,'Sube temporalmente una característica en combate.'],
+  ['X Defense',350,'Sube temporalmente una característica en combate.'],
+  ['X Speed',350,'Sube temporalmente una característica en combate.'],
+  ['X Accuracy',350,'Sube temporalmente una característica en combate.'],
+  ['X Sp. Atk',350,'Sube temporalmente una característica en combate.'],
+  ['X Sp. Def',350,'Sube temporalmente una característica en combate.'],
+  ['Red Nectar',400,'Néctar que cambia la forma de Oricorio.'],
+  ['Yellow Nectar',400,'Néctar que cambia la forma de Oricorio.'],
+  ['Pink Nectar',400,'Néctar que cambia la forma de Oricorio.'],
+  ['Purple Nectar',400,'Néctar que cambia la forma de Oricorio.'],
+  ['Health Candy',1000,'Caramelo de entrenamiento: sube una característica.'],
+  ['Mighty Candy',1000,'Caramelo de entrenamiento: sube una característica.'],
+  ['Tough Candy',1000,'Caramelo de entrenamiento: sube una característica.'],
+  ['Smart Candy',1000,'Caramelo de entrenamiento: sube una característica.'],
+  ['Courage Candy',1000,'Caramelo de entrenamiento: sube una característica.'],
+  ['Quick Candy',1000,'Caramelo de entrenamiento: sube una característica.']
+ ],
+ 'Bayas': [
+  ['Cheri Berry',200,'Cura la parálisis al comerla.'],
+  ['Chesto Berry',200,'Despierta al que la come.'],
+  ['Pecha Berry',200,'Cura el envenenamiento.'],
+  ['Rawst Berry',200,'Cura las quemaduras.'],
+  ['Aspear Berry',200,'Descongela.'],
+  ['Leppa Berry',500,'Recupera usos de un movimiento.'],
+  ['Oran Berry',200,'Restaura salud cuando esta baja.'],
+  ['Persim Berry',200,'Quita la confusión.'],
+  ['Lum Berry',400,'Quita cualquier estado alterado.'],
+  ['Sitrus Berry',800,'Restaura bastante salud en apuros.'],
+  ['Occa Berry',200,'Reduce el daño de un ataque supereficaz de tipo fuego.'],
+  ['Passho Berry',200,'Reduce el daño de un ataque supereficaz de tipo agua.'],
+  ['Wacan Berry',200,'Reduce el daño de un ataque supereficaz de tipo eléctrico.'],
+  ['Rindo Berry',200,'Reduce el daño de un ataque supereficaz de tipo planta.'],
+  ['Yache Berry',200,'Reduce el daño de un ataque supereficaz de tipo hielo.'],
+  ['Chople Berry',200,'Reduce el daño de un ataque supereficaz de tipo lucha.'],
+  ['Kebia Berry',200,'Reduce el daño de un ataque supereficaz de tipo veneno.'],
+  ['Shuca Berry',200,'Reduce el daño de un ataque supereficaz de tipo tierra.'],
+  ['Coba Berry',200,'Reduce el daño de un ataque supereficaz de tipo volador.'],
+  ['Payapa Berry',200,'Reduce el daño de un ataque supereficaz de tipo psíquico.'],
+  ['Tanga Berry',200,'Reduce el daño de un ataque supereficaz de tipo bicho.'],
+  ['Charti Berry',200,'Reduce el daño de un ataque supereficaz de tipo roca.'],
+  ['Kasib Berry',200,'Reduce el daño de un ataque supereficaz de tipo fantasma.'],
+  ['Haban Berry',200,'Reduce el daño de un ataque supereficaz de tipo dragón.'],
+  ['Colbur Berry',200,'Reduce el daño de un ataque supereficaz de tipo siniestro.'],
+  ['Babiri Berry',200,'Reduce el daño de un ataque supereficaz de tipo acero.'],
+  ['Chilan Berry',200,'Reduce el daño de un ataque supereficaz de tipo normal.'],
+  ['Roseli Berry',200,'Reduce el daño de un ataque supereficaz de tipo hada.']
+ ],
+ 'Evolución': [
+  ['Sun Stone',4000,'Hace evolucionar a ciertos Pokémon de planta y fuego.'],
+  ['Moon Stone',4000,'Hace evolucionar a ciertos Pokémon de hada.'],
+  ['Fire Stone',4000,'Hace evolucionar a ciertos Pokémon de fuego.'],
+  ['Thunder Stone',4000,'Hace evolucionar a ciertos Pokémon eléctricos.'],
+  ['Water Stone',4000,'Hace evolucionar a ciertos Pokémon de agua.'],
+  ['Leaf Stone',4000,'Hace evolucionar a ciertos Pokémon de planta.'],
+  ['Shiny Stone',4000,'Provoca evoluciones ligadas a la luz.'],
+  ['Dusk Stone',4000,'Provoca evoluciones ligadas a la oscuridad.'],
+  ['Dawn Stone',4000,'Provoca evoluciones ligadas al amanecer.'],
+  ['Ice Stone',4000,'Hace evolucionar a ciertos Pokémon de hielo.'],
+  ['Oval Stone',4000,'Piedra con forma de huevo. Provoca una evolución.'],
+  ['Alola Stone',4000,'Piedra regional que despierta formas de Alola.'],
+  ['King\'s Rock',4000,'Puede hacer retroceder al rival. También provoca evoluciones.'],
+  ['Razor Claw',4000,'Aumenta los críticos. También provoca evoluciones.'],
+  ['Razor Fang',4000,'Puede hacer retroceder. También provoca evoluciones.'],
+  ['Metal Coat',4000,'Recubrimiento metálico. Provoca una evolución.'],
+  ['Deep Sea Scale',4000,'Escama del fondo marino. Provoca una evolución.'],
+  ['Deep Sea Tooth',4000,'Colmillo del fondo marino. Provoca una evolución.'],
+  ['Dragon Scale',4000,'Escama dura. Provoca una evolución.'],
+  ['Upgrade',4000,'Dispositivo de Silph. Provoca una evolución.'],
+  ['Protector',4000,'Armadura pesada. Provoca una evolución.'],
+  ['Electirizer',4000,'Caja con carga eléctrica. Provoca una evolución.'],
+  ['Magmarizer',4000,'Caja llena de magma. Provoca una evolución.'],
+  ['Dubious Disc',4000,'Disco con datos sospechosos. Provoca una evolución.'],
+  ['Reaper Cloth',4000,'Tela impregnada de energía. Provoca una evolución.'],
+  ['Prism Scale',4000,'Escama irisada. Provoca una evolución.'],
+  ['Whipped Dream',4000,'Nata dulce. Provoca una evolución.'],
+  ['Sachet',4000,'Bolsita perfumada. Provoca una evolución.'],
+  ['Sweet',500,'Dulce decorativo que da forma a Alcremie.'],
+  ['Cracked Pot',4000,'Tetera agrietada. Provoca una evolución.'],
+  ['Chipped Pot',38000,'Tetera desportillada de gran valor.'],
+  ['Unremarkable Teacup',4000,'Taza corriente. Provoca una evolución.'],
+  ['Masterpiece Teacup',9500,'Taza de maestro, muy cotizada.'],
+  ['Galarica Wreath',4000,'Corona tejida con nueces de Galar.'],
+  ['Black Augurite',4000,'Mineral negro y afilado. Provoca una evolución.'],
+  ['Peat Block',4000,'Bloque de turba antigua. Provoca una evolución.'],
+  ['Auspicious Armor',4000,'Armadura cargada de buena fortuna.'],
+  ['Malicious Armor',4000,'Armadura cargada de rencor.'],
+  ['Gimmighoul Coin',100,'Moneda antigua. Se coleccionan.']
+ ],
+ 'Objetos equipados': [
+  ['Air Balloon',1000,'Deja al portador flotando hasta que lo golpean.'],
+  ['Assault Vest',2000,'Sube la defensa especial pero prohíbe movimientos de apoyo.'],
+  ['Big Root',4400,'Aumenta la salud robada por drenaje.'],
+  ['Black Sludge',2000,'Cura a los de veneno y daña a los demás.'],
+  ['Eject Button',4000,'Saca al portador del combate al recibir un golpe.'],
+  ['Eviolite',4000,'Sube las defensas de los que aún pueden evolucionar.'],
+  ['Exp Share',7500,'Reparte la experiencia con el resto del equipo.'],
+  ['Focus Band',1000,'Puede resistir con un punto de salud un golpe letal.'],
+  ['Focus Sash',4000,'Resiste con un punto de salud si estaba al máximo.'],
+  ['Leftovers',4400,'Recupera un poco de salud cada turno.'],
+  ['Muscle Band',4000,'Refuerza los movimientos físicos.'],
+  ['Quick Claw',1000,'A veces permite atacar primero.'],
+  ['Scope Lens',2500,'Aumenta la probabilidad de golpe crítico.'],
+  ['Shell Bell',4400,'Recupera salud proporcional al daño causado.'],
+  ['Smoke Ball',4400,'Permite huir siempre de los Pokémon salvajes.'],
+  ['Wide Lens',4400,'Mejora un poco la precisión.'],
+  ['Wise Glasses',4000,'Refuerza los movimientos especiales.'],
+  ['Megalite Stone',0,'Piedra que permite la megaevolución.'],
+  ['Normalium Z',0,'Cristal Z de tipo normal. Potencia un movimiento una vez por combate.'],
+  ['Fightinium Z',0,'Cristal Z de tipo lucha. Potencia un movimiento una vez por combate.'],
+  ['Flyinium Z',0,'Cristal Z de tipo volador. Potencia un movimiento una vez por combate.'],
+  ['Poisonium Z',0,'Cristal Z de tipo veneno. Potencia un movimiento una vez por combate.'],
+  ['Groundium Z',0,'Cristal Z de tipo tierra. Potencia un movimiento una vez por combate.'],
+  ['Rockium Z',0,'Cristal Z de tipo roca. Potencia un movimiento una vez por combate.'],
+  ['Buginium Z',0,'Cristal Z de tipo bicho. Potencia un movimiento una vez por combate.'],
+  ['Ghostium Z',0,'Cristal Z de tipo fantasma. Potencia un movimiento una vez por combate.'],
+  ['Steelium Z',0,'Cristal Z de tipo acero. Potencia un movimiento una vez por combate.'],
+  ['Firium Z',0,'Cristal Z de tipo fuego. Potencia un movimiento una vez por combate.'],
+  ['Waterium Z',0,'Cristal Z de tipo agua. Potencia un movimiento una vez por combate.'],
+  ['Grassium Z',0,'Cristal Z de tipo planta. Potencia un movimiento una vez por combate.'],
+  ['Electrium Z',0,'Cristal Z de tipo eléctrico. Potencia un movimiento una vez por combate.'],
+  ['Psychium Z',0,'Cristal Z de tipo psíquico. Potencia un movimiento una vez por combate.'],
+  ['Icium Z',0,'Cristal Z de tipo hielo. Potencia un movimiento una vez por combate.'],
+  ['Draconium Z',0,'Cristal Z de tipo dragón. Potencia un movimiento una vez por combate.'],
+  ['Darkinium Z',0,'Cristal Z de tipo siniestro. Potencia un movimiento una vez por combate.'],
+  ['Fairium Z',0,'Cristal Z de tipo hada. Potencia un movimiento una vez por combate.'],
+  ['Mirror Herb',4200,'Copia las subidas de característica del rival.'],
+  ['Choice Band',4000,'Sube el ataque pero encierra en un solo movimiento.'],
+  ['Choice Scarf',4000,'Sube la velocidad con la misma limitación.'],
+  ['Choice Specs',4000,'Sube el ataque especial con la misma limitación.'],
+  ['Black Belt',4400,'Objeto de Nubia.'],
+  ['Black Glasses',4400,'Objeto de Nubia.'],
+  ['Charcoal',4400,'Objeto de Nubia.'],
+  ['Dragon Fang',4400,'Objeto de Nubia.'],
+  ['Fairy Feather',4400,'Objeto de Nubia.'],
+  ['Hard Stone',4400,'Objeto de Nubia.'],
+  ['Magnet',4400,'Objeto de Nubia.'],
+  ['Miracle Seed',4400,'Objeto de Nubia.'],
+  ['Mystic Water',4400,'Objeto de Nubia.'],
+  ['Never-Melt Ice',4400,'Objeto de Nubia.'],
+  ['Poison Barb',4400,'Objeto de Nubia.'],
+  ['Sharp Beak',4400,'Objeto de Nubia.'],
+  ['Silk Scarf',4400,'Objeto de Nubia.'],
+  ['Silver Powder',4400,'Objeto de Nubia.'],
+  ['Soft Sand',4400,'Objeto de Nubia.'],
+  ['Spell Tag',4400,'Objeto de Nubia.'],
+  ['Twisted Spoon',4400,'Objeto de Nubia.'],
+  ['Flame Orb',2000,'Quema al portador al final del turno.'],
+  ['Life Orb',2000,'Aumenta el daño a costa de salud propia.'],
+  ['Toxic Orb',2000,'Envenena gravemente al portador.'],
+  ['Damp Rock',2500,'Alarga la lluvia.'],
+  ['Heat Rock',2500,'Alarga el sol abrasador.'],
+  ['Icy Rock',2500,'Alarga el granizo.'],
+  ['Smooth Rock',2500,'Alarga la tormenta de arena.'],
+  ['Draco Plate',0,'Placa antigua que refuerza los movimientos de su tipo.'],
+  ['Dread Plate',0,'Placa antigua que refuerza los movimientos de su tipo.'],
+  ['Earth Plate',0,'Placa antigua que refuerza los movimientos de su tipo.'],
+  ['Fist Plate',0,'Placa antigua que refuerza los movimientos de su tipo.'],
+  ['Flame Plate',0,'Placa antigua que refuerza los movimientos de su tipo.'],
+  ['Icicle Plate',0,'Placa antigua que refuerza los movimientos de su tipo.'],
+  ['Insect Plate',0,'Placa antigua que refuerza los movimientos de su tipo.'],
+  ['Iron Plate',0,'Placa antigua que refuerza los movimientos de su tipo.'],
+  ['Meadow Plate',0,'Placa antigua que refuerza los movimientos de su tipo.'],
+  ['Mind Plate',0,'Placa antigua que refuerza los movimientos de su tipo.'],
+  ['Pixie Plate',0,'Placa antigua que refuerza los movimientos de su tipo.'],
+  ['Sky Plate',0,'Placa antigua que refuerza los movimientos de su tipo.'],
+  ['Splash Plate',0,'Placa antigua que refuerza los movimientos de su tipo.'],
+  ['Spooky Plate',0,'Placa antigua que refuerza los movimientos de su tipo.'],
+  ['Stone Plate',0,'Placa antigua que refuerza los movimientos de su tipo.'],
+  ['Toxic Plate',0,'Placa antigua que refuerza los movimientos de su tipo.'],
+  ['Zap Plate',0,'Placa antigua que refuerza los movimientos de su tipo.'],
+  ['Gracidea Flower',1400,'Flor que cambia la forma de Shaymin.'],
+  ['Griseous Orb',7000,'Orbe que mantiene la forma origen de Giratina.'],
+  ['Leek',1200,'Puerro largo. Sube mucho los críticos de Farfetch’d.'],
+  ['Light Ball',1400,'Duplica el ataque de Pikachu.'],
+  ['Lucky Punch',1200,'Sube mucho los críticos de Chansey.'],
+  ['Metal Powder',1200,'Sube la defensa de Ditto sin transformar.'],
+  ['Reveal Glass',0,'Espejo que cambia la forma de los genios.'],
+  ['Thick Club',4400,'Duplica el ataque de Cubone y Marowak.'],
+  ['Burn Drive',4000,'Casete que cambia el tipo del movimiento de Genesect.'],
+  ['Chill Drive',4000,'Casete que cambia el tipo del movimiento de Genesect.'],
+  ['Douse Drive',4000,'Casete que cambia el tipo del movimiento de Genesect.'],
+  ['Shock Drive',4000,'Casete que cambia el tipo del movimiento de Genesect.'],
+  ['Bug Memory Disc',2000,'Disco de memoria que cambia el tipo de Silvally.'],
+  ['Dark Memory Disc',2000,'Disco de memoria que cambia el tipo de Silvally.'],
+  ['Dragon Memory Disc',2000,'Disco de memoria que cambia el tipo de Silvally.'],
+  ['Electric Memory Disc',2000,'Disco de memoria que cambia el tipo de Silvally.'],
+  ['Fairy Memory Disc',2000,'Disco de memoria que cambia el tipo de Silvally.'],
+  ['Fighting Memory Disc',2000,'Disco de memoria que cambia el tipo de Silvally.'],
+  ['Fire Memory Disc',2000,'Disco de memoria que cambia el tipo de Silvally.'],
+  ['Flying Memory Disc',2000,'Disco de memoria que cambia el tipo de Silvally.'],
+  ['Ghost Memory Disc',2000,'Disco de memoria que cambia el tipo de Silvally.'],
+  ['Grass Memory Disc',2000,'Disco de memoria que cambia el tipo de Silvally.'],
+  ['Ground Memory Disc',2000,'Disco de memoria que cambia el tipo de Silvally.'],
+  ['Ice Memory Disc',2000,'Disco de memoria que cambia el tipo de Silvally.'],
+  ['Poison Memory Disc',2000,'Disco de memoria que cambia el tipo de Silvally.'],
+  ['Psychic Memory Disc',2000,'Disco de memoria que cambia el tipo de Silvally.'],
+  ['Rock Memory Disc',2000,'Disco de memoria que cambia el tipo de Silvally.'],
+  ['Steel Memory Disc',2000,'Disco de memoria que cambia el tipo de Silvally.'],
+  ['Water Memory Disc',2000,'Disco de memoria que cambia el tipo de Silvally.'],
+  ['Blue Orb',0,'Orbe que despierta a Kyogre.'],
+  ['Red Orb',0,'Orbe que despierta a Groudon.']
+ ],
+ 'Equipo de entrenador': [
+  ['DNA Splicer',0,'Fusiona y separa a Kyurem con sus compañeros.'],
+  ['N-Solarizer',0,'Fusiona a Necrozma con Solgaleo.'],
+  ['N-Lunarizer',0,'Fusiona a Necrozma con Lunala.'],
+  ['Prison Bottle',0,'Botella que despierta la forma cautiva de Hoopa.'],
+  ['Trainer\'s License',0,'Acredita tu registro oficial como entrenador.'],
+  ['Pokédex',10000,'Registra las especies que veas y te da su ficha.'],
+  ['Old Rod',1000,'Caña sencilla. Pesca en aguas someras.'],
+  ['Good Rod',5000,'Caña decente. Alcanza a más especies.'],
+  ['Super Rod',15000,'Caña profesional. Llega a las aguas profundas.'],
+  ['Escape Rope',150,'Devuelve al grupo a la entrada de una cueva o edificio.'],
+  ['Honey',1000,'Untada en un árbol, atrae Pokémon salvajes.'],
+  ['Key Stone',0,'Piedra que activa la megaevolución.'],
+  ['Z-Ring',0,'Anillo que canaliza el poder de los cristales Z.'],
+  ['Dynamax Band',0,'Brazalete que permite el fenómeno Dinamax.'],
+  ['Tera Orb',0,'Orbe que activa la teracristalización.'],
+  ['Capture Styler',0,'Aparato que somete Pokémon sin combatir.'],
+  ['Backpack',150,'Mochila de viaje. Aumenta lo que puedes cargar.'],
+  ['Binoculars',250,'Duplica el alcance de la percepción a distancia.'],
+  ['Camping Kettle',100,'Hervidor de campamento.'],
+  ['Camping Stove',250,'Hornillo portátil para cocinar en ruta.'],
+  ['Canteen',50,'Cantimplora. Un día de agua.'],
+  ['Energy Cell',20,'Pila recargable para aparatos pequeños.'],
+  ['Flashlight',50,'Linterna de mano. Ilumina veinte metros.'],
+  ['Solar Flashlight',120,'Linterna solar. No necesita pilas.'],
+  ['Flint and Steel',100,'Pedernal y eslabón para encender fuego.'],
+  ['Climber\'s Kit',500,'Cuerdas y clavos para escalar sin tirada.'],
+  ['Cooking Kit',500,'Utensilios completos de cocina de campaña.'],
+  ['Diver\'s Kit',750,'Equipo de buceo ligero.'],
+  ['Gardener\'s Kit',350,'Herramientas para cultivar y recolectar bayas.'],
+  ['Lantern',100,'Farol de aceite. Ilumina un campamento entero.'],
+  ['Solar Lantern',150,'Farol solar. Se carga de día.'],
+  ['Mess Kit',150,'Plato, cubiertos y taza de campaña.'],
+  ['Multi-tool',150,'Herramienta plegable con doce funciones.'],
+  ['Pocket Knife',50,'Navaja pequeña pero útil.'],
+  ['Camping Ration',50,'Comida seca para un día de viaje.'],
+  ['Rebreather',500,'Respirador que da una hora bajo el agua.'],
+  ['Rebreather Filter',50,'Filtro de repuesto para el respirador.'],
+  ['Sleeping Bag',250,'Saco de dormir. Permite descanso largo a la intemperie.'],
+  ['Solar Charger',250,'Cargador solar para todo el equipo del grupo.'],
+  ['Small Tent',250,'Tienda para dos personas.'],
+  ['Large Tent',500,'Tienda para cuatro personas.'],
+  ['Artisan Tools',350,'Herramientas de oficio para reparar y fabricar.'],
+  ['Thieves\' Tools',500,'Ganzúas y alambres. Abren cerraduras sencillas.'],
+  ['Dungeoneer\'s Pack',1200,'Equipo completo para explorar cuevas.'],
+  ['Explorer\'s Pack',1200,'Equipo completo para viajes largos.'],
+  ['Filcher\'s Pack',1200,'Equipo completo para el que prefiere no ser visto.'],
+  ['Egg Incubator',1000,'Incuba huevos mientras caminas.'],
+  ['Egg Incubator Plus',3000,'Incubadora mejorada. Más rápida.'],
+  ['Egg Incubator Super',10000,'La mejor incubadora del mercado.']
+ ],
+ 'Llaves de Nubia': [
+  ['Carta Náutica',0,'Abre el acceso a la Caverna del Cauca.'],
+  ['Muestra de la Veta',0,'Abre el acceso al Ojo del Cañón.'],
+  ['Permiso de la Federación',0,'Autoriza la subida al Camino Victoria.'],
+  ['Balsa Dorada',0,'Plano en miniatura de la Sierra Nevada.'],
+  ['Vueltiao de Rosalba',0,'Tejido que marca un camino que no está en los mapas.'],
+  ['Pase del Teleférico',0,'Acceso a la estación alta de Ciudad Brisamar.']
+ ]
+};
+
+const DINERO_INICIAL = 2000;
+function dineroDe(n){
+  const v = leerPorClave(S.dinero, n);
+  return (v === null || v === undefined) ? DINERO_INICIAL : v;
+}
+function fijarDinero(n, v){
+  S.dinero = S.dinero || {};
+  S.dinero[claveJug(n)] = Math.max(0, Math.round(v));
+}
+
+/* ---------- ventanita de cantidad ---------- */
+let cantResolver = null;
+function pedirCantidad({titulo, texto, precio}){
+  $('#cantTit').textContent = titulo;
+  $('#cantTxt').innerHTML = texto;
+  $('#cantN').value = 1;
+  $('#cantTotal').textContent = precio ? ('Total: ' + precio + ' ₽') : '';
+  $('#cantDlg').dataset.precio = precio || 0;
+  $('#cantDlg').showModal();
+  $('#cantN').focus();
+  return new Promise(r=>{ cantResolver = r; });
+}
+function cerrarCant(v){
+  if($('#cantDlg').open) $('#cantDlg').close();
+  if(cantResolver){ cantResolver(v); cantResolver = null; }
+}
+$('#cantN').addEventListener('input', ()=>{
+  const p = +$('#cantDlg').dataset.precio || 0;
+  const n = Math.max(1, +$('#cantN').value || 1);
+  $('#cantTotal').textContent = p ? ('Total: ' + (p*n) + ' ₽') : '';
+});
+$('#cantOk').onclick = ()=> cerrarCant(Math.max(1, +$('#cantN').value || 1));
+$('#cantNo').onclick = ()=> cerrarCant(null);
+$('#cantDlg').addEventListener('cancel', e=>{ e.preventDefault(); cerrarCant(null); });
+
+/* ---------- catálogo del director ---------- */
+let catAbierta = 'Poké Balls';
+function jugadoresDisponibles(){
+  const m = new Map();
+  const sumar = n => { const c = claveJug(n); if(c && !m.has(c)) m.set(c, String(n)); };
+  sumar(yo);
+  [...presentes].forEach(sumar);
+  S.fichas.filter(f=>!f.especie).forEach(f=> sumar(f.jugador || f.dueno || ''));
+  return [...m.values()];
+}
 function pintarCatalogo(){
   if(!soyDM || !$('#dmObjetos') || dmTab!=='objetos') return;
-  const jugadores = [...new Set([...presentes,
-    ...S.fichas.filter(f=>!f.especie).map(f=>f.jugador||f.dueno)].filter(Boolean))];
-  const ops = jugadores.map(n=>`<option>${esc(n)}</option>`).join('');
+  const jug = jugadoresDisponibles();
+  const ops = jug.map(n=>`<option>${esc(n)}</option>`).join('');
+  const saldos = jug.map(n=>`<span class="saldo">${esc(n)} · ${dineroDe(n)} ₽</span>`).join('');
+
   $('#dmObjetos').innerHTML = `
-    <p class="nota" style="margin:0 0 10px">Entrega objetos a quien quieras. Los precios son de referencia;
-      la lista completa está en <a href="https://poke5e.app/items" target="_blank" rel="noopener"
-      style="color:var(--mar)">poke5e.app/items</a>.</p>
-    ${CATALOGO.map((o,i)=>`
-      <div class="cat">
-        <div><b>${esc(o[0])}</b><small>${esc(o[2])}${o[1]!=='—'?' · '+o[1]+' monedas':''}</small></div>
-        <div style="display:flex;gap:4px;align-items:center">
-          <select data-para="${i}">${ops || '<option value="">sin jugadores</option>'}</select>
-          <button class="bt" data-dar="${i}" style="font-size:8px;padding:5px 7px">DAR</button>
-        </div>
-      </div>`).join('')}`;
+    <div class="saldos">${saldos || 'Nadie en la sala todavía.'}</div>
+    <label style="font-family:'Silkscreen',monospace;font-size:9px;color:var(--tinta-suave)">DESTINATARIO</label>
+    <select id="catQuien" style="width:100%;margin-bottom:10px">${ops || '<option value="">sin jugadores</option>'}</select>
+    ${Object.entries(CATALOGO).map(([cat, items])=>`
+      <details class="catgrp" ${cat===catAbierta?'open':''} data-cat="${esc(cat)}">
+        <summary>${esc(cat)} <b>${items.length}</b></summary>
+        ${items.map((o,i)=>`
+          <div class="cat">
+            <div><b>${esc(o[0])}</b><small>${esc(o[2])}</small></div>
+            <div class="precio">${o[1] ? o[1]+' ₽' : 'único'}</div>
+            <div style="display:flex;gap:4px">
+              <button class="bt" data-dar="${esc(cat)}|${i}" style="font-size:8px;padding:5px 7px">VENDER</button>
+              <button class="bt" data-regalo="${esc(cat)}|${i}" style="font-size:8px;padding:5px 7px;border-color:var(--selva);color:var(--selva)">REGALAR</button>
+            </div>
+          </div>`).join('')}
+      </details>`).join('')}
+    <p class="nota">Vender descuenta del saldo del destinatario. Regalar no cuesta nada.
+      Los precios son de referencia; la lista completa de Pokémon 5E está en
+      <a href="https://poke5e.app/items" target="_blank" rel="noopener" style="color:var(--mar)">poke5e.app/items</a>.</p>`;
+
+  $('#dmObjetos').querySelectorAll('.catgrp').forEach(d=>
+    d.addEventListener('toggle', ()=>{ if(d.open) catAbierta = d.dataset.cat; }));
+}
+
+async function entregarObjeto(clave, cobrar){
+  const [cat, i] = clave.split('|');
+  const o = (CATALOGO[cat]||[])[+i]; if(!o) return;
+  const quien = $('#catQuien') ? $('#catQuien').value : '';
+  if(!quien){ anotar('No hay a quién entregarle nada todavía.', false); return; }
+
+  const precio = cobrar ? o[1] : 0;
+  const n = await pedirCantidad({
+    titulo: cobrar ? 'VENDER OBJETO' : 'REGALAR OBJETO',
+    texto: `<b>${esc(o[0])}</b> para <b>${esc(quien)}</b>.<br>`
+         + (cobrar ? `Precio unitario: ${o[1]} ₽ · saldo actual: ${dineroDe(quien)} ₽`
+                   : 'Sin coste. ¿Cuántos quieres regalar?'),
+    precio
+  });
+  if(!n) return;
+
+  const total = precio * n;
+  if(cobrar && total > dineroDe(quien)){
+    await confirmarNubia({
+      titulo:'FONDOS INSUFICIENTES',
+      texto:`<b>${esc(quien)}</b> no tiene fondos suficientes.<br>`
+          + `Necesita ${total} ₽ y solo tiene ${dineroDe(quien)} ₽.`,
+      si:'ENTENDIDO' });
+    return;
+  }
+  if(cobrar) fijarDinero(quien, dineroDe(quien) - total);
+
+  const L = mochilaDe(quien);
+  const ya = L.find(x=>x.nombre === o[0]);
+  if(ya) ya.cant += n; else L.push({ id:id8(), nombre:o[0], cant:n, desc:o[2] });
+  S.mochilas = S.mochilas || {}; S.mochilas[claveJug(quien)] = L;
+
+  anotar(cobrar
+    ? `<b>${esc(quien)}</b> compra ${n} × <b>${esc(o[0])}</b> por ${total} ₽ · le quedan ${dineroDe(quien)} ₽`
+    : `El director regala ${n} × <b>${esc(o[0])}</b> a <b>${esc(quien)}</b>`);
+  pintar(); enviar('estado', S);
 }
 $('#dmObjetos').addEventListener('click', e=>{
-  const b=e.target.closest('[data-dar]'); if(!b) return;
-  const i=+b.dataset.dar, o=CATALOGO[i];
-  const quien = $('#dmObjetos').querySelector(`[data-para="${i}"]`).value;
-  if(!quien) return;
-  const L = mochilaDe(quien);
-  const ya = L.find(x=>x.nombre===o[0]);
-  if(ya) ya.cant++; else L.push({ id:id8(), nombre:o[0], cant:1, desc:o[2] });
-  S.mochilas = S.mochilas || {}; S.mochilas[claveJug(quien)] = L;
-  anotar(`El director entrega <b>${esc(o[0])}</b> a <b>${esc(quien)}</b>`);
-  pintarMochila(); enviar('estado', S);
+  const v = e.target.closest('[data-dar]');
+  if(v){ entregarObjeto(v.dataset.dar, true); return; }
+  const r = e.target.closest('[data-regalo]');
+  if(r){ entregarObjeto(r.dataset.regalo, false); return; }
 });
+
+
+/* ===================== CALCULADORA DE PREMIOS ===================== */
+/* Se calcula como en los juegos: una base por la clase del rival,
+   multiplicada por la suma de niveles de su equipo. Todo a la vista
+   y todo editable, para que puedas ajustarlo a tu mesa. */
+const CLASES_RIVAL = [
+  ['Entrenador común',      12],
+  ['Entrenador veterano',   20],
+  ['Peón de El Dorado',     18],
+  ['Capataz de El Dorado',  35],
+  ['Líder de Gimnasio',     60],
+  ['Alto Mando',           110],
+  ['Campeona',             200],
+  ['Pokémon salvaje',        6]
+];
+function calcularPremio(){
+  const base  = +$('#prClase').value || 0;
+  const n     = Math.max(1, +$('#prCant').value || 1);
+  const nivel = Math.max(1, +$('#prNivel').value || 1);
+  const rivales = Math.max(1, +$('#prRivales').value || 1);
+  return base * nivel * n * rivales;
+}
+function pintarPremios(){
+  if(!soyDM || !$('#dmPremios') || dmTab!=='premios') return;
+  if($('#dmPremios').dataset.montado === '1'){ refrescarPremio(); return; }
+  const jug = jugadoresDisponibles();
+  $('#dmPremios').dataset.montado = '1';
+  $('#dmPremios').innerHTML = `
+    <label>CLASE DEL RIVAL</label>
+    <select id="prClase">${CLASES_RIVAL.map(c=>`<option value="${c[1]}">${esc(c[0])} · base ${c[1]}</option>`).join('')}</select>
+    <div class="fila" style="display:flex;gap:6px;margin-top:8px">
+      <div style="flex:1"><label>RIVALES</label><input id="prRivales" type="number" min="1" value="1"></div>
+      <div style="flex:1"><label>POKÉMON C/U</label><input id="prCant" type="number" min="1" value="2"></div>
+      <div style="flex:1"><label>NIVEL MEDIO</label><input id="prNivel" type="number" min="1" value="5"></div>
+    </div>
+    <div class="premio" id="prTotal">0 ₽</div>
+    <label style="margin-top:8px">REPARTO</label>
+    <div class="subtabs" id="prModo">
+      <button data-modo="uno" aria-pressed="true">A UNO</button>
+      <button data-modo="todos" aria-pressed="false">REPARTIR</button>
+    </div>
+    <select id="prQuien">${jug.map(n=>`<option>${esc(n)}</option>`).join('')||'<option value="">sin jugadores</option>'}</select>
+    <div class="fila" style="margin-top:9px"><button class="bt rosa" id="prPagar" style="width:100%">PAGAR PREMIO</button></div>
+    <p class="nota">Premio = base de la clase × nivel medio × Pokémon por rival × número de rivales.
+      Cambia cualquier número y el total se recalcula solo.</p>`;
+  ['prClase','prRivales','prCant','prNivel'].forEach(id=>
+    $('#'+id).addEventListener('input', refrescarPremio));
+  $('#prModo').addEventListener('click', e=>{
+    const b=e.target.closest('[data-modo]'); if(!b) return;
+    document.querySelectorAll('#prModo button').forEach(x=>x.setAttribute('aria-pressed', x===b));
+    $('#prQuien').disabled = b.dataset.modo === 'todos';
+  });
+  $('#prPagar').onclick = pagarPremio;
+  refrescarPremio();
+}
+function refrescarPremio(){
+  if($('#prTotal')) $('#prTotal').textContent = calcularPremio().toLocaleString('es-CO') + ' ₽';
+}
+function pagarPremio(){
+  const total = calcularPremio();
+  if(!total) return;
+  const repartir = $('#prModo').querySelector('[data-modo="todos"]').getAttribute('aria-pressed') === 'true';
+  const jug = jugadoresDisponibles();
+  if(repartir){
+    if(!jug.length) return;
+    const parte = Math.floor(total / jug.length);
+    jug.forEach(n=> fijarDinero(n, dineroDe(n) + parte));
+    anotar(`Premio repartido: <b>${parte.toLocaleString('es-CO')} ₽</b> para cada uno de los ${jug.length} entrenadores.`);
+  } else {
+    const quien = $('#prQuien').value;
+    if(!quien) return;
+    fijarDinero(quien, dineroDe(quien) + total);
+    anotar(`<b>${esc(quien)}</b> cobra <b>${total.toLocaleString('es-CO')} ₽</b> · saldo ${dineroDe(quien).toLocaleString('es-CO')} ₽`);
+  }
+  pintar(); enviar('estado', S);
+}
 
 /* ===================== MODO ENFOQUE CON RAÍLES ===================== */
 const ICONOS = {
@@ -3855,7 +4372,8 @@ let herrActiva = null;
 
 function pintarRailes(){
   if(!$('#railIzq')) return;
-  $('#railIzq').innerHTML = herramientasVisibles().map(h=>
+  $('#railIzq').innerHTML = `<div id="railDinero">${dineroDe(yo)} ₽</div>` +
+    herramientasVisibles().map(h=>
     `<button class="railbt ${herrActiva===h.k?'on':''}" data-herr="${h.k}" aria-label="${ETIQ_HERR[h.k]}">
       <svg viewBox="0 0 24 24">${ICONOS[h.k]}</svg><span>${ETIQ_HERR[h.k]}</span></button>`).join('');
 
@@ -3951,7 +4469,7 @@ async function leerFila(){
   const antes = S.nombreMapa;
   S = Object.assign({}, S, data.estado);
   S.areas=S.areas||[]; S.objetos=S.objetos||[]; S.imgs=S.imgs||{};
-  S.piezas=S.piezas||{}; S.equipos=S.equipos||{}; S.npcs=S.npcs||[]; S.mochilas=S.mochilas||{};
+  S.piezas=S.piezas||{}; S.equipos=S.equipos||{}; S.npcs=S.npcs||[]; S.mochilas=S.mochilas||{}; S.dinero=S.dinero||{};
   if(!Array.isArray(S.filas) || !S.filas.length) S.filas = MAPAS.Localidades['Pueblo Fundación'];
   anclarLocal();
   pintar();
@@ -3963,7 +4481,7 @@ function recibir({tipo,dato,de}){
   if(tipo==='hola'){ if(soyDM) enviar('estado',S); return; }
   if(tipo==='estado'){ if(!soyDM){
       const cambio = S.nombreMapa !== dato.nombreMapa;
-      S=dato; S.areas=S.areas||[]; S.objetos=S.objetos||[]; S.imgs=S.imgs||{}; S.piezas=S.piezas||{}; S.equipos=S.equipos||{}; S.npcs=S.npcs||[]; S.mochilas=S.mochilas||{}; pintar();
+      S=dato; S.areas=S.areas||[]; S.objetos=S.objetos||[]; S.imgs=S.imgs||{}; S.piezas=S.piezas||{}; S.equipos=S.equipos||{}; S.npcs=S.npcs||[]; S.mochilas=S.mochilas||{}; S.dinero=S.dinero||{}; pintar();
       if(cambio && (S.objetos||[]).includes('mapa')) abrirMapaN(true);
     } return; }
   if(tipo==='tirada'){ verTirada(dato,false); return; }
