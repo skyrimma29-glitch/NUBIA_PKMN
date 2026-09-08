@@ -828,7 +828,7 @@ footer code{background:#1c3a56;padding:2px 5px;color:#cfe0e6}
       <button class="bt" id="confNo">CANCELAR</button>
     </div>
   </div>
-</div></div>
+</div></dialog>
 
 <dialog id="dexDlg">
   <div class="dexcab"><span>POKÉDEX DE NUBIA</span><i></i></div>
@@ -1716,6 +1716,14 @@ function dibujarMapa(){
 }
 
 let cacheTokens = null;
+/* Mueve una sola pieza tocando su estilo. Evita reconstruir la capa
+   entera y con ella recargar todas las imágenes. */
+function colocarToken(t){
+  const n = document.querySelector('#capaTokens .tk[data-id="'+t.id+'"]');
+  if(!n){ dibujarTokens(); return; }
+  n.style.left = (t.x/W())*100 + '%';
+  n.style.top  = (t.y/H())*100 + '%';
+}
 function dibujarTokens(){
   const w=W(), h=H(), oc=new Set(S.niebla);
   const capa = $('#capaTokens');
@@ -2877,6 +2885,9 @@ function escucharPartida(){
         { event:'UPDATE', schema:'public', table:'partidas', filter:'id=eq.'+partida.id },
         ({ new: fila }) => {
           if(soyDM || !fila || !fila.estado) return;
+          const huella = JSON.stringify(fila.estado);
+          if(huella === huellaEstado) return;
+          huellaEstado = huella;
           const antes = S.nombreMapa;
           S = Object.assign({}, S, fila.estado);
           S.areas=S.areas||[]; S.objetos=S.objetos||[]; S.imgs=S.imgs||{};
@@ -2891,10 +2902,13 @@ function guardarPartida(){
   if(!sb || !partida || !soyDM) return;
   clearTimeout(guardando);
   guardando = setTimeout(async ()=>{
-    await sb.from('partidas')
+    const { error } = await sb.from('partidas')
       .update({ estado: S, actualizado: new Date().toISOString() })
       .eq('id', partida.id);
-  }, 700);
+    // Solo cuando la fila ya está escrita se avisa: así nadie lee un estado viejo
+    if(!error && canal) canal.send({type:'broadcast', event:'op',
+      payload:{tipo:'sync', dato:null, de:yo}});
+  }, 450);
 }
 
 /* ---------- imágenes en el almacenamiento ---------- */
@@ -3537,12 +3551,11 @@ function anunciarme(eco){
 }
 function enviar(tipo,dato){
   if(tipo==='estado'){
-    guardarPartida();
-    // Con partida guardada basta un aviso: cada quien relee la fila.
-    // Así el mensaje nunca crece de más y nadie se queda sin mapa.
-    if(canal) canal.send({type:'broadcast', event:'op',
-      payload: (sb && partida) ? {tipo:'sync', dato:null, de:yo}
-                               : {tipo:'estado', dato:aligerar(dato), de:yo}});
+    if(sb && partida && soyDM){
+      guardarPartida();          // el aviso se manda al terminar de guardar
+    } else if(canal){
+      canal.send({type:'broadcast', event:'op', payload:{tipo:'estado', dato:aligerar(dato), de:yo}});
+    }
     return;
   }
   if(canal) canal.send({type:'broadcast',event:'op',payload:{tipo,dato,de:yo}});
@@ -3603,8 +3616,11 @@ function recibir({tipo,dato,de}){
   if(tipo==='mapaN'){ abrirMapaN(false); return; }
   if(tipo==='area'){ if(!S.areas.some(a=>a.id===dato.id)) S.areas.push(dato);
     dibujarAreas(); if(soyDM) enviar('estado',S); return; }
-  if(tipo==='mover'){ const t=S.tokens.find(x=>x.id===dato.id);
-    if(t){t.x=dato.x;t.y=dato.y;pintar();} if(soyDM)enviar('estado',S); return; }
+  if(tipo==='mover'){
+    const t=S.tokens.find(x=>x.id===dato.id);
+    if(t){ t.x=dato.x; t.y=dato.y; colocarToken(t); }
+    if(soyDM) guardarPartida();     // se guarda sin repintar ni avisar de golpe
+    return; }
   if(tipo==='token'){ if(!S.tokens.some(t=>t.id===dato.id))S.tokens.push(dato);
     pintar(); if(soyDM)enviar('estado',S); return; }
   if(tipo==='ficha'){ const i=S.fichas.findIndex(f=>f.id===dato.id||(f.nombre===dato.nombre&&!f.especie&&!dato.especie));
