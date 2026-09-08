@@ -437,6 +437,10 @@ body.herr-abierta #cajonHerr{display:flex;transform:none}
 #dmPremios select,#dmPremios input{width:100%}
 #dmPremios select:disabled{opacity:.45}
 
+.catbarra{display:flex;align-items:center;gap:7px;margin:9px 0 11px}
+.catbarra span{flex:1;font-family:'Silkscreen',monospace;font-size:9px;color:var(--mar)}
+#catBuscar{font-family:'Alegreya Sans',sans-serif;font-size:13px}
+
 /* ------------- acordeones ------------- */
 .acc{background:var(--arena-hueso);border:3px solid var(--tinta);box-shadow:5px 5px 0 var(--sombra);margin-bottom:13px}
 .acc>summary{list-style:none;cursor:pointer;font-family:'Silkscreen',monospace;font-size:11px;
@@ -4185,41 +4189,73 @@ function jugadoresDisponibles(){
   S.fichas.filter(f=>!f.especie).forEach(f=> sumar(f.jugador || f.dueno || ''));
   return [...m.values()];
 }
+let filtroObj = '', abiertas = new Set(['Poké Balls']);
 function pintarCatalogo(){
   if(!soyDM || !$('#dmObjetos') || dmTab!=='objetos') return;
   const jug = jugadoresDisponibles();
-  const ops = jug.map(n=>`<option>${esc(n)}</option>`).join('');
+  const ops = jug.map(n=>`<option ${n===catQuien?'selected':''}>${esc(n)}</option>`).join('');
   const saldos = jug.map(n=>`<span class="saldo">${esc(n)} · ${dineroDe(n)} ₽</span>`).join('');
+  const q = filtroObj.trim().toLowerCase();
+  const total = Object.values(CATALOGO).reduce((a,v)=>a+v.length,0);
+
+  let encontrados = 0;
+  const grupos = Object.entries(CATALOGO).map(([cat, items])=>{
+    const vis = q ? items.filter(o =>
+      o[0].toLowerCase().includes(q) || o[2].toLowerCase().includes(q)) : items;
+    encontrados += vis.length;
+    if(!vis.length) return '';
+    const abierta = q ? true : abiertas.has(cat);
+    return `<details class="catgrp" ${abierta?'open':''} data-cat="${esc(cat)}">
+      <summary>${esc(cat)} <b>${vis.length}</b></summary>
+      ${vis.map(o=>{
+        const i = items.indexOf(o);
+        return `<div class="cat">
+          <div><b>${esc(o[0])}</b><small>${esc(o[2])}</small></div>
+          <div class="precio">${o[1] ? o[1].toLocaleString('es-CO')+' ₽' : 'único'}</div>
+          <div style="display:flex;gap:4px">
+            <button class="bt" data-dar="${esc(cat)}|${i}" style="font-size:8px;padding:5px 7px">VENDER</button>
+            <button class="bt" data-regalo="${esc(cat)}|${i}" style="font-size:8px;padding:5px 7px;border-color:var(--selva);color:var(--selva)">REGALAR</button>
+          </div>
+        </div>`;
+      }).join('')}
+    </details>`;
+  }).join('');
 
   $('#dmObjetos').innerHTML = `
     <div class="saldos">${saldos || 'Nadie en la sala todavía.'}</div>
     <label style="font-family:'Silkscreen',monospace;font-size:9px;color:var(--tinta-suave)">DESTINATARIO</label>
-    <select id="catQuien" style="width:100%;margin-bottom:10px">${ops || '<option value="">sin jugadores</option>'}</select>
-    ${Object.entries(CATALOGO).map(([cat, items])=>`
-      <details class="catgrp" ${cat===catAbierta?'open':''} data-cat="${esc(cat)}">
-        <summary>${esc(cat)} <b>${items.length}</b></summary>
-        ${items.map((o,i)=>`
-          <div class="cat">
-            <div><b>${esc(o[0])}</b><small>${esc(o[2])}</small></div>
-            <div class="precio">${o[1] ? o[1]+' ₽' : 'único'}</div>
-            <div style="display:flex;gap:4px">
-              <button class="bt" data-dar="${esc(cat)}|${i}" style="font-size:8px;padding:5px 7px">VENDER</button>
-              <button class="bt" data-regalo="${esc(cat)}|${i}" style="font-size:8px;padding:5px 7px;border-color:var(--selva);color:var(--selva)">REGALAR</button>
-            </div>
-          </div>`).join('')}
-      </details>`).join('')}
-    <p class="nota">Vender descuenta del saldo del destinatario. Regalar no cuesta nada.
-      Los precios son de referencia; la lista completa de Pokémon 5E está en
-      <a href="https://poke5e.app/items" target="_blank" rel="noopener" style="color:var(--mar)">poke5e.app/items</a>.</p>`;
+    <select id="catQuien" style="width:100%;margin-bottom:9px">${ops || '<option value="">sin jugadores</option>'}</select>
+    <input id="catBuscar" placeholder="Buscar entre ${total} objetos…" value="${esc(filtroObj)}" style="width:100%">
+    <div class="catbarra">
+      <span>${q ? encontrados+' de '+total : total+' objetos'}</span>
+      <button class="bt" id="catTodo" style="font-size:8px;padding:5px 7px">ABRIR TODO</button>
+      <button class="bt" id="catNada" style="font-size:8px;padding:5px 7px">PLEGAR</button>
+    </div>
+    ${grupos || '<div class="vacio">Ningún objeto coincide con esa búsqueda.</div>'}
+    <p class="nota">Vender descuenta del saldo. Regalar no cuesta nada. Los objetos marcados como
+      <b>único</b> no tienen precio: se entregan, no se compran.</p>`;
 
+  const b = $('#catBuscar');
+  b.addEventListener('input', ()=>{
+    filtroObj = b.value;
+    const pos = b.selectionStart;
+    pintarCatalogo();
+    const nb = $('#catBuscar'); nb.focus(); nb.setSelectionRange(pos, pos);
+  });
+  $('#catQuien').addEventListener('change', e=>{ catQuien = e.target.value; });
+  $('#catTodo').onclick = ()=>{ abiertas = new Set(Object.keys(CATALOGO)); pintarCatalogo(); };
+  $('#catNada').onclick = ()=>{ abiertas = new Set(); pintarCatalogo(); };
   $('#dmObjetos').querySelectorAll('.catgrp').forEach(d=>
-    d.addEventListener('toggle', ()=>{ if(d.open) catAbierta = d.dataset.cat; }));
+    d.addEventListener('toggle', ()=>{
+      if(d.open) abiertas.add(d.dataset.cat); else abiertas.delete(d.dataset.cat);
+    }));
 }
+let catQuien = '';
 
 async function entregarObjeto(clave, cobrar){
   const [cat, i] = clave.split('|');
   const o = (CATALOGO[cat]||[])[+i]; if(!o) return;
-  const quien = $('#catQuien') ? $('#catQuien').value : '';
+  const quien = catQuien || ($('#catQuien') ? $('#catQuien').value : '');
   if(!quien){ anotar('No hay a quién entregarle nada todavía.', false); return; }
 
   const precio = cobrar ? o[1] : 0;
