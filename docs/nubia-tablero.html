@@ -2007,12 +2007,16 @@ $('#capaTokens').addEventListener('pointerdown', e=>{
   const n=e.target.closest('.tk'); if(!n) return;
   const t=S.tokens.find(x=>x.id===n.dataset.id); if(!t) return;
   const movible = soyDM || t.dueno===yo;
-  sel=t.id; drag={t,n,movible,inicio:{x:t.x,y:t.y}};
+  sel=t.id; drag={t,n,movible,pid:e.pointerId,inicio:{x:t.x,y:t.y}};
   if(movible) n.classList.add('arrastrando');
-  n.setPointerCapture(e.pointerId); e.preventDefault();
+  try{ n.setPointerCapture(e.pointerId); }catch{}
+  e.preventDefault();
 });
 $('#capaTokens').addEventListener('pointermove', e=>{
-  if(!drag || !drag.movible) return;
+  if(!drag) return;
+  // Ratón sin botón pulsado: el gesto ya acabó aunque no llegara el aviso.
+  if(e.pointerType === 'mouse' && e.buttons === 0){ terminarArrastre(); return; }
+  if(!drag.movible) return;
   const r=$('#tablero').getBoundingClientRect(), w=W(), h=H();
   const x=Math.max(0,Math.min(w-1,Math.floor(((e.clientX-r.left)/r.width)*w)));
   const y=Math.max(0,Math.min(h-1,Math.floor(((e.clientY-r.top)/r.height)*h)));
@@ -2025,23 +2029,29 @@ $('#capaTokens').addEventListener('pointermove', e=>{
 });
 function terminarArrastre(){
   if(!drag) return;
-  drag.n.classList.remove('arrastrando');
-  const d = drag.destino;
-  const movido = drag.movible && d && (d.x!==drag.inicio.x || d.y!==drag.inicio.y);
-  const t = drag.t, drag2movible = drag.movible;
+  // Lo primero es soltar. Si algo falla después, el gesto ya terminó:
+  // así nunca puede quedarse una ficha pegada al cursor.
+  const g = drag;
+  drag = null;
+  try{ g.n.classList.remove('arrastrando'); }catch{}
+  try{ if(g.pid !== undefined && g.n.hasPointerCapture && g.n.hasPointerCapture(g.pid))
+         g.n.releasePointerCapture(g.pid); }catch{}
+
+  const d = g.destino;
+  const movido = g.movible && d && (d.x!==g.inicio.x || d.y!==g.inicio.y);
+  const t = g.t, drag2movible = g.movible;
   if(movido){
     t.x=d.x; t.y=d.y;
     recienMovidos.set(t.id, {t:Date.now(), x:t.x, y:t.y});
-    enviar('mover',{id:t.id,x:t.x,y:t.y});
+    try{ enviar('mover',{id:t.id,x:t.x,y:t.y}); }catch(err){ console.warn('mover', err); }
   }
-  drag=null;
   if(redibujoPendiente){ redibujoPendiente=false; pintar(); } else dibujarTokens();
   dibujarAreas();
   if(syncEsperando){ syncEsperando=false; setTimeout(recargarEstado, 120); }
   if(!movido){
-    if(escaneando) abrirPokedex(t);
-    else if(drag2movible) abrirDlg(t);
-    else abrirPokedex(t);          // ficha ajena: se puede consultar, no editar
+    if(escaneando) abrirPokedex(t);       // solo con el escáner encendido
+    else if(drag2movible) abrirDlg(t);    // si es tuya, se edita
+    // si no es tuya y no estás escaneando, solo queda seleccionada
   }
 }
 // Se escucha en toda la ventana: si sueltas fuera del tablero, el gesto igual acaba.
@@ -2051,11 +2061,16 @@ $('#capaTokens').addEventListener('lostpointercapture', terminarArrastre);
 addEventListener('pointerup', terminarArrastre);
 addEventListener('pointercancel', terminarArrastre);
 addEventListener('blur', terminarArrastre);
+addEventListener('pointermove', e=>{
+  if(drag && e.pointerType === 'mouse' && e.buttons === 0) terminarArrastre();
+});
+document.addEventListener('visibilitychange', terminarArrastre);
 $('#capaTokens').addEventListener('contextmenu', e=>{
   const n=e.target.closest('.tk'); if(!n) return;
   const t=S.tokens.find(x=>x.id===n.dataset.id); if(!t) return;
   e.preventDefault();
-  if(soyDM || t.dueno===yo) abrirDlg(t); else abrirPokedex(t);
+  if(soyDM || t.dueno===yo) abrirDlg(t);
+  else if(escaneando) abrirPokedex(t);
 });
 $('#capaTokens').addEventListener('dblclick', e=>{
   const n=e.target.closest('.tk'); if(!n) return;
@@ -3077,6 +3092,18 @@ async function abrirPokedex(t){
   const especie = (t.especie || t.nombre || '').trim();
   if(!especie) return;
   const clave = especie.toLowerCase().replace(/\s+/g,'-');
+
+  // Una ficha sin especie declarada puede ser un entrenador o un NPC.
+  // Antes de abrir nada se comprueba que sea una especie real.
+  if(!t.especie){
+    let existe = false;
+    try{ existe = (await fetch('https://pokeapi.co/api/v2/pokemon/'+encodeURIComponent(clave))).ok; }
+    catch{ existe = false; }
+    if(!existe){
+      anotar(`<b>${esc(especie)}</b> no es un Pokémon: la Pokédex no lo registra.`, false);
+      return;
+    }
+  }
   const c = $('#dexCuerpo');
   c.innerHTML = '<div style="padding:30px" class="dexnom">CONSULTANDO…</div>';
   $('#dexDlg').showModal();
@@ -3135,11 +3162,27 @@ $('#dexCerrar').onclick = ()=> $('#dexDlg').close();
 
 
 /* ===================== EQUIPO POKÉMON Y PC BOX ===================== */
-const claveJug = n => String(n||'').trim().toLowerCase();
+/* Se descartan acentos, espacios y cualquier carácter invisible.
+   «Maleja», «maleja » y «Ma­leja» con guion suave son la misma persona. */
+const claveJug = n => String(n||'')
+  .normalize('NFKD')
+  .replace(/[\u0300-\u036f]/g, '')      // acentos
+  .replace(/[\u200B-\u200D\uFEFF\u00AD]/g, '')  // invisibles
+  .toLowerCase()
+  .replace(/[^a-z0-9]/g, '');
+
+/* Busca en un diccionario aunque la clave guardada tenga otro formato. */
+function leerPorClave(obj, n){
+  if(!obj) return null;
+  const c = claveJug(n);
+  if(obj[c] !== undefined) return obj[c];
+  const k = Object.keys(obj).find(k => claveJug(k) === c);
+  return k !== undefined ? obj[k] : null;
+}
 
 /* Lectura pura: nunca escribe en el estado. Ese era el fallo que borraba equipos. */
 function equipoLeer(n){
-  const e = (S.equipos||{})[claveJug(n)];
+  const e = leerPorClave(S.equipos, n);
   if(!e) return { eq:[null,null,null,null,null,null], caja:[] };
   const eq = (e.eq||[]).slice(0,6);
   while(eq.length < 6) eq.push(null);
@@ -3545,7 +3588,13 @@ function pintarJugadores(){
   };
   [...presentes].forEach(sumar);
   S.fichas.filter(f=>!f.especie).forEach(f=> sumar(f.jugador || f.dueno || ''));
-  const nombres = [...porClave.values()];
+  // Segunda pasada: nada puede repetirse en pantalla, pase lo que pase
+  const vistos = new Set();
+  const nombres = [...porClave.values()].filter(n=>{
+    const c = claveJug(n);
+    if(vistos.has(c)) return false;
+    vistos.add(c); return true;
+  });
 
   if(!nombres.length){
     $('#dmJugadores').innerHTML = '<div class="vacio">Nadie más se ha conectado a esta sala todavía.</div>';
@@ -3676,7 +3725,7 @@ $('#descCorto').onclick = ()=>descansar(false);
 $('#descLargo').onclick = ()=>descansar(true);
 
 /* ===================== MOCHILA ===================== */
-function mochilaDe(n){ return ((S.mochilas||{})[claveJug(n)] || []).slice(); }
+function mochilaDe(n){ return (leerPorClave(S.mochilas, n) || []).slice(); }
 function guardarMochila(n, lista){
   S.mochilas = S.mochilas || {};
   S.mochilas[claveJug(n)] = lista;
@@ -3776,21 +3825,39 @@ const ICONOS = {
   mochila:'<path d="M8 10V7a4 4 0 0 1 8 0v3"/><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M9 15h6"/>',
   pokedex:'<rect x="4" y="3" width="16" height="18" rx="2"/><circle cx="8" cy="8" r="2.4"/><path d="M13 7h5M13 10h5M7 15h10M7 18h10"/>',
   captura:'<circle cx="12" cy="12" r="9"/><path d="M3 12h6M15 12h6"/><circle cx="12" cy="12" r="2.6"/>',
-  mapa:'<path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/>'
+  equipo :'<circle cx="8" cy="9" r="3.4"/><circle cx="16" cy="15" r="3.4"/><path d="M4.6 9h6.8M12.6 15h6.8"/>',
+  mapa   :'<path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/>',
+  gps    :'<path d="M12 21s7-6.2 7-11a7 7 0 1 0-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.6"/>'
 };
-const PANELES = { mochila:'#panelMochila', pokedex:'#panelDex', captura:'#panelCaptura', mapa:'#panelMapa' };
+const PANELES = { mochila:'#panelMochila', pokedex:'#panelDex', captura:'#panelCaptura',
+                  equipo:'#panelEquipo', mapa:'#panelMapa' };
+const ETIQ_HERR = { mochila:'MOCHILA', pokedex:'POKÉDEX', captura:'CAPTURA',
+                    equipo:'EQUIPO', mapa:'ESCENARIO', gps:'MAPA DE NUBIA' };
+
+/* Qué botones se ven en el raíl. Se decide por permiso, no por lo que
+   esté visible en pantalla: en modo enfoque las columnas están ocultas. */
+function herramientasVisibles(){
+  const objetos = S.objetos || [];
+  return [
+    { k:'mochila', ver:true },
+    { k:'pokedex', ver:tienePokedex() },
+    { k:'captura', ver:true },
+    { k:'equipo',  ver:true },
+    { k:'mapa',    ver:soyDM },
+    { k:'gps',     ver:soyDM || objetos.includes('mapa'), accion:()=>{
+        abrirMapaN(false);
+        if(soyDM) enviar('mapaN', S.nombreMapa);
+      } }
+  ].filter(h=>h.ver);
+}
 const origen = new Map();
 let herrActiva = null;
 
 function pintarRailes(){
   if(!$('#railIzq')) return;
-  const claves = Object.keys(PANELES).filter(k=>{
-    const el = document.querySelector(PANELES[k]);
-    return el && !el.hidden && getComputedStyle(el).display !== 'none';
-  });
-  $('#railIzq').innerHTML = claves.map(k=>
-    `<button class="railbt ${herrActiva===k?'on':''}" data-herr="${k}" aria-label="${k}">
-      <svg viewBox="0 0 24 24">${ICONOS[k]}</svg><span>${k.toUpperCase()}</span></button>`).join('');
+  $('#railIzq').innerHTML = herramientasVisibles().map(h=>
+    `<button class="railbt ${herrActiva===h.k?'on':''}" data-herr="${h.k}" aria-label="${ETIQ_HERR[h.k]}">
+      <svg viewBox="0 0 24 24">${ICONOS[h.k]}</svg><span>${ETIQ_HERR[h.k]}</span></button>`).join('');
 
   const e = equipoLeer(yo);
   $('#railDer').innerHTML = `<button id="railPC">PC BOX</button>` + e.eq.map((p,i)=>
@@ -3807,6 +3874,8 @@ function pintarRailes(){
 }
 $('#railIzq').addEventListener('click', e=>{
   const b=e.target.closest('[data-herr]'); if(!b) return;
+  const h = herramientasVisibles().find(x=>x.k===b.dataset.herr);
+  if(h && h.accion){ h.accion(); return; }     // el GPS no abre cajón: abre el mapa
   abrirHerramienta(b.dataset.herr);
 });
 function abrirHerramienta(k){
@@ -3864,7 +3933,8 @@ function enviar(tipo,dato){
     }
     return;
   }
-  if(canal) canal.send({type:'broadcast',event:'op',payload:{tipo,dato,de:yo}});
+  try{ if(canal) canal.send({type:'broadcast',event:'op',payload:{tipo,dato,de:yo}}); }
+  catch(err){ console.warn('envío', tipo, err); }
 }
 
 let syncPendiente = null, syncEsperando = false;
