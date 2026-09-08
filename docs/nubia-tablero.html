@@ -441,6 +441,15 @@ body.herr-abierta #cajonHerr{display:flex;transform:none}
 .catbarra span{flex:1;font-family:'Silkscreen',monospace;font-size:9px;color:var(--mar)}
 #catBuscar{font-family:'Alegreya Sans',sans-serif;font-size:13px}
 
+.destino{display:flex;align-items:center;gap:9px;background:var(--tinta);padding:9px 11px;margin-bottom:10px}
+.destino span{font-family:'Silkscreen',monospace;font-size:9px;color:#8fc8d3;white-space:nowrap}
+.destino select{flex:1;font-family:'Silkscreen',monospace;font-size:12px;border-color:var(--oro)}
+#brindis{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);z-index:150;
+  background:var(--selva);color:#fff;font-family:'Silkscreen',monospace;font-size:11px;
+  padding:12px 18px;border:3px solid var(--tinta);box-shadow:0 8px 22px rgba(0,0,0,.4);
+  opacity:0;pointer-events:none;transition:opacity .2s,transform .2s}
+#brindis.ver{opacity:1;transform:translateX(-50%)}
+
 /* ------------- acordeones ------------- */
 .acc{background:var(--arena-hueso);border:3px solid var(--tinta);box-shadow:5px 5px 0 var(--sombra);margin-bottom:13px}
 .acc>summary{list-style:none;cursor:pointer;font-family:'Silkscreen',monospace;font-size:11px;
@@ -949,6 +958,7 @@ footer code{background:#1c3a56;padding:2px 5px;color:#cfe0e6}
   </div>
 </div></dialog>
 
+<div id="brindis"></div>
 <div class="menuslot" id="menuSlot"></div>
 
 <dialog id="confirmar"><div class="confcaja">
@@ -3674,6 +3684,11 @@ function pintarJugadores(){
         <h5>DATOS</h5>
         <div class="jugpk"><b>${f?esc(f.nombre):'Sin ficha de entrenador'}</b>
           <span style="font-family:'Alegreya Sans',sans-serif;font-size:11px">${f?f.pv+' / '+f.pvMax+' PS · ini '+(f.ini||0):'—'}</span></div>
+        <h5 style="margin-top:10px">MOCHILA · ${mochilaDe(n).length} tipos · ${dineroDe(n)} ₽</h5>
+        ${mochilaDe(n).length
+          ? mochilaDe(n).map(o=>`<div class="jugpk"><b>${esc(o.nombre)}</b>
+              <span style="font-family:Silkscreen,monospace;font-size:9px;color:var(--fucsia)">×${o.cant}</span></div>`).join('')
+          : '<div class="jugpk"><b>Mochila vacía</b></div>'}
         <h5 style="margin-top:10px">POKÉMON · ${cuantos}</h5>
         ${lista.length ? lista.map(({p,z,i})=>`
           <div class="jugpk">
@@ -4206,7 +4221,11 @@ let filtroObj = '', abiertas = new Set(['Poké Balls']);
 function pintarCatalogo(){
   if(!soyDM || !$('#dmObjetos') || dmTab!=='objetos') return;
   const jug = jugadoresDisponibles();
-  const ops = jug.map(n=>`<option ${n===catQuien?'selected':''}>${esc(n)}</option>`).join('');
+  // El primero de la lista es un jugador, no el director: así nadie se autoentrega sin querer
+  const otros = jug.filter(n=>claveJug(n)!==claveJug(yo));
+  const orden = otros.concat(jug.filter(n=>claveJug(n)===claveJug(yo)));
+  if(!catQuien && orden.length) catQuien = orden[0];
+  const ops = orden.map(n=>`<option ${n===catQuien?'selected':''}>${esc(n)}</option>`).join('');
   const saldos = jug.map(n=>`<span class="saldo">${esc(n)} · ${dineroDe(n)} ₽</span>`).join('');
   const q = filtroObj.trim().toLowerCase();
   const total = Object.values(CATALOGO).reduce((a,v)=>a+v.length,0);
@@ -4236,8 +4255,10 @@ function pintarCatalogo(){
 
   $('#dmObjetos').innerHTML = `
     <div class="saldos">${saldos || 'Nadie en la sala todavía.'}</div>
-    <label style="font-family:'Silkscreen',monospace;font-size:9px;color:var(--tinta-suave)">DESTINATARIO</label>
-    <select id="catQuien" style="width:100%;margin-bottom:9px">${ops || '<option value="">sin jugadores</option>'}</select>
+    <div class="destino">
+      <span>ENTREGAR A</span>
+      <select id="catQuien">${ops || '<option value="">sin jugadores</option>'}</select>
+    </div>
     <input id="catBuscar" placeholder="Buscar entre ${total} objetos…" value="${esc(filtroObj)}" style="width:100%">
     <div class="catbarra">
       <span>${q ? encontrados+' de '+total : total+' objetos'}</span>
@@ -4300,6 +4321,7 @@ async function entregarObjeto(clave, cobrar){
   anotar(cobrar
     ? `<b>${esc(quien)}</b> compra ${n} × <b>${esc(o[0])}</b> por ${total} ₽ · le quedan ${dineroDe(quien)} ₽`
     : `El director regala ${n} × <b>${esc(o[0])}</b> a <b>${esc(quien)}</b>`);
+  brindis(`${n} × ${o[0]} → ${quien}`);
   pintar(); enviar('estado', S);
 }
 $('#dmObjetos').addEventListener('click', e=>{
@@ -4309,6 +4331,17 @@ $('#dmObjetos').addEventListener('click', e=>{
   if(r){ entregarObjeto(r.dataset.regalo, false); return; }
 });
 
+
+/* Avisito flotante para confirmar una acción sin interrumpir. */
+let brindisT = null;
+function brindis(texto){
+  const n = $('#brindis');
+  if(!n) return;
+  n.textContent = texto;
+  n.classList.add('ver');
+  clearTimeout(brindisT);
+  brindisT = setTimeout(()=> n.classList.remove('ver'), 2600);
+}
 
 /* ===================== CALCULADORA DE PREMIOS ===================== */
 /* Se calcula como en los juegos: una base por la clase del rival,

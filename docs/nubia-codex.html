@@ -100,7 +100,7 @@ p.lead{margin:0 0 24px;color:var(--tinta-suave);max-width:70ch}
 /* ---------- rejilla de tiles ---------- */
 .tilewrap{border:3px solid var(--tinta);background:var(--tinta);box-shadow:6px 6px 0 var(--sombra);overflow:auto;max-width:100%}
 .tiles{display:grid;gap:0;image-rendering:pixelated;width:100%;max-width:100%}
-.t{aspect-ratio:1;position:relative;min-width:0;overflow:visible}
+.t{position:relative;min-width:0;min-height:0;overflow:visible}
 .t.npc{cursor:pointer}
 .t.npc::after{
   content:attr(data-n);position:absolute;inset:14%;border-radius:50%;
@@ -892,7 +892,7 @@ function pinta(id){
   const W=Math.max(...L.mapa.map(r=>r.length));
   const filas=L.mapa.map(r=>r.padEnd(W,'.'));
 
-  let tiles=`<div class="tiles" style="grid-template-columns:repeat(${W},1fr)">`;
+  let tiles=`<div class="tiles" style="grid-template-columns:repeat(${W},1fr);grid-template-rows:repeat(${filas.length},1fr);aspect-ratio:${W}/${filas.length}">`;
   filas.forEach(r=>[...r].forEach(ch=>{
     if(/[1-9]/.test(ch)){
       tiles+=`<div class="t npc" data-n="${ch}" style="background:${COLORES['=']}"></div>`;

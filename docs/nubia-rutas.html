@@ -62,7 +62,7 @@ main{padding:32px 0 70px}
 
 .tilewrap{border:3px solid var(--tinta);background:var(--tinta);box-shadow:6px 6px 0 var(--sombra);overflow:auto;max-width:100%}
 .tiles{display:grid;gap:0;width:100%;max-width:100%}
-.t{aspect-ratio:1;position:relative;min-width:0;overflow:visible}
+.t{position:relative;min-width:0;min-height:0;overflow:visible}
 .t.pt{cursor:pointer}
 .t.pt::after{content:attr(data-n);position:absolute;inset:10%;border-radius:50%;
   background:var(--fucsia);color:#fff;border:2px solid var(--tinta);
@@ -919,7 +919,7 @@ function pintar(id){
   const W = Math.max(...r.mapa.map(f=>f.length));
   const filas = r.mapa.map(f=>f.padEnd(W, f[f.length-1] || '.'));
 
-  let tiles = `<div class="tiles" style="grid-template-columns:repeat(${W},1fr)">`;
+  let tiles = `<div class="tiles" style="grid-template-columns:repeat(${W},1fr);grid-template-rows:repeat(${filas.length},1fr);aspect-ratio:${W}/${filas.length}">`;
   filas.forEach(f => [...f].forEach(ch=>{
     if(/[1-9]/.test(ch)) tiles += `<div class="t pt" data-n="${ch}" style="background:${COLORES[',']}"></div>`;
     else if(ch === '!')  tiles += `<div class="t pt obj" data-n="!" style="background:${COLORES[',']}"></div>`;
