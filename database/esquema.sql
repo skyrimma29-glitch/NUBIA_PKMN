@@ -63,6 +63,36 @@ create table if not exists pokedex (
 );
 create index if not exists pokedex_jugador_idx on pokedex(partida, jugador);
 
+
+-- ------------------------------------------------- 5. TEXTOS PROPIOS
+-- Cada persona puede reescribir los textos del códice, el atlas y los
+-- planos. Solo los ve quien los escribe: los demás siguen con el original.
+create table if not exists textos (
+  jugador  uuid references auth.users on delete cascade,
+  clave    text not null,
+  valor    text,
+  editado  timestamptz default now(),
+  primary key (jugador, clave)
+);
+
+alter table textos enable row level security;
+
+drop policy if exists textos_leer on textos;
+create policy textos_leer on textos
+  for select to authenticated using (jugador = auth.uid());
+
+drop policy if exists textos_escribir on textos;
+create policy textos_escribir on textos
+  for insert to authenticated with check (jugador = auth.uid());
+
+drop policy if exists textos_actualizar on textos;
+create policy textos_actualizar on textos
+  for update to authenticated using (jugador = auth.uid());
+
+drop policy if exists textos_borrar on textos;
+create policy textos_borrar on textos
+  for delete to authenticated using (jugador = auth.uid());
+
 -- ============================================ POLÍTICAS DE ACCESO
 alter table perfiles  enable row level security;
 alter table partidas  enable row level security;

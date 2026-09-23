@@ -162,6 +162,9 @@ tr,.punto,.npc{transition:background .14s}
 <div class="vueltiao"></div>
 <footer><div class="wrap">Atlas de Rutas de Nubia — documento de trabajo del director.</div></footer>
 
+<script src="nubia-config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="nubia-editor.js"></script>
 <script>
 /* ===========================================================
    Leyenda de casillas:
@@ -959,6 +962,8 @@ function pintar(id){
     </div>
   </div>`;
 
+  if(window.NubiaEditor) window.NubiaEditor.marcar($('#ficha'), 'ruta:'+r.id);
+
   $('#ficha').querySelectorAll('.t.pt').forEach(t => t.onclick = ()=>{
     const n = t.dataset.n;
     $('#ficha').querySelectorAll('.t.pt').forEach(x=>x.classList.toggle('sel', x.dataset.n===n));
@@ -970,6 +975,10 @@ function pintar(id){
   });
 }
 pintar('r1');
+if(window.NubiaEditor){
+  const intro = document.querySelector('.intro');
+  if(intro) window.NubiaEditor.marcar(intro, 'atlas-intro');
+}
 </script>
 </body>
 </html>

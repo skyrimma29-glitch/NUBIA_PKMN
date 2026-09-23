@@ -450,6 +450,52 @@ body.herr-abierta #cajonHerr{display:flex;transform:none}
   opacity:0;pointer-events:none;transition:opacity .2s,transform .2s}
 #brindis.ver{opacity:1;transform:translateX(-50%)}
 
+/* ------------- objeto equipado ------------- */
+.tk .objeq{position:absolute;bottom:-6px;left:-8px;width:22px;height:22px;border-radius:50%;
+  background:var(--arena-hueso);border:2px solid var(--tinta);display:grid;place-items:center;
+  overflow:hidden;z-index:4}
+.tk .objeq img{width:118%;height:118%;object-fit:contain;image-rendering:pixelated}
+.objrow{display:flex;gap:8px;align-items:end;margin-bottom:10px}
+.objrow .campo1{flex:1}
+.objprev{width:42px;height:42px;border:2px solid var(--tinta);background:#fff;display:grid;
+  place-items:center;flex:0 0 auto;overflow:hidden}
+.objprev img{width:120%;height:120%;object-fit:contain;image-rendering:pixelated}
+.objprev span{font-family:'Silkscreen',monospace;font-size:9px;color:var(--tinta-suave)}
+
+/* ------------- equipo del NPC ------------- */
+.npceq{display:grid;gap:2px;background:var(--tinta);border:2px solid var(--tinta);
+  max-height:150px;overflow:auto;margin-bottom:8px}
+.npceq .it{background:var(--arena-hueso);padding:6px 8px;display:grid;
+  grid-template-columns:26px 1fr auto;gap:8px;align-items:center}
+.npceq .mini{width:26px;height:26px;border-radius:50%;border:2px solid var(--tinta);
+  overflow:hidden;display:grid;place-items:center;background:#0e7c8b}
+.npceq .mini img{width:100%;height:100%;object-fit:contain}
+.npceq b{font-family:'Silkscreen',monospace;font-size:9px}
+.npceq button{font-size:8px;padding:4px 6px;border:2px solid var(--tinta-suave);background:#fff;color:var(--fucsia)}
+.npc-eq{background:#eef3f6;border-top:2px solid var(--tinta);padding:7px 9px;display:grid;gap:4px}
+.npc-eq .fila2{display:flex;align-items:center;gap:7px}
+.npc-eq .fila2 .mini{width:24px;height:24px;border-radius:50%;border:2px solid var(--tinta);
+  overflow:hidden;display:grid;place-items:center;background:#0e7c8b;flex:0 0 auto}
+.npc-eq .fila2 .mini img{width:100%;height:100%;object-fit:contain}
+.npc-eq b{font-family:'Silkscreen',monospace;font-size:9px;flex:1}
+.npc-eq button{font-size:8px;padding:4px 6px;border:2px solid var(--selva);background:#fff;color:var(--selva)}
+
+/* ------------- movimientos ------------- */
+.movs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px}
+.movs input{width:100%}
+.movbt{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px}
+.movbt button{font-family:'Silkscreen',monospace;font-size:9px;padding:9px 6px;
+  border:2px solid var(--tinta);background:var(--arena-hueso);color:var(--tinta);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.movbt button:hover:not(:disabled){background:var(--fucsia);color:#fff;border-color:var(--fucsia)}
+.movbt button:disabled{opacity:.35;cursor:default}
+.item .movs2{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:6px}
+.item .movs2 button{font-family:'Silkscreen',monospace;font-size:8px;padding:6px 4px;
+  border:2px solid var(--mar);background:#fff;color:var(--mar);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.item .movs2 button:hover{background:var(--mar);color:#fff}
+#movInfo{font-family:'Alegreya Sans',sans-serif;font-size:11px;color:var(--tinta-suave);margin:0 0 8px}
+
 /* ------------- acordeones ------------- */
 .acc{background:var(--arena-hueso);border:3px solid var(--tinta);box-shadow:5px 5px 0 var(--sombra);margin-bottom:13px}
 .acc>summary{list-style:none;cursor:pointer;font-family:'Silkscreen',monospace;font-size:11px;
@@ -1011,6 +1057,37 @@ footer code{background:#1c3a56;padding:2px 5px;color:#cfe0e6}
     <div class="fila">
       <div style="flex:1"><label for="dDmg">FÓRMULA DE DAÑO</label><input id="dDmg" placeholder="2d6+3"></div>
     </div>
+    <label for="dObj">OBJETO EQUIPADO</label>
+    <div class="objrow">
+      <div class="campo1"><input id="dObj" list="listaObj" placeholder="Leftovers" autocomplete="off"></div>
+      <div class="objprev" id="dObjPrev"><span>—</span></div>
+      <button class="bt" id="dObjQuitar" style="font-size:9px">QUITAR</button>
+    </div>
+    <datalist id="listaObj"></datalist>
+
+    <div id="dMovs" style="display:none">
+      <label>MOVIMIENTOS</label>
+      <p id="movInfo">Escribe o elige entre los que esta especie puede aprender.</p>
+      <div class="movs">
+        <input id="dMov0" list="listaMov" placeholder="Movimiento 1" autocomplete="off">
+        <input id="dMov1" list="listaMov" placeholder="Movimiento 2" autocomplete="off">
+        <input id="dMov2" list="listaMov" placeholder="Movimiento 3" autocomplete="off">
+        <input id="dMov3" list="listaMov" placeholder="Movimiento 4" autocomplete="off">
+      </div>
+      <datalist id="listaMov"></datalist>
+      <label>USAR EN LA MESA</label>
+      <div class="movbt" id="dMovBt"></div>
+    </div>
+
+    <div id="dEquipoNpc" style="display:none">
+      <label>EQUIPO DEL NPC</label>
+      <div class="npceq" id="dEqLista"></div>
+      <div class="fila">
+        <div style="flex:1"><input id="dEqNom" list="listaPk" placeholder="pikachu" autocomplete="off"></div>
+        <div style="width:72px"><input id="dEqNivel" type="number" min="1" value="5"></div>
+        <button class="bt rosa" id="dEqAdd" style="font-size:9px">AÑADIR</button>
+      </div>
+    </div>
     <label>TIRAR DESDE ESTA FICHA</label>
     <div class="dlgtiros">
       <button id="tAtaque">ATAQUE</button>
@@ -1296,7 +1373,8 @@ function dibujarTokens(){
   // La firma no incluye la posición: mover una ficha no rehace el HTML,
   // solo desplaza la que ya está en pantalla. Adiós al parpadeo.
   const firma = visibles.map(t=>[t.id, t.color, t.img, t.nivel, t.nombre,
-    (t.cond||[]).join(''), sel===t.id, soyDM||t.dueno===yo].join('~')).join('|');
+    (t.cond||[]).join(''), (t.objeto&&t.objeto.img)||'', sel===t.id,
+    soyDM||t.dueno===yo].join('~')).join('|');
 
   if(firma !== cacheTokens){
     capa.innerHTML = visibles.map(t=>{
@@ -1309,6 +1387,7 @@ function dibujarTokens(){
         <span class="rd">${t.img?`<img src="${t.img}" alt="">`:esc(ini)}</span>
         ${cond.length?`<span class="cnd">${cond.map(c=>`<i style="background:${COLCOND[c]||'#fff'}" title="${c}"></i>`).join('')}</span>`:''}
         ${t.nivel?`<span class="lv">${t.nivel}</span>`:''}
+        ${t.objeto&&t.objeto.img?`<span class="objeq" title="${esc(t.objeto.nombre)}"><img src="${t.objeto.img}" alt=""></span>`:''}
         <span class="nm">${esc(t.nombre)}</span>
       </div>`;
     }).join('');
@@ -1362,6 +1441,12 @@ function dibujarFichas(){
       <div class="pvtxt">${f.pv} / ${f.pvMax} PS</div>`
       :`<div class="pvtxt" style="color:${pct<=25?'var(--fucsia)':pct<=55?'var(--oro)':'var(--selva)'}">${
           pct<=0?'fuera de combate':pct<=25?'muy malherido':pct<=55?'herido':'en pie'}</div>`}
+      ${(()=>{ const tk=S.tokens.find(x=>x.id===f.tokenId);
+        const mv=movsDe(tk);
+        return (editable && f.especie && mv.length)
+          ? `<div class="movs2">${mv.map((m,i)=>
+              `<button data-mov="${f.id}|${i}" title="${esc(m)}">${esc(m)}</button>`).join('')}</div>`
+          : ''; })()}
       ${editable?`<div class="mini">
         <button data-h="${f.id}" data-d="-5">−5</button><button data-h="${f.id}" data-d="-1">−1</button>
         <button data-h="${f.id}" data-d="1">+1</button><button data-h="${f.id}" data-d="5">+5</button>
@@ -1584,6 +1669,14 @@ function abrirDlg(t){
   if(t.img){ p.style.display='flex'; $('#dlgImg').src=t.img;
     $('#dlgInfo').innerHTML = `<b>${esc(t.especie||t.nombre)}</b>${esc(t.tipos||'')}`; }
   else p.style.display='none';
+  objetoTmp = t.objeto ? Object.assign({}, t.objeto) : null;
+  if($('#dObj')) $('#dObj').value = objetoTmp ? objetoTmp.nombre : '';
+  pintarObjetoPrev(objetoTmp);
+  montarMovimientos(t);
+  if($('#dEquipoNpc')){
+    $('#dEquipoNpc').style.display = t.esNpc ? 'block' : 'none';
+    if(t.esNpc) pintarEquipoNpc(t.esNpc);
+  }
   $('#dDel').style.display = (!t.esPk && (soyDM || t.dueno===yo)) ? '' : 'none';
   $('#dDueno').disabled = !soyDM;
   $('#dlg').showModal();
@@ -1599,6 +1692,8 @@ $('#dOk').onclick=()=>{
     n.dmg    = $('#dDmg').value.trim();
     n.pv     = +$('#dPv').value || n.pv;
     n.pvMax  = +$('#dPvMax').value || n.pvMax;
+    n.objeto = objetoTmp;
+    n.movs = [0,1,2,3].map(i=>$('#dMov'+i).value.trim()).filter(Boolean);
     $('#dlg').close(); pintarNpcs(); enviar('estado', S);
     return;
   }
@@ -1607,6 +1702,8 @@ $('#dOk').onclick=()=>{
     pk.nombre=$('#dNom').value.trim()||pk.nombre;
     pk.nivel=+$('#dNivel').value||pk.nivel;
     pk.color=$('#dColor').value;
+    pk.objeto=objetoTmp;
+    pk.movs=[0,1,2,3].map(i=>$('#dMov'+i).value.trim()).filter(Boolean);
     const i=e.eq.findIndex(x=>x&&x.id===pk.id);
     if(i>=0) e.eq[i]=pk; else { const j=e.caja.findIndex(x=>x&&x.id===pk.id); if(j>=0) e.caja[j]=pk; }
     $('#dlg').close(); guardarEquipo(yo, e);
@@ -1616,6 +1713,11 @@ $('#dOk').onclick=()=>{
   if(soyDM) t.dueno=$('#dDueno').value;
   t.nivel=+$('#dNivel').value||0; t.color=$('#dColor').value;
   t.atk=+$('#dAtk').value||0; t.dmg=$('#dDmg').value.trim();
+  t.objeto = objetoTmp;
+  if(t.especie) t.movs = [0,1,2,3].map(i=>$('#dMov'+i).value.trim()).filter(Boolean);
+  const pkEq = (equipoLeer(t.dueno||yo).eq.concat(equipoLeer(t.dueno||yo).caja))
+    .find(x=>x && x.id===t.pk);
+  if(pkEq){ pkEq.objeto = objetoTmp; pkEq.movs = t.movs; }  // objeto y ataques viajan con el Pokémon
   t.cond=[...$('#dCond').querySelectorAll('input:checked')].map(i=>i.dataset.c);
   let f=S.fichas.find(x=>x.tokenId===t.id);
   if(!f){ f={id:id8(), tokenId:t.id, nombre:t.nombre}; S.fichas.push(f); }
@@ -2897,6 +2999,7 @@ $('#menuSlot').addEventListener('click', e=>{
     if(S.tokens.some(t=>t.pk===pk.id)){ anotar(`<b>${esc(pk.nombre)}</b> ya está en el tablero`, false); return; }
     const t = { id:id8(), pk:pk.id, nombre:pk.nombre, especie:pk.especie, tipos:pk.tipos,
                 nivel:pk.nivel, img:pk.img, color:pk.color, dueno:yo,
+                objeto:pk.objeto||null, movs:pk.movs||[],
                 x:Math.min(3,W()-1), y:Math.min(3,H()-1) };
     S.tokens.push(t);
     const ps = Math.round((pk.nivel||1)*4.5);
@@ -3005,6 +3108,7 @@ $('#dImgQuitar').onclick = ()=>{
 };
 
 /* ---------- biblioteca de fichas del director ---------- */
+let npcAbierto = null;
 function pintarNpcs(){
   if(!soyDM || !$('#listaNpcs')) return;
   const L = S.npcs || [];
@@ -3013,13 +3117,21 @@ function pintarNpcs(){
     return `<div class="npc-it" draggable="true" data-npc="${n.id}">
       <div class="av" style="background:${n.color||'#7b5ba6'}">
         ${n.img?`<img src="${n.img}" alt="">`:esc(ini)}</div>
-      <div><b>${esc(n.nombre)}</b><span>${n.especie?esc(n.especie)+' · ':''}Nv ${n.nivel||1} · ${n.pvMax||10} PS</span></div>
+      <div><b>${esc(n.nombre)}</b><span>${n.especie?esc(n.especie)+' · ':''}Nv ${n.nivel||1} · ${n.pvMax||10} PS${
+        (n.equipo||[]).length ? ' · '+n.equipo.length+' Pokémon' : ''}</span></div>
       <div class="accs">
         <button data-npcacc="poner" data-id="${n.id}">PONER</button>
+        ${(n.equipo||[]).length?`<button data-npcacc="equipo" data-id="${n.id}">EQUIPO</button>`:''}
         <button data-npcacc="editar" data-id="${n.id}">EDITAR</button>
         <button data-npcacc="borrar" data-id="${n.id}" style="color:var(--fucsia)">✕</button>
       </div>
-    </div>`;
+    </div>${ npcAbierto===n.id && (n.equipo||[]).length ? `
+    <div class="npc-eq">${n.equipo.map((pk,i)=>`
+      <div class="fila2">
+        <div class="mini" style="background:${pk.color||'#0e7c8b'}">${pk.img?`<img src="${pk.img}" alt="">`:''}</div>
+        <b>${esc(pk.nombre)} · Nv ${pk.nivel||1}${pk.objeto?' · '+esc(pk.objeto.nombre):''}</b>
+        <button data-sacar="${n.id}|${i}">SACAR</button>
+      </div>`).join('')}</div>` : '' }`;
   }).join('') : '<div class="npc-it" style="grid-template-columns:1fr;cursor:default"><span>Sin fichas guardadas. Crea una o guarda la que tengas seleccionada en el tablero.</span></div>';
 }
 
@@ -3027,6 +3139,7 @@ function ponerNpc(id, x, y){
   const n = (S.npcs||[]).find(v=>v.id===id); if(!n) return;
   const t = { id:id8(), npc:n.id, nombre:n.nombre, especie:n.especie||'', tipos:n.tipos||'',
               nivel:n.nivel||1, img:n.img||'', color:n.color||'#7b5ba6', atk:n.atk||0, dmg:n.dmg||'',
+              objeto:n.objeto||null, movs:n.movs||[],
               dueno:'', x: x!==undefined?x:Math.min(4,W()-1), y: y!==undefined?y:Math.min(4,H()-1) };
   S.tokens.push(t);
   S.fichas.push({ id:id8(), tokenId:t.id, nombre:n.nombre, especie:n.especie||'', img:n.img||'',
@@ -3037,9 +3150,12 @@ function ponerNpc(id, x, y){
 }
 
 $('#listaNpcs').addEventListener('click', e=>{
+  const sa = e.target.closest('[data-sacar]');
+  if(sa){ const [idn, i] = sa.dataset.sacar.split('|'); sacarPokemonNpc(idn, +i); return; }
   const b = e.target.closest('[data-npcacc]'); if(!b) return;
   const id = b.dataset.id;
   if(b.dataset.npcacc==='poner') ponerNpc(id);
+  if(b.dataset.npcacc==='equipo'){ npcAbierto = npcAbierto===id ? null : id; pintarNpcs(); }
   if(b.dataset.npcacc==='borrar'){
     const n=(S.npcs||[]).find(v=>v.id===id);
     if(n && confirm('¿Borrar «'+n.nombre+'» de la biblioteca? Las piezas ya puestas en el tablero no se tocan.')){
@@ -3102,6 +3218,211 @@ $('#npcGuardarSel').onclick = ()=>{
   pintarNpcs(); enviar('estado', S);
 };
 
+
+
+/* ===================== OBJETOS EQUIPADOS Y EQUIPO DE NPC ===================== */
+/* PokéAPI nombra sus objetos en minúscula y con guiones. Se normaliza igual
+   que los nombres del catálogo para poder pedir su ilustración. */
+function slugObjeto(n){
+  return String(n||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'')
+    .toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+}
+const cacheObj = new Map();
+async function spriteObjeto(nombre){
+  const slug = slugObjeto(nombre);
+  if(!slug) return '';
+  if(cacheObj.has(slug)) return cacheObj.get(slug);
+  let url = '';
+  try{
+    const r = await fetch('https://pokeapi.co/api/v2/item/'+encodeURIComponent(slug));
+    if(r.ok){ const j = await r.json(); url = j.sprites?.default || ''; }
+  }catch{}
+  cacheObj.set(slug, url);
+  return url;
+}
+
+// El desplegable de objetos se alimenta del catálogo del director
+function llenarListaObjetos(){
+  if(!$('#listaObj')) return;
+  const todos = Object.values(CATALOGO).flat().map(o=>o[0]).sort();
+  $('#listaObj').innerHTML = todos.map(n=>`<option value="${esc(n)}">`).join('');
+}
+
+let objetoTmp = null;
+function pintarObjetoPrev(o){
+  const p = $('#dObjPrev');
+  if(!p) return;
+  p.innerHTML = o && o.img ? `<img src="${o.img}" alt="">`
+              : `<span>${o && o.nombre ? esc(o.nombre.slice(0,2).toUpperCase()) : '—'}</span>`;
+}
+if($('#dObj')) $('#dObj').addEventListener('change', async ()=>{
+  const nombre = $('#dObj').value.trim();
+  if(!nombre){ objetoTmp = null; pintarObjetoPrev(null); return; }
+  objetoTmp = { nombre, img:'' };
+  pintarObjetoPrev(objetoTmp);
+  objetoTmp.img = await spriteObjeto(nombre);
+  pintarObjetoPrev(objetoTmp);
+});
+if($('#dObjQuitar')) $('#dObjQuitar').onclick = ()=>{
+  objetoTmp = null; $('#dObj').value=''; pintarObjetoPrev(null);
+};
+
+/* ---------- equipo guardado de un NPC ---------- */
+function pintarEquipoNpc(n){
+  const c = $('#dEqLista'); if(!c) return;
+  const L = n.equipo || [];
+  c.innerHTML = L.length ? L.map((pk,i)=>`
+    <div class="it">
+      <div class="mini" style="background:${pk.color||'#0e7c8b'}">${pk.img?`<img src="${pk.img}" alt="">`:''}</div>
+      <b>${esc(pk.nombre)} · Nv ${pk.nivel||1}</b>
+      <button data-eqdel="${i}">✕</button>
+    </div>`).join('')
+    : '<div class="it" style="grid-template-columns:1fr"><b>Sin Pokémon guardados</b></div>';
+}
+if($('#dEqLista')) $('#dEqLista').addEventListener('click', e=>{
+  const b = e.target.closest('[data-eqdel]'); if(!b) return;
+  const n = editando && editando.esNpc; if(!n) return;
+  n.equipo = (n.equipo||[]).filter((_,i)=> i !== +b.dataset.eqdel);
+  pintarEquipoNpc(n); pintarNpcs(); enviar('estado', S);
+});
+if($('#dEqAdd')) $('#dEqAdd').onclick = async ()=>{
+  const n = editando && editando.esNpc; if(!n) return;
+  const clave = slugObjeto($('#dEqNom').value);
+  if(!clave) return;
+  const b = $('#dEqAdd'); b.disabled = true; b.textContent = '…';
+  let nombre = clave, img = '', tipos = '';
+  try{
+    const r = await fetch('https://pokeapi.co/api/v2/pokemon/'+encodeURIComponent(clave));
+    if(r.ok){
+      const j = await r.json();
+      nombre = j.name.charAt(0).toUpperCase()+j.name.slice(1);
+      img = j.sprites?.other?.['official-artwork']?.front_default || j.sprites?.front_default || '';
+      tipos = j.types.map(t=>t.type.name).join(' / ');
+    }
+  }catch{}
+  b.disabled = false; b.textContent = 'AÑADIR';
+  n.equipo = n.equipo || [];
+  n.equipo.push({ id:id8(), especie:nombre, nombre, nivel:Math.max(1,+$('#dEqNivel').value||1),
+                  img, tipos, color:'#0e7c8b' });
+  $('#dEqNom').value='';
+  pintarEquipoNpc(n); pintarNpcs(); enviar('estado', S);
+};
+
+/* Saca a un Pokémon del equipo guardado de un NPC y lo pone en el tablero. */
+function sacarPokemonNpc(idNpc, i, x, y){
+  const n = (S.npcs||[]).find(v=>v.id===idNpc); if(!n) return;
+  const pk = (n.equipo||[])[i]; if(!pk) return;
+  const ps = Math.round((pk.nivel||1)*4.5);
+  const t = { id:id8(), npc:n.id, nombre:pk.nombre, especie:pk.especie, tipos:pk.tipos,
+              nivel:pk.nivel, img:pk.img, color:pk.color||'#0e7c8b', dueno:'',
+              objeto: pk.objeto || null, movs: pk.movs || [],
+              x: x!==undefined?x:Math.min(5,W()-1), y: y!==undefined?y:Math.min(5,H()-1) };
+  S.tokens.push(t);
+  S.fichas.push({ id:id8(), tokenId:t.id, nombre:pk.nombre, especie:pk.especie, img:pk.img||'',
+                  nivel:pk.nivel, dueno:'', pv:ps, pvMax:ps, ini:0, enIniciativa:false });
+  anotar(`<b>${esc(n.nombre)}</b> envía a <b>${esc(pk.nombre)}</b>`);
+  pintar(); enviar('estado', S);
+}
+
+
+/* ===================== MOVIMIENTOS ===================== */
+/* PokéAPI da la lista completa de lo que cada especie puede aprender.
+   Se usa tal cual: nada de inventar movimientos que no le corresponden. */
+const cacheMovs = new Map();      // especie -> [nombres bonitos]
+const cacheNomEs = new Map();     // slug    -> nombre en español
+
+const bonito = s => String(s||'').split('-')
+  .map(p => p.charAt(0).toUpperCase()+p.slice(1)).join(' ');
+
+async function movsDeEspecie(especie){
+  const clave = slugObjeto(especie);
+  if(!clave) return [];
+  if(cacheMovs.has(clave)) return cacheMovs.get(clave);
+  let lista = [];
+  try{
+    const r = await fetch('https://pokeapi.co/api/v2/pokemon/'+encodeURIComponent(clave));
+    if(r.ok){
+      const j = await r.json();
+      lista = j.moves.map(m => bonito(m.move.name)).sort((a,b)=>a.localeCompare(b,'es'));
+    }
+  }catch{}
+  cacheMovs.set(clave, lista);
+  return lista;
+}
+
+/* El nombre en español solo se pide para los cuatro elegidos, no para los cientos. */
+async function nombreEsMov(nombre){
+  const slug = slugObjeto(nombre);
+  if(!slug) return nombre;
+  if(cacheNomEs.has(slug)) return cacheNomEs.get(slug);
+  let es = bonito(slug);
+  try{
+    const r = await fetch('https://pokeapi.co/api/v2/move/'+encodeURIComponent(slug));
+    if(r.ok){
+      const j = await r.json();
+      const n = j.names?.find(x=>x.language.name==='es');
+      if(n) es = n.name;
+    }
+  }catch{}
+  cacheNomEs.set(slug, es);
+  return es;
+}
+
+function movsDe(t){
+  return (t && Array.isArray(t.movs)) ? t.movs.slice(0,4) : [];
+}
+/* Quién lo lanza: el entrenador dueño, o salvaje si no tiene. */
+function anunciarMovimiento(t, mov){
+  if(!mov) return;
+  const quien = t.dueno
+    ? `El <b>${esc(t.nombre)}</b> de <b>${esc(t.dueno)}</b>`
+    : `El <b>${esc(t.nombre)}</b> salvaje`;
+  anotar(`${quien} ha usado <b>${esc(mov)}</b>`);
+}
+
+/* ---------- dentro del editor de ficha ---------- */
+async function montarMovimientos(t){
+  const caja = $('#dMovs'); if(!caja) return;
+  const esPokemon = !!(t.especie || (t.esPk && t.esPk.especie) || (t.esNpc && t.esNpc.especie));
+  caja.style.display = esPokemon ? 'block' : 'none';
+  if(!esPokemon) return;
+
+  const actuales = movsDe(t.esPk || t.esNpc || t);
+  for(let i=0;i<4;i++) $('#dMov'+i).value = actuales[i] || '';
+  pintarBotonesMov(t);
+
+  const especie = t.especie || (t.esPk&&t.esPk.especie) || (t.esNpc&&t.esNpc.especie);
+  $('#movInfo').textContent = 'Consultando los movimientos de '+especie+'…';
+  const lista = await movsDeEspecie(especie);
+  $('#listaMov').innerHTML = lista.map(m=>`<option value="${esc(m)}">`).join('');
+  $('#movInfo').textContent = lista.length
+    ? `${lista.length} movimientos que ${especie} puede aprender. Escribe o elige.`
+    : 'No se pudo consultar la lista. Puedes escribir el movimiento a mano.';
+}
+function pintarBotonesMov(t){
+  const c = $('#dMovBt'); if(!c) return;
+  const m = [0,1,2,3].map(i => ($('#dMov'+i) ? $('#dMov'+i).value.trim() : ''));
+  c.innerHTML = m.map((x,i)=>
+    `<button data-usar="${i}" ${x?'':'disabled'} title="${esc(x||'')}">${esc(x||'— vacío —')}</button>`).join('');
+}
+[0,1,2,3].forEach(i=>{
+  const n = $('#dMov'+i);
+  if(n) n.addEventListener('input', ()=> pintarBotonesMov(editando));
+});
+if($('#dMovBt')) $('#dMovBt').addEventListener('click', e=>{
+  const b = e.target.closest('[data-usar]'); if(!b || b.disabled) return;
+  const t = editando; if(!t) return;
+  anunciarMovimiento(t, $('#dMov'+b.dataset.usar).value.trim());
+});
+
+/* ---------- desde el orden de combate ---------- */
+$('#fichas').addEventListener('click', e=>{
+  const b = e.target.closest('[data-mov]'); if(!b) return;
+  const [idFicha, i] = b.dataset.mov.split('|');
+  const f = S.fichas.find(x=>x.id===idFicha); if(!f) return;
+  const t = S.tokens.find(x=>x.id===f.tokenId); if(!t) return;
+  anunciarMovimiento(t, movsDe(t)[+i]);
+});
 
 /* ===================== CONFIRMACIÓN PROPIA ===================== */
 let confResolver = null;
@@ -4188,7 +4509,7 @@ $('#sala').value=hp.get('sala')||''; $('#nombre').value=hp.get('nombre')||'';
 yo=$('#nombre').value.trim();
 fijarRol(hp.get('dm')==='1');
 $('#capaNiebla').style.pointerEvents='none';
-pintaDados(); formu(); pintar();
+pintaDados(); formu(); llenarListaObjetos(); pintar();
 if(SUPABASE_URL && SUPABASE_KEY && window.supabase){
   sb = window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
   // Primero la cuenta y la partida, después la sala: así nadie se anuncia sin nombre

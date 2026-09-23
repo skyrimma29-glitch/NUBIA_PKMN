@@ -290,6 +290,9 @@ tr,.punto,.npc{transition:background .14s}
   </div>
 </footer>
 
+<script src="nubia-config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="nubia-editor.js"></script>
 <script>
 /* ============================================================
    DATOS — edita libremente. Los mapas son cadenas de texto.
@@ -329,7 +332,7 @@ const LOC = [
    'TTTTTTTTTTTTTTTTTTTTTT'],
   clave:['Laboratorio Ceiba (★): entrega de iniciales y de la Pokédex de Nubia.','El Vagón: un vagón de tren varado al sur, refugio de Pokémon pequeños.','Muelle de la ciénaga: salida a la Ruta 1 en canoa si el grupo no quiere caminar.'],
   npcs:[
-    {n:1,nom:'Yuli Barraza',cls:'Colegiala',act:'Trece años, mochila más grande que ella. Quiere irse de viaje y sus papás no la dejan todavía.',dial:'¿Vas pa\' Ciudad Cumbia? Cuando llegues me mandas foto del gimnasio, ¿sí? Dicen que allá se pelea con tirando champeta.'},
+    {n:1,nom:'Yuli Barraza',cls:'Colegiala',act:'Trece años, mochila más grande que ella. Quiere irse de viaje y sus papás no la dejan todavía.',dial:'¿Vas pa\' Ciudad Cumbia? Cuando llegues me mandas foto del gimnasio, ¿sí? Dicen que allá se pelea con tambor.'},
     {n:2,nom:'Profesora Ceiba Mendoza',cls:'Investigadora regional',act:'Cincuentona, botas embarradas, jamás está en el laboratorio sentada. Directa y sin ceremonia.',dial:'Aquí no se estudia al Pokémon en jaula. Se estudia caminando. Toma tu compañero y camina.'},
     {n:3,nom:'Mateo Ariza',cls:'Escarabajo de Ruta',act:'Ciclista adolescente que entrena subiendo la loma del pueblo diez veces al día. Competitivo pero noble.',dial:'Si subes la Sierra sin piernas te devuelves llorando. Yo llevo tres meses subiendo esa loma. Te reto a la Ruta 1.'},
     {n:4,nom:'Don Chepe',cls:'Cacharrero',act:'Dueño de la tienda. Vende Poké Balls, pilas, cordones y confianza. Siempre da ñapa.',dial:'Llévate dos Poké Balls y te doy la tercera de ñapa, mijo. Pero eso sí: la ñapa no se pide, se gana.'},
@@ -364,7 +367,7 @@ const LOC = [
     {n:1,nom:'Sara Iriarte',cls:'Bailadora de Cumbia',act:'Ensaya en el balcón de su casa a las seis de la mañana. Amable, hiperactiva, habla con las manos.',dial:'Mi Pokémon no aprende movimientos: aprende pasos. Míralo. Uno, dos, tres… ¡y golpe!'},
     {n:2,nom:'Tico Zambrano',cls:'Mototaxista',act:'Conoce cada hueco de la ciudad. Cobra barato y habla el triple de lo que cobra.',dial:'Te llevo a cualquier barrio por dos monedas. Si cae el arroyo son cuatro, y ahí sí te agarras duro.'},
     {n:3,nom:'"Chelo" Ospino',cls:'Locutor Deportivo',act:'Transmite combates callejeros en vivo desde una cabina de lata. Dramático hasta para pedir agua.',dial:'¡En vivo desde el malecón! Dime tu nombre, novato, que si ganas te lo pongo en la radio y si pierdes también.'},
-    {n:4,nom:'Yamila Carrasquilla',cls:'Líder de Gimnasio · Eléctrico',act:'La Champetera Electríca. Bailarina de comparsa y líder. Se ríe mientras te derrota.',dial:'En Nubia se pelea con ritmo, corazón. Si pierdes el compás, pierdes el combate.'},
+    {n:4,nom:'Yamila Carrasquilla',cls:'Líder de Gimnasio · Eléctrico',act:'La Marimonda. Bailarina de comparsa y líder. Se ríe mientras te derrota.',dial:'En Nubia se pelea con ritmo, corazón. Si pierdes el compás, pierdes el combate.'},
     {n:5,nom:'Ing. Ramiro Ospina',cls:'Alto Mando · Tierra (visitante)',act:'Ingeniero de canales, mide arroyos con un teodolito. Serio, paciente, mide antes de hablar.',dial:'La gente le tiene miedo al agua que baja. Yo le tengo respeto al suelo que se la lleva. Ese es mi trabajo.'}],
   ganchos:['Un arroyo repentino deja atrapados a tres Pokémon y a un niño en un techo. Es una escena de rescate con tiradas de Atletismo, no de combate.','En el muelle 4 cargan cajas de "café" a medianoche. Ningún camión de café necesita respiraderos.']
 },
@@ -699,8 +702,8 @@ const CLASES = [
 ];
 
 const LIDERES = [
-  {n:'1',ciu:'Ciudad Cumbia',tipo:'Eléctrico',col:'#e6b800',nom:'Yamila Carrasquilla, "La Champetera Electríca"',med:'Medalla Tambora',
-   ret:'Tarima de baile con placas de presión. Hay que pisarlas siguiendo el patrón de una tambora (prueba de Interpretación o Perspicacia) antes de que la tarima se energice.',
+  {n:'1',ciu:'Ciudad Cumbia',tipo:'Eléctrico',col:'#e6b800',nom:'Yamila Carrasquilla, "La Marimonda"',med:'Medalla Tambora',
+   ret:'Tarima de carnaval con placas de presión. Hay que pisarlas siguiendo el patrón de una tambora (prueba de Interpretación o Perspicacia) antes de que la tarima se energice.',
    dial:'En Nubia se pelea con ritmo, corazón. Si pierdes el compás, pierdes el combate.'},
   {n:'2',ciu:'Ciudad Muralla',tipo:'Roca',col:'#a08055',nom:'Baltasar Corales',med:'Medalla Baluarte',
    ret:'Dentro del fuerte: bloques de piedra coralina que se empujan para abrir el camino. Acertijo de empuje con un número limitado de movimientos.',
@@ -934,6 +937,8 @@ function pinta(id){
         </div>`).join('')}</div>
     </div>
   </div>`;
+
+  if(window.NubiaEditor) window.NubiaEditor.marcar($('#ficha'), 'loc:'+L.id);
 
   $('#ficha').querySelectorAll('.t.npc').forEach(t=>t.onclick=()=>{
     const n=t.dataset.n;

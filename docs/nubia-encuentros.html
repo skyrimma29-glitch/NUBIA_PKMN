@@ -183,6 +183,9 @@ tr,.punto,.npc{transition:background .14s}
   Las ilustraciones se consultan en vivo a <code>pokeapi.co</code>. Si no hay internet, el tirador funciona igual y solo se queda sin imagen.
 </div></footer>
 
+<script src="nubia-config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="nubia-editor.js"></script>
 <script>
 /* ==========================================================================
    TABLAS — aquí va tu contenido. Cada zona tiene:
@@ -350,5 +353,6 @@ $('#cerrarJson').onclick = ()=> $('#cajaJSON').style.display='none';
 
 pintar();
 </script>
+<script>addEventListener("load",()=>{ if(window.NubiaEditor) window.NubiaEditor.marcar(document.querySelector("main"), "encuentros"); });</script>
 </body>
 </html>
