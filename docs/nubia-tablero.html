@@ -496,6 +496,37 @@ body.herr-abierta #cajonHerr{display:flex;transform:none}
 .item .movs2 button:hover{background:var(--mar);color:#fff}
 #movInfo{font-family:'Alegreya Sans',sans-serif;font-size:11px;color:var(--tinta-suave);margin:0 0 8px}
 
+/* ------------- tarjeta de perfil ------------- */
+#perfil{position:fixed;left:18px;top:50%;transform:translateY(-50%);z-index:96;
+  display:none;flex-direction:column;align-items:center;gap:9px;width:132px}
+body.conperfil #perfil{display:flex}
+body.lateral-abierto #perfil{opacity:.25;pointer-events:none}
+#perfil .marco{width:112px;height:112px;border-radius:50%;padding:4px;
+  background:linear-gradient(145deg,var(--oro),#b8770f);
+  box-shadow:0 7px 0 var(--sombra),0 12px 26px rgba(18,40,63,.25);
+  transition:transform .16s,box-shadow .16s}
+#perfil .marco:hover{transform:translateY(-3px);box-shadow:0 10px 0 var(--sombra),0 16px 30px rgba(18,40,63,.3)}
+#perfil .av{width:100%;height:100%;border-radius:50%;overflow:hidden;background:var(--tinta);
+  display:grid;place-items:center;cursor:pointer;border:3px solid var(--tinta)}
+#perfil .av img{width:100%;height:100%;object-fit:cover;image-rendering:auto}
+#perfil .av span{font-family:'Silkscreen',monospace;font-size:26px;color:var(--oro)}
+#perfil .nom{font-family:'Silkscreen',monospace;font-size:10px;text-align:center;
+  background:var(--tinta);color:var(--arena-hueso);padding:6px 9px;cursor:text;
+  max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  border:2px solid var(--oro)}
+#perfil .nom:hover{background:#1b3a58}
+#perfil input.nom{background:#fff;color:var(--tinta);text-align:center;border-color:var(--fucsia)}
+#perfil .pie{font-family:'Alegreya Sans',sans-serif;font-size:11px;color:var(--tinta-suave);text-align:center}
+
+body.enfoque #perfil{left:auto;right:18px;top:auto;bottom:16px;transform:none;width:78px;gap:6px;z-index:72}
+body.enfoque #perfil .marco{width:64px;height:64px;padding:3px;box-shadow:0 4px 0 var(--sombra)}
+body.enfoque #perfil .av span{font-size:15px}
+body.enfoque #perfil .nom{font-size:8px;padding:4px 6px}
+body.enfoque #perfil .pie{display:none}
+@media(max-width:1280px){#perfil{position:static;transform:none;width:auto;flex-direction:row;
+  margin-bottom:14px;align-items:center}
+  #perfil .marco{width:64px;height:64px}}
+
 /* ------------- acordeones ------------- */
 .acc{background:var(--arena-hueso);border:3px solid var(--tinta);box-shadow:5px 5px 0 var(--sombra);margin-bottom:13px}
 .acc>summary{list-style:none;cursor:pointer;font-family:'Silkscreen',monospace;font-size:11px;
@@ -538,7 +569,9 @@ body.herr-abierta #cajonHerr{display:flex;transform:none}
   font-family:'Silkscreen',monospace;font-size:11px;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.65);
   box-shadow:0 2px 0 rgba(0,0,0,.35);background-clip:padding-box}
 .tk .rd{position:absolute;inset:0;border-radius:50%;overflow:hidden;display:grid;place-items:center}
-.tk img{width:112%;height:112%;object-fit:contain}
+.tk img{width:112%;height:112%;object-fit:contain;image-rendering:auto}
+.tk .rd img{width:100%;height:100%;object-fit:cover}
+.tk.pk .rd img{width:112%;height:112%;object-fit:contain}
 .tk.arrastrando{cursor:grabbing;z-index:30;box-shadow:0 9px 15px rgba(0,0,0,.42);transform:scale(1.09)}
 .tk.mio{border-color:var(--oro)}
 .tk.sel{outline:3px solid var(--fucsia);outline-offset:2px}
@@ -984,6 +1017,13 @@ footer code{background:#1c3a56;padding:2px 5px;color:#cfe0e6}
   </div>
 </aside>
 
+<div id="perfil">
+  <div class="marco"><div class="av" id="perfilAv" title="Cambiar la foto"></div></div>
+  <div class="nom" id="perfilNom">—</div>
+  <div class="pie" id="perfilPie"></div>
+</div>
+<input id="perfilFoto" type="file" accept="image/*" style="display:none">
+
 <div id="railIzq"></div>
 <div id="railDer"></div>
 <div id="cajonHerr">
@@ -1138,6 +1178,7 @@ const MAPAS = {
 },
 'Rutas':{
  'Ruta 1 · Mangal':['TTTTTTTTTT~~~~~~~~~~TTTTTTTTTT','E,,,,hhhhh,,,,,,,,,,hhh,,,,,,E',',,,,,h1hhh,,,,2,,,,,hhh,,,3,,,','..T...hhh...T....T..hhh.......','..T....!....T....T.....T...4..','hhh.........,,,,,,.....T......','hhhh........,,,,,,...hhh......','TThhh.......~~~~~~...hhh...TTT','TTTTTTTTTT~~~~~~~~~~TTTTTTTTTT'],
+ 'Bahía Fundación':['TTTTTTTETTTTTTT','sssssssssssssss','sssssssssssssss','~~~~~~~~~~~~~~~','~~~~~~PPP~~~~~~','~~~~~~PPP~~hh~E','~~~~~~~~~~~hhh~','~~bb~~~~~~~hhh~','~~bb~~~~~~~~~~~','~~~~~~~~~~~~~~~','sssssssssssssss','sssssssEsssssss'],
  'Ruta 2 · Dunas':['~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~','~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~','~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~','shsssss1sssshssshssss3ssssssssss','s,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,E','s,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,T','shsshssssssshsss,ssshsssssssssss','E,,,ThssssssTs2T,ssshTsTsss4sshs','sssshsssshsshssh,ssshsssshssssss','hssshssssssssssssssssssssshshsss','TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT','TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT'],
  'Ruta 2-1 Rocosos':['^^^^^^^^^^^^^^^E^^^^^^^^^^^^^^','^^^^^^^^^^^^^^^,^^^^^^^^^^^^^^','^^,,,,,,,,,,,,,,,,,,,,,,,,,,^^','^^,,,,,,,,,,,,,,,,,,,,,,,,,,^^','^^,,^^,,,,^^,,,,^^,,,,^^,,,,^^','^^,,^^,,,,^^x,,,^^,,,,^^,,,,^^','^^,,,,,,,,,,,,,,,,,,,,,,,,,,^^','^^,,,,,,,,,,,,,,,,,,,,,,,,,,^^','^^,,,,,,,,,,,,,,,,,,,,,,,,,,^^','^^,,,,,,,,,,,,,,,,,,,,,,,,,,^^','^^,,^^,,,,^^,,,,^^,,,,^^,,,,^^','^^,,^^,,,,^^,,,,^^,,,,^^,,,,^^','E,,,,,,,,,,,,,,,,,,,,x,,,,,,,E','^^,,,,,,,,x,,,,,,,,,,,,,,,,,^^','^^,,,,,,,x,,,,,,,,,,,,,,,,,,^^','^^,,,,,,,,,,,,,,,,,,,,,,,,,,^^','^^,,^^,,,,^^,,,,^^,,,,^^,,,,^^','^^,,^^,,,,^^,,,,^^,,,,^^,,,,^^','^^,,,,,,,,,,,,,,,,,,,,,,,,,,^^','^^,,,,,,,,,,,,,,,,,,,,,,,,,,^^','^^,,,,,,,,,,,,,,,,,,x,,,,,,,^^','^^,,,,,,,,,,,,,,,,,,,,,,,,,,^^','^^,,,,,,,,,,,,,,,,,,,,,,,,,,^^','^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^','^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^'],
  'Ruta 3 · Sabana':['TTTTTETTTTTT','T....,,....T','T....,,.hh.T','T...h,,....T','T...h,,....T','T..1.,,....T','T....,,....T','T.h..,,....T','T.,,,,,,,,hT','T..hh,,.2..T','T....,,....T','T.###,,.##.T','T.###,,h##.T','Th###,,.##.T','T....,,h...T','T..h.,,....T','T..3h,,....T','T.,,,,,,,,.T','T....,,...hT','Th...,,..h.T','T....,,....T','T....,,.4.hT','T....,,....T','Thh.h,,....T','T....,,..hhT','TTTTTTETTTTT'],
@@ -1170,6 +1211,7 @@ const MAPAS = {
  'Liga Nubia':['^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^','^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^','^^####################################^^','^^####################################^^','^^##================================##^^','^^##================================##^^','^^##==######================######==##^^','^^##==#LLLL#================#LLLL#==##^^','^^##==#LLLL#================#LLLL#==##^^','^^##==#LLLL#================#LLLL#==##^^','^^##==#LLLL#================#LLLL#==##^^','^^##==######================######==##^^','^^##================================##^^','^^##================================##^^','^^##============nnn==nnn============##^^','^^##============nnn==nnn============##^^','^^##============nnn==nnn============##^^','^^##============nni==inn============##^^','^^##============nni==inn============##^^','^^##================================##^^','^^##================================##^^','^^##============nni==inn============##^^','^^##============nni==inn============##^^','^^##============nnn==nnn============##^^','^^##============nnn==nnn============##^^','^^##============nnn==nnn============##^^','^^##================================##^^','^^##================================##^^','^^##==######================######==##^^','^^##==#LLLL#================#LLLL#==##^^','^^##==#LLLL#================#LLLL#==##^^','^^##==#LLLL#================#LLLL#==##^^','^^##==#LLLL#================#LLLL#==##^^','^^##==######================######==##^^','^^##================================##^^','^^##================================##^^','^^#################=##################^^','^^#################=##################^^','^^^^^^^^^^^^^^^^^^^=^^^^^^^^^^^^^^^^^^^^','^^^^^^^^^^^^^^^^^^^E^^^^^^^^^^^^^^^^^^^^'],
  'Hall de la Fama':['####################','#==================#','#=======LLLL=======#','#=======LLLL=======#','#=======LLLL=======#','#========nn========#','#==##==##nn##==##==#','#==##==##nn##==##==#','#========nn========#','#========nn========#','#==##==##nn##==##==#','#==##==##nn##==##==#','#========nn========#','#========nn========#','#========nn========#','#########E##########'],
  'Torre Café Dorado':['################','#==============#','#====DDDDDD====#','#====DDD1DD====#','#====DDDDDD====#','#==============#','#==============#','#=####====####=#','#=####====####=#','#=##2#====#3##=#','#=####====####=#','#==============#','#=======4======#','########E#######'],
+ 'Central Eléctrica Cumbia':['#########################','#=======================#','#=####=============####=#','#=#LL#=============#LL#=#','#=#LL#=============#LL#=#','#=####=============####=#','#=======================#','#=======================#','#======##=======##======#','#======##=======##======#','#=========#####=========#','#=========#GGG#=========#','#=====xx==#GGG#==xx=====#','#=====xx==#GGG#==xx=====#','#=========#####=========#','#=======================#','#======##=======##======#','#======##=======##======#','#=======================#','#=####=============####=#','#=#LL#=============#LL#=#','#=#LL#=============#LL#=#','#=####=============####=#','#=======================#','############E############'],
  'Laboratorio Ceiba':['################','#==============#','#=###=LLLL=###=#','#=###=LLLL=###=#','#=###======###=#','#=======1======#','#==2========3==#','#=###======###=#','#=###======###=#','#=###===4==###=#','#==============#','########E#######'],
  'Bodega Mayor':['####################','#==================#','#===============DDD#','#==##===##===##=DDD#','#==##===##===##=D3D#','#==##===##===##=DDD#','#==##===##===##====#','#==##=1=##=2=##====#','#==##===##===##====#','#==##===##===##====#','#==##===##===##=xxx#','#===============xxx#','#===============x4x#','#===============xxx#','#==================#','######E#############'],
  'Museo del Oro':['##################','#================#','#================#','#==##========##==#','#==##========##==#','#======LLLL======#','#===2==LLLL===3==#','#======LL1L======#','#======LLLL======#','#==##========##==#','#==##========##==#','#========4=======#','#================#','#########E########'],
@@ -1203,6 +1245,8 @@ const MAPAS = {
    Al cargar el esquema desde el desplegable, su imagen entra sola.
    ===================================================================== */
 const MAPAS_IMG = {
+  'Bahía Fundación': '',
+  'Central Eléctrica Cumbia': '',
   'Pueblo Fundación': '',
   'Ciudad Cumbia': '',
   'Ciudad Muralla': '',
@@ -1382,7 +1426,7 @@ function dibujarTokens(){
       const ini = (t.nombre||'?').slice(0,2).toUpperCase();
       const cond = t.cond||[];
       const anillo = cond.length ? `;box-shadow:0 0 0 3px ${COLCOND[cond[0]]||'#fff'},0 2px 0 rgba(0,0,0,.35)` : '';
-      return `<div class="tk ${mio?'mio':''} ${sel===t.id?'sel':''}" data-id="${t.id}"
+      return `<div class="tk ${mio?'mio':''} ${t.especie?'pk':''} ${sel===t.id?'sel':''}" data-id="${t.id}"
         style="width:${(1/w)*100}%;height:${(1/h)*100}%;background:${t.color}${anillo}">
         <span class="rd">${t.img?`<img src="${t.img}" alt="">`:esc(ini)}</span>
         ${cond.length?`<span class="cnd">${cond.map(c=>`<i style="background:${COLCOND[c]||'#fff'}" title="${c}"></i>`).join('')}</span>`:''}
@@ -1545,6 +1589,7 @@ function pintar(){
   pintarMochila();
   pintarCatalogo();
   pintarRailes();
+  pintarPerfil();
   actualizarBotonTraerJugadoresPokemon();
 }
 
@@ -1788,10 +1833,14 @@ function reducir(file){
   return new Promise(res=>{
     const fr=new FileReader();
     fr.onload=()=>{ const im=new Image();
-      im.onload=()=>{ const cv=document.createElement('canvas'); cv.width=cv.height=96;
+      im.onload=()=>{
+        // 256 px y poca compresión: las fichas se ven nítidas incluso ampliadas
+        const L = 256;
+        const cv=document.createElement('canvas'); cv.width=cv.height=L;
         const g=cv.getContext('2d'), l=Math.min(im.width,im.height);
-        g.drawImage(im,(im.width-l)/2,(im.height-l)/2,l,l,0,0,96,96);
-        res(cv.toDataURL('image/jpeg',.8)); };
+        g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high';
+        g.drawImage(im,(im.width-l)/2,(im.height-l)/2,l,l,0,0,L,L);
+        res(cv.toDataURL('image/jpeg',.92)); };
       im.onerror=()=>res(''); im.src=fr.result; };
     fr.onerror=()=>res(''); fr.readAsDataURL(file);
   });
@@ -2500,6 +2549,8 @@ function mostrarObjeto(k){
 
 /* ---------- mapa emergente de la región ---------- */
 const UBIC = {
+ 'Bahía Fundación':[560,246],
+ 'Central Eléctrica Cumbia':[388,258],
  'Pueblo Fundación':[540,270],
  'Ciudad Cumbia':[400,270],
  'Ciudad Muralla':[255,335],
@@ -3324,6 +3375,81 @@ function sacarPokemonNpc(idNpc, i, x, y){
   pintar(); enviar('estado', S);
 }
 
+
+
+/* ===================== TARJETA DE PERFIL ===================== */
+/* Muestra la foto y el nombre del personaje del jugador. La foto se guarda
+   en la ficha, así que sobrevive a los cambios de escenario y de sesión.
+   Si nadie sube una, se queda con las iniciales y no pasa nada. */
+function pintarPerfil(){
+  const c = $('#perfil'); if(!c) return;
+  const f = miFicha();
+  document.body.classList.toggle('conperfil', !!f);
+  if(!f) return;
+  const t = S.tokens.find(x=>x.id===f.tokenId);
+  const img = f.img || (t && t.img) || '';
+  const ini = (f.nombre||'?').slice(0,2).toUpperCase();
+  const av = $('#perfilAv');
+  av.style.background = t ? (t.color||'#12283f') : '#12283f';
+  av.innerHTML = img ? `<img src="${img}" alt="">` : `<span>${esc(ini)}</span>`;
+  const n = $('#perfilNom');
+  if(n.tagName !== 'INPUT') n.textContent = f.nombre || '—';
+  $('#perfilPie').textContent = `${f.pv} / ${f.pvMax} PS`;
+}
+
+/* ---------- cambiar la foto ---------- */
+$('#perfilAv').onclick = ()=> $('#perfilFoto').click();
+$('#perfilFoto').onchange = async ()=>{
+  const arch = $('#perfilFoto').files[0]; if(!arch) return;
+  const f = miFicha(); if(!f) return;
+  $('#perfilAv').innerHTML = '<span>…</span>';
+  // Con cuenta va al almacenamiento y queda para siempre; sin cuenta,
+  // se guarda dentro de la partida como imagen incrustada.
+  const url = (await subirImagen(arch,'fichas')) || (await reducir(arch));
+  $('#perfilFoto').value = '';
+  if(!url){ pintarPerfil(); return; }
+  f.img = url;
+  const t = S.tokens.find(x=>x.id===f.tokenId);
+  if(t) t.img = url;
+  pintar();
+  if(soyDM) enviar('estado', S);
+  else { if(t) enviar('tokenUpd', t); enviar('ficha', f); }
+  anotar(`<b>${esc(f.nombre)}</b> cambia su retrato`, false);
+};
+
+/* ---------- cambiar el nombre ---------- */
+$('#perfilNom').onclick = function(){
+  const f = miFicha(); if(!f || this.tagName === 'INPUT') return;
+  const campo = document.createElement('input');
+  campo.className = 'nom'; campo.id = 'perfilNom';
+  campo.maxLength = 18; campo.value = f.nombre || '';
+  this.replaceWith(campo);
+  campo.focus(); campo.select();
+  const cerrar = guardar=>{
+    const nuevo = campo.value.trim();
+    const caja = document.createElement('div');
+    caja.className = 'nom'; caja.id = 'perfilNom';
+    caja.textContent = (guardar && nuevo) ? nuevo : (f.nombre || '—');
+    campo.replaceWith(caja);
+    caja.onclick = $('#perfilNom').onclick;
+    if(guardar && nuevo && nuevo !== f.nombre){
+      const antes = f.nombre;
+      f.nombre = nuevo;
+      const t = S.tokens.find(x=>x.id===f.tokenId);
+      if(t) t.nombre = nuevo;
+      anotar(`<b>${esc(antes)}</b> ahora se llama <b>${esc(nuevo)}</b>`);
+      pintar();
+      if(soyDM) enviar('estado', S);
+      else { if(t) enviar('tokenUpd', t); enviar('ficha', f); }
+    }
+    pintarPerfil();
+  };
+  campo.onblur = ()=> cerrar(true);
+  campo.onkeydown = e=>{
+    if(e.key === 'Enter'){ e.preventDefault(); campo.blur(); }
+    if(e.key === 'Escape'){ campo.onblur = null; cerrar(false); }
+  };
+};
 
 /* ===================== MOVIMIENTOS ===================== */
 /* PokéAPI da la lista completa de lo que cada especie puede aprender.

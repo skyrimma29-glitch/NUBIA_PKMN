@@ -1,179 +1,219 @@
 /* =====================================================================
    EDITOR DE TEXTOS DE NUBIA
-   Permite reescribir cualquier texto del códice, el atlas, los planos y
-   las tablas de encuentro. Los cambios se guardan en la cuenta de quien
-   los hace: los demás siguen viendo el texto original.
+   Reescribe cualquier texto del códice, el atlas, los planos y las tablas
+   de encuentro. Lo que cambies es tuyo: los demás siguen viendo el texto
+   original.
 
-   Requiere nubia-config.js y la librería de Supabase cargados antes,
-   y la tabla `textos` del archivo esquema.sql.
+   Con cuenta iniciada se guarda en Supabase y te sigue en cualquier
+   dispositivo. Sin cuenta se guarda en este navegador, para que puedas
+   trabajar igual mientras tanto.
    ===================================================================== */
 (function(){
   const CFG = window.NUBIA || {};
-  let sb = null, cuenta = null, editando = false;
-  const overrides = new Map();          // clave -> texto propio
-  const marcados  = new Map();          // clave -> {nodo, original}
+  const LLAVE = 'nubia-textos';
+  let sb = null, cuenta = null, editando = false, enNube = false;
+  const overrides = new Map();     // clave -> texto propio
+  const marcados  = new Map();     // clave -> {nodo, original}
 
-  /* ---------- estilos ---------- */
+  /* ---------------- estilos ---------------- */
   const css = document.createElement('style');
   css.textContent = `
-    #nbEditBar{position:fixed;right:16px;bottom:16px;z-index:200;display:flex;gap:8px;align-items:center}
-    #nbEditBar button{font-family:'Silkscreen',monospace;font-size:10px;padding:11px 13px;
+    #nbBar{position:fixed;right:16px;bottom:16px;z-index:300;display:flex;gap:8px;
+      align-items:flex-end;flex-direction:column}
+    #nbBar .fila{display:flex;gap:8px;align-items:center}
+    #nbBar button{font-family:'Silkscreen',monospace;font-size:10px;padding:11px 13px;
       border:3px solid #12283f;background:#fdf6e6;color:#12283f;cursor:pointer;
-      box-shadow:4px 4px 0 rgba(0,0,0,.28);transition:background .14s,transform .08s}
-    #nbEditBar button:hover{background:#fff}
-    #nbEditBar button:active{transform:translate(2px,2px);box-shadow:2px 2px 0 rgba(0,0,0,.28)}
-    #nbEditBar button.on{background:#c6386b;color:#fff;border-color:#12283f}
-    #nbEditBar .aviso{font-family:'Alegreya Sans',sans-serif;font-size:12px;background:#12283f;
-      color:#cfe0e6;padding:9px 12px;max-width:260px;line-height:1.4}
-    body.nb-editando [data-nbedit]{outline:2px dashed #c6386b;outline-offset:2px;
-      cursor:text;transition:background .12s}
-    body.nb-editando [data-nbedit]:hover{background:#fff3f7}
-    body.nb-editando [data-nbedit]:focus{outline:3px solid #c6386b;background:#fff}
-    [data-nbedit].nb-propio{background:#fff8e2;box-shadow:inset 3px 0 0 #e0951c}
+      box-shadow:4px 4px 0 rgba(0,0,0,.28)}
+    #nbBar button:hover{background:#fff}
+    #nbBar button:active{transform:translate(2px,2px);box-shadow:2px 2px 0 rgba(0,0,0,.28)}
+    #nbBar button.on{background:#c6386b;color:#fff}
+    #nbEstado{font-family:'Alegreya Sans',sans-serif;font-size:11px;background:#12283f;
+      color:#cfe0e6;padding:7px 10px;max-width:280px;line-height:1.35}
+    body.nb-edit [data-nbedit]{outline:2px dashed #c6386b;outline-offset:3px;cursor:text}
+    body.nb-edit [data-nbedit]:hover{background:#fff1f5}
+    body.nb-edit [data-nbedit]:focus{outline:3px solid #c6386b;background:#fff}
+    [data-nbedit].nb-mio{box-shadow:inset 4px 0 0 #e0951c;background:#fffaee}
     #nbToast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(18px);
-      z-index:210;background:#2e7d4f;color:#fff;font-family:'Silkscreen',monospace;font-size:10px;
+      z-index:310;background:#2e7d4f;color:#fff;font-family:'Silkscreen',monospace;font-size:10px;
       padding:11px 16px;border:3px solid #12283f;opacity:0;pointer-events:none;
       transition:opacity .2s,transform .2s}
     #nbToast.ver{opacity:1;transform:translateX(-50%)}
-    @media (prefers-reduced-motion:reduce){#nbEditBar button,#nbToast{transition:none}}`;
-  document.head.appendChild(css);
+    @media (prefers-reduced-motion:reduce){#nbToast{transition:none}}`;
+  (document.head || document.documentElement).appendChild(css);
 
+  /* ---------------- barra ---------------- */
   const barra = document.createElement('div');
-  barra.id = 'nbEditBar';
-  barra.innerHTML = `<span class="aviso" id="nbAviso" style="display:none"></span>
-    <button id="nbRestaurar" style="display:none">RESTAURAR</button>
-    <button id="nbEditar">EDITAR TEXTOS</button>`;
+  barra.id = 'nbBar';
+  barra.innerHTML = `<div id="nbEstado">Cargando…</div>
+    <div class="fila">
+      <button id="nbRestaurar" style="display:none">RESTAURAR</button>
+      <button id="nbEditar">EDITAR TEXTOS</button>
+    </div>`;
   const toast = document.createElement('div');
   toast.id = 'nbToast';
-  addEventListener('DOMContentLoaded', ()=>{
-    document.body.appendChild(barra);
-    document.body.appendChild(toast);
-  });
 
-  let toastT = null;
+  function montar(){
+    if(document.body && !document.getElementById('nbBar')){
+      document.body.appendChild(barra);
+      document.body.appendChild(toast);
+      estado();
+    }
+  }
+  if(document.body) montar(); else addEventListener('DOMContentLoaded', montar);
+
+  let tT = null;
   function avisar(txt){
     toast.textContent = txt; toast.classList.add('ver');
-    clearTimeout(toastT); toastT = setTimeout(()=>toast.classList.remove('ver'), 2200);
+    clearTimeout(tT); tT = setTimeout(()=>toast.classList.remove('ver'), 2200);
+  }
+  function estado(){
+    const n = document.getElementById('nbEstado'); if(!n) return;
+    const propios = [...marcados.keys()].filter(k=>overrides.has(k)).length;
+    n.textContent = (enNube
+      ? 'Tus textos se guardan en tu cuenta.'
+      : 'Sin cuenta: tus textos se guardan solo en este navegador.')
+      + (propios ? ' ' + propios + ' cambiados aquí.' : '');
+    const r = document.getElementById('nbRestaurar');
+    if(r){ r.style.display = propios ? '' : 'none'; r.textContent = 'RESTAURAR ' + propios; }
   }
 
-  /* ---------- conexión ---------- */
-  async function iniciar(){
-    if(!CFG.SUPABASE_URL || !CFG.SUPABASE_KEY || !window.supabase) return;
-    sb = window.supabase.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_KEY);
-    const { data:{ session } } = await sb.auth.getSession();
-    cuenta = session?.user || null;
-    sb.auth.onAuthStateChange((_e, s)=>{ if(s?.user && !cuenta){ cuenta = s.user; cargar(); } });
-    if(cuenta) await cargar();
+  /* ---------------- almacenamiento ---------------- */
+  function local(){
+    try{ return JSON.parse(localStorage.getItem(LLAVE) || '{}'); }catch{ return {}; }
+  }
+  function guardarLocal(){
+    try{ localStorage.setItem(LLAVE, JSON.stringify(Object.fromEntries(overrides))); }catch{}
   }
   async function cargar(){
-    if(!sb || !cuenta) return;
-    const { data } = await sb.from('textos').select('clave,valor').eq('jugador', cuenta.id);
-    (data||[]).forEach(r => overrides.set(r.clave, r.valor));
-    // se aplica a lo que ya esté marcado en pantalla
-    marcados.forEach((m, clave)=>{ if(overrides.has(clave)) aplicar(clave); });
+    Object.entries(local()).forEach(([k,v])=>overrides.set(k,v));
+    if(sb && cuenta){
+      try{
+        const { data, error } = await sb.from('textos').select('clave,valor').eq('jugador', cuenta.id);
+        if(!error){
+          enNube = true;
+          (data||[]).forEach(r=>overrides.set(r.clave, r.valor));
+        }
+      }catch{}
+    }
+    marcados.forEach((_,k)=>aplicar(k));
+    estado();
   }
   async function guardar(clave, valor){
-    if(!sb || !cuenta) return false;
-    const { error } = await sb.from('textos')
-      .upsert({ jugador: cuenta.id, clave, valor }, { onConflict:'jugador,clave' });
-    return !error;
+    overrides.set(clave, valor);
+    guardarLocal();
+    if(enNube){
+      try{
+        const { error } = await sb.from('textos')
+          .upsert({ jugador: cuenta.id, clave, valor }, { onConflict:'jugador,clave' });
+        if(error) return 'Guardado solo en este navegador';
+      }catch{ return 'Guardado solo en este navegador'; }
+      return 'Guardado en tu cuenta';
+    }
+    return 'Guardado en este navegador';
   }
-  async function borrar(clave){
-    if(!sb || !cuenta) return false;
-    const { error } = await sb.from('textos').delete().eq('jugador', cuenta.id).eq('clave', clave);
-    return !error;
+  async function quitar(clave){
+    overrides.delete(clave);
+    guardarLocal();
+    if(enNube){
+      try{ await sb.from('textos').delete().eq('jugador', cuenta.id).eq('clave', clave); }catch{}
+    }
   }
 
+  async function iniciar(){
+    if(CFG.SUPABASE_URL && CFG.SUPABASE_KEY && window.supabase){
+      try{
+        sb = window.supabase.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_KEY);
+        const ses = await sb.auth.getSession();
+        cuenta = (ses && ses.data && ses.data.session && ses.data.session.user) || null;
+        sb.auth.onAuthStateChange(function(_e, s){
+          if(s && s.user && !cuenta){ cuenta = s.user; cargar(); }
+        });
+      }catch{}
+    }
+    await cargar();
+  }
+
+  /* ---------------- marcado ---------------- */
   function aplicar(clave){
-    const m = marcados.get(clave); if(!m) return;
+    const m = marcados.get(clave); if(!m || !m.nodo.isConnected) return;
     if(overrides.has(clave)){
       m.nodo.innerHTML = overrides.get(clave);
-      m.nodo.classList.add('nb-propio');
+      m.nodo.classList.add('nb-mio');
     } else {
       m.nodo.innerHTML = m.original;
-      m.nodo.classList.remove('nb-propio');
+      m.nodo.classList.remove('nb-mio');
     }
   }
 
-  /* ---------- marcar lo editable ---------- */
-  const SELECTOR = 'p, li, blockquote, h2, h3, h4, h5, .desc, .act, .sub, .notas, .nom, td, summary, .cl';
-  /* Marca todos los textos de un contenedor. El prefijo debe ser estable
-     entre repintados: así el mismo párrafo conserva su clave. */
-  function marcar(contenedor, prefijo){
-    if(!contenedor) return;
-    let i = 0;
-    contenedor.querySelectorAll(SELECTOR).forEach(n=>{
-      if(n.querySelector(SELECTOR)) return;           // solo las hojas del árbol
-      const txt = (n.textContent||'').trim();
+  const SELECTOR = 'p, li, blockquote, h1, h2, h3, h4, h5, td, th, summary, '
+                 + 'dd, dt, figcaption, .desc, .act, .dial, .sub, .nota, .cl, .lead';
+  /* Marca los textos de un contenedor. El prefijo debe ser estable entre
+     repintados para que el mismo párrafo conserve su clave. `excluir` deja
+     fuera las zonas que se repintan con su propio prefijo. */
+  function marcar(contenedor, prefijo, excluir){
+    if(!contenedor) return 0;
+    let i = 0, n = 0;
+    contenedor.querySelectorAll(SELECTOR).forEach(function(nodo){
+      if(nodo.closest('#nbBar')) return;
+      if(excluir && nodo.closest(excluir)) return;
+      if(nodo.querySelector(SELECTOR)) return;             // solo las hojas
+      const txt = (nodo.textContent||'').trim();
       if(txt.length < 3) return;
       const clave = prefijo + ':' + (i++);
-      n.setAttribute('data-nbedit', clave);
-      n.setAttribute('spellcheck', 'false');
-      marcados.set(clave, { nodo:n, original:n.innerHTML });
-      if(editando) n.setAttribute('contenteditable', 'true');
+      nodo.setAttribute('data-nbedit', clave);
+      nodo.setAttribute('spellcheck','false');
+      if(!marcados.has(clave) || marcados.get(clave).nodo !== nodo)
+        marcados.set(clave, { nodo: nodo, original: nodo.innerHTML });
+      if(editando) nodo.setAttribute('contenteditable','true');
       aplicar(clave);
+      n++;
     });
-    refrescarBarra();
+    estado();
+    return n;
   }
 
-  function refrescarBarra(){
-    const b = document.getElementById('nbRestaurar');
-    if(!b) return;
-    const propios = [...marcados.keys()].filter(k=>overrides.has(k)).length;
-    b.style.display = propios ? '' : 'none';
-    b.textContent = 'RESTAURAR ' + propios;
-  }
-
-  /* ---------- modo edición ---------- */
+  /* ---------------- modo edición ---------------- */
   function alternar(){
-    if(!cuenta){
-      const a = document.getElementById('nbAviso');
-      a.style.display = '';
-      a.textContent = 'Entra con tu cuenta desde el menú para guardar tus propios textos. '
-                    + 'Los cambios sin cuenta no se guardan.';
-      setTimeout(()=>{ a.style.display='none'; }, 6000);
-      return;
-    }
     editando = !editando;
-    document.body.classList.toggle('nb-editando', editando);
+    document.body.classList.toggle('nb-edit', editando);
     const b = document.getElementById('nbEditar');
     b.classList.toggle('on', editando);
-    b.textContent = editando ? 'TERMINAR EDICIÓN' : 'EDITAR TEXTOS';
-    marcados.forEach(m=>{
+    b.textContent = editando ? 'TERMINAR' : 'EDITAR TEXTOS';
+    marcados.forEach(function(m){
+      if(!m.nodo.isConnected) return;
       if(editando) m.nodo.setAttribute('contenteditable','true');
       else m.nodo.removeAttribute('contenteditable');
     });
-    if(editando) avisar('Toca cualquier texto y escribe');
+    avisar(editando ? 'Toca cualquier texto y escribe' : 'Edición terminada');
   }
 
-  document.addEventListener('focusout', async e=>{
-    if(!editando) return;
-    const n = e.target.closest?.('[data-nbedit]'); if(!n) return;
-    const clave = n.getAttribute('data-nbedit');
-    const m = marcados.get(clave); if(!m) return;
-    const valor = n.innerHTML.trim();
-    if(valor === m.original.trim()){
-      if(overrides.has(clave)){ overrides.delete(clave); await borrar(clave); }
-      n.classList.remove('nb-propio');
-    } else {
-      overrides.set(clave, valor);
-      n.classList.add('nb-propio');
-      avisar(await guardar(clave, valor) ? 'Guardado en tu cuenta' : 'No se pudo guardar');
-    }
-    refrescarBarra();
-  });
-
-  document.addEventListener('click', async e=>{
-    if(e.target.id === 'nbEditar'){ alternar(); return; }
-    if(e.target.id === 'nbRestaurar'){
+  document.addEventListener('click', async function(e){
+    if(e.target.closest('#nbEditar')){ alternar(); return; }
+    if(e.target.closest('#nbRestaurar')){
       const propios = [...marcados.keys()].filter(k=>overrides.has(k));
       if(!propios.length) return;
       if(!confirm('¿Devolver '+propios.length+' textos de esta pantalla a su versión original?')) return;
-      for(const k of propios){ overrides.delete(k); await borrar(k); aplicar(k); }
-      refrescarBarra(); avisar('Textos restaurados');
+      for(const k of propios){ await quitar(k); aplicar(k); }
+      estado(); avisar('Textos restaurados');
     }
   });
 
-  window.NubiaEditor = { marcar, get activo(){ return editando; } };
+  document.addEventListener('focusout', async function(e){
+    if(!editando) return;
+    const nodo = e.target && e.target.closest && e.target.closest('[data-nbedit]');
+    if(!nodo) return;
+    const clave = nodo.getAttribute('data-nbedit');
+    const m = marcados.get(clave); if(!m) return;
+    const valor = nodo.innerHTML.trim();
+    if(valor === m.original.trim()){
+      if(overrides.has(clave)){ await quitar(clave); nodo.classList.remove('nb-mio'); }
+    } else {
+      nodo.classList.add('nb-mio');
+      avisar(await guardar(clave, valor));
+    }
+    estado();
+  });
+
+  window.NubiaEditor = { marcar: marcar, get activo(){ return editando; } };
   iniciar();
 })();

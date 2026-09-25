@@ -997,6 +997,13 @@ $('#dorado-jefes').innerHTML=JEFES.map(l=>`
   </div>`).join('');
 
 $('#actos').innerHTML=ACTOS.map(([a,b])=>`<div class="card"><span class="cnom">${a}</span><p style="margin-top:8px">${b}</p></div>`).join('');
+/* Marca todo el documento para el editor de textos: pestañas, listas de
+   clases, gimnasios y actos. La ficha de localidad se marca aparte cada
+   vez que se repinta, con su propio prefijo. */
+addEventListener('load', ()=>{
+  if(!window.NubiaEditor) return;
+  window.NubiaEditor.marcar(document.querySelector('main') || document.body, 'codex', '#ficha');
+});
 </script>
 </body>
 </html>
