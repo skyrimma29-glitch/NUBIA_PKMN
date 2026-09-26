@@ -513,24 +513,24 @@ body.herr-abierta #cajonHerr{display:flex;transform:none}
 #movInfo{font-family:'Alegreya Sans',sans-serif;font-size:11px;color:var(--tinta-suave);margin:0 0 8px}
 
 /* ------------- tarjeta de perfil ------------- */
-#perfil{display:none;align-items:center;gap:12px;margin-bottom:15px;padding:12px;
+#perfil{display:none;align-items:center;gap:13px;margin-bottom:15px;padding:14px;
   background:var(--arena-hueso);border:3px solid var(--tinta);box-shadow:5px 5px 0 var(--sombra)}
 body.conperfil #perfil{display:flex}
-#perfil .marco{width:72px;height:72px;border-radius:50%;padding:3px;flex:0 0 auto;
+#perfil .marco{width:94px;height:94px;border-radius:50%;padding:4px;flex:0 0 auto;
   background:linear-gradient(145deg,var(--oro),#b8770f);
   box-shadow:0 4px 0 var(--sombra);transition:transform .16s,box-shadow .16s}
 #perfil .marco:hover{transform:translateY(-2px);box-shadow:0 6px 0 var(--sombra)}
 #perfil .av{width:100%;height:100%;border-radius:50%;overflow:hidden;background:var(--tinta);
   display:grid;place-items:center;cursor:pointer;border:3px solid var(--tinta)}
 #perfil .av img{width:100%;height:100%;object-fit:cover;image-rendering:auto}
-#perfil .av span{font-family:'Silkscreen',monospace;font-size:18px;color:var(--oro)}
+#perfil .av span{font-family:'Silkscreen',monospace;font-size:24px;color:var(--oro)}
 #perfil .datos{min-width:0;flex:1}
-#perfil .nom{font-family:'Silkscreen',monospace;font-size:10px;cursor:text;
+#perfil .nom{font-family:'Silkscreen',monospace;font-size:11px;cursor:text;
   background:var(--tinta);color:var(--arena-hueso);padding:6px 8px;border:2px solid var(--oro);
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block}
 #perfil .nom:hover{background:#1b3a58}
 #perfil input.nom{background:#fff;color:var(--tinta);border-color:var(--fucsia);width:100%}
-#perfil .pie{font-family:'Alegreya Sans',sans-serif;font-size:12px;color:var(--tinta-suave);
+#perfil .pie{font-family:'Silkscreen',monospace;font-size:11px;color:var(--selva);
   margin-top:5px;text-align:center}
 
 /* En enfoque se va sola a la esquina de abajo a la izquierda, bajo el raíl */
@@ -1616,6 +1616,7 @@ function pintar(){
   pintarMochila();
   pintarCatalogo();
   pintarRailes();
+  moverPerfil();
   pintarPerfil();
   actualizarBotonTraerJugadoresPokemon();
 }
@@ -2492,8 +2493,8 @@ $('#capTirar').onclick=()=>{
 function alternarEnfoque(){
   if(document.body.classList.contains('enfoque')) cerrarHerramienta();
   document.body.classList.toggle('enfoque');
-  moverPerfil();
   pintarRailes();
+  moverPerfil();
   $('#enfoque').classList.toggle('on', document.body.classList.contains('enfoque'));
 }
 $('#enfoque').onclick=alternarEnfoque;
@@ -3407,13 +3408,37 @@ function sacarPokemonNpc(idNpc, i, x, y){
 
 /* La columna izquierda se oculta en modo enfoque, así que la tarjeta sale
    de ella y se cuelga del documento; al volver regresa a su hueco. */
+const PERFIL_HTML = `
+  <div class="marco"><div class="av" id="perfilAv" title="Cambiar la foto"></div></div>
+  <div class="datos">
+    <div class="nom" id="perfilNom">—</div>
+    <div class="pie" id="perfilPie"></div>
+  </div>`;
+
+/* Si un repintado se llevó la tarjeta por delante, se rehace.
+   Sus botones van por delegación, así que siguen funcionando igual. */
+function asegurarPerfil(){
+  let c = $('#perfil');
+  if(!c){
+    const hueco = $('#perfilHueco');
+    if(!hueco) return null;
+    c = document.createElement('div');
+    c.id = 'perfil';
+    c.innerHTML = PERFIL_HTML;
+    hueco.after(c);
+  }
+  return c;
+}
 function moverPerfil(){
-  const c = $('#perfil'), hueco = $('#perfilHueco');
+  const c = asegurarPerfil(), hueco = $('#perfilHueco');
   if(!c || !hueco) return;
-  // En enfoque se cuelga del raíl derecho: así fluye bajo el equipo Pokémon
-  // y nunca puede taparlo, por corta que sea la pantalla.
-  if(document.body.classList.contains('enfoque')) document.body.appendChild(c);
-  else hueco.after(c);
+  // Fuera de la columna en enfoque: cuelga del documento, nunca de un raíl
+  // que se repinta, porque eso la borraría.
+  if(document.body.classList.contains('enfoque')){
+    if(c.parentElement !== document.body) document.body.appendChild(c);
+  } else if(c.previousElementSibling !== hueco){
+    hueco.after(c);
+  }
 }
 
 /* ===================== TARJETA DE PERFIL ===================== */
@@ -3421,7 +3446,7 @@ function moverPerfil(){
    en la ficha, así que sobrevive a los cambios de escenario y de sesión.
    Si nadie sube una, se queda con las iniciales y no pasa nada. */
 function pintarPerfil(){
-  const c = $('#perfil'); if(!c) return;
+  const c = asegurarPerfil(); if(!c) return;
   const f = miFicha();
   document.body.classList.toggle('conperfil', !!f);
   if(!f) return;
@@ -3437,7 +3462,9 @@ function pintarPerfil(){
 }
 
 /* ---------- cambiar la foto ---------- */
-$('#perfilAv').onclick = ()=> $('#perfilFoto').click();
+document.addEventListener('click', e=>{
+  if(e.target.closest('#perfilAv')) $('#perfilFoto').click();
+});
 $('#perfilFoto').onchange = async ()=>{
   const arch = $('#perfilFoto').files[0]; if(!arch) return;
   const f = miFicha(); if(!f) return;
@@ -3457,12 +3484,16 @@ $('#perfilFoto').onchange = async ()=>{
 };
 
 /* ---------- cambiar el nombre ---------- */
-$('#perfilNom').onclick = function(){
-  const f = miFicha(); if(!f || this.tagName === 'INPUT') return;
+document.addEventListener('click', e=>{
+  const n = e.target.closest('#perfilNom');
+  if(n && n.tagName !== 'INPUT') editarNombrePerfil(n);
+});
+function editarNombrePerfil(nodo){
+  const f = miFicha(); if(!f) return;
   const campo = document.createElement('input');
   campo.className = 'nom'; campo.id = 'perfilNom';
   campo.maxLength = 18; campo.value = f.nombre || '';
-  this.replaceWith(campo);
+  nodo.replaceWith(campo);
   campo.focus(); campo.select();
   const cerrar = guardar=>{
     const nuevo = campo.value.trim();
@@ -3470,7 +3501,6 @@ $('#perfilNom').onclick = function(){
     caja.className = 'nom'; caja.id = 'perfilNom';
     caja.textContent = (guardar && nuevo) ? nuevo : (f.nombre || '—');
     campo.replaceWith(caja);
-    caja.onclick = $('#perfilNom').onclick;
     if(guardar && nuevo && nuevo !== f.nombre){
       const antes = f.nombre;
       f.nombre = nuevo;
@@ -3488,7 +3518,7 @@ $('#perfilNom').onclick = function(){
     if(e.key === 'Enter'){ e.preventDefault(); campo.blur(); }
     if(e.key === 'Escape'){ campo.onblur = null; cerrar(false); }
   };
-};
+}
 
 /* ===================== MOVIMIENTOS ===================== */
 /* PokéAPI da la lista completa de lo que cada especie puede aprender.
