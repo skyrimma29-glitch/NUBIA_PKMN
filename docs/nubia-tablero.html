@@ -497,35 +497,35 @@ body.herr-abierta #cajonHerr{display:flex;transform:none}
 #movInfo{font-family:'Alegreya Sans',sans-serif;font-size:11px;color:var(--tinta-suave);margin:0 0 8px}
 
 /* ------------- tarjeta de perfil ------------- */
-#perfil{position:fixed;left:18px;top:50%;transform:translateY(-50%);z-index:96;
-  display:none;flex-direction:column;align-items:center;gap:9px;width:132px}
+#perfil{display:none;align-items:center;gap:12px;margin-bottom:15px;padding:12px;
+  background:var(--arena-hueso);border:3px solid var(--tinta);box-shadow:5px 5px 0 var(--sombra)}
 body.conperfil #perfil{display:flex}
-body.lateral-abierto #perfil{opacity:.25;pointer-events:none}
-#perfil .marco{width:112px;height:112px;border-radius:50%;padding:4px;
+#perfil .marco{width:72px;height:72px;border-radius:50%;padding:3px;flex:0 0 auto;
   background:linear-gradient(145deg,var(--oro),#b8770f);
-  box-shadow:0 7px 0 var(--sombra),0 12px 26px rgba(18,40,63,.25);
-  transition:transform .16s,box-shadow .16s}
-#perfil .marco:hover{transform:translateY(-3px);box-shadow:0 10px 0 var(--sombra),0 16px 30px rgba(18,40,63,.3)}
+  box-shadow:0 4px 0 var(--sombra);transition:transform .16s,box-shadow .16s}
+#perfil .marco:hover{transform:translateY(-2px);box-shadow:0 6px 0 var(--sombra)}
 #perfil .av{width:100%;height:100%;border-radius:50%;overflow:hidden;background:var(--tinta);
   display:grid;place-items:center;cursor:pointer;border:3px solid var(--tinta)}
 #perfil .av img{width:100%;height:100%;object-fit:cover;image-rendering:auto}
-#perfil .av span{font-family:'Silkscreen',monospace;font-size:26px;color:var(--oro)}
-#perfil .nom{font-family:'Silkscreen',monospace;font-size:10px;text-align:center;
-  background:var(--tinta);color:var(--arena-hueso);padding:6px 9px;cursor:text;
-  max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
-  border:2px solid var(--oro)}
+#perfil .av span{font-family:'Silkscreen',monospace;font-size:18px;color:var(--oro)}
+#perfil .datos{min-width:0;flex:1}
+#perfil .nom{font-family:'Silkscreen',monospace;font-size:10px;cursor:text;
+  background:var(--tinta);color:var(--arena-hueso);padding:6px 8px;border:2px solid var(--oro);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block}
 #perfil .nom:hover{background:#1b3a58}
-#perfil input.nom{background:#fff;color:var(--tinta);text-align:center;border-color:var(--fucsia)}
-#perfil .pie{font-family:'Alegreya Sans',sans-serif;font-size:11px;color:var(--tinta-suave);text-align:center}
+#perfil input.nom{background:#fff;color:var(--tinta);border-color:var(--fucsia);width:100%}
+#perfil .pie{font-family:'Alegreya Sans',sans-serif;font-size:12px;color:var(--tinta-suave);
+  margin-top:5px;text-align:center}
 
-body.enfoque #perfil{left:auto;right:18px;top:auto;bottom:16px;transform:none;width:78px;gap:6px;z-index:72}
-body.enfoque #perfil .marco{width:64px;height:64px;padding:3px;box-shadow:0 4px 0 var(--sombra)}
-body.enfoque #perfil .av span{font-size:15px}
-body.enfoque #perfil .nom{font-size:8px;padding:4px 6px}
+/* En enfoque se despega y baja a la derecha, bajo el equipo Pokémon */
+body.enfoque #perfil{position:fixed;right:18px;bottom:16px;z-index:72;
+  flex-direction:column;gap:6px;width:78px;padding:8px;margin:0;
+  box-shadow:0 6px 0 var(--sombra),0 10px 24px rgba(18,40,63,.28)}
+body.enfoque #perfil .marco{width:58px;height:58px}
+body.enfoque #perfil .av span{font-size:14px}
+body.enfoque #perfil .datos{width:100%;text-align:center}
+body.enfoque #perfil .nom{font-size:8px;padding:4px 5px;text-align:center}
 body.enfoque #perfil .pie{display:none}
-@media(max-width:1280px){#perfil{position:static;transform:none;width:auto;flex-direction:row;
-  margin-bottom:14px;align-items:center}
-  #perfil .marco{width:64px;height:64px}}
 
 /* ------------- acordeones ------------- */
 .acc{background:var(--arena-hueso);border:3px solid var(--tinta);box-shadow:5px 5px 0 var(--sombra);margin-bottom:13px}
@@ -697,6 +697,15 @@ footer code{background:#1c3a56;padding:2px 5px;color:#cfe0e6}
   <!-- ================= IZQUIERDA ================= -->
   <div>
     <div class="aviso solojug">Estás como <b>jugador</b>. Las herramientas de mapa, niebla y Pokémon aparecen al pulsar <b>SOY EL DIRECTOR</b> arriba.</div>
+
+    <div id="perfilHueco"></div>
+    <div id="perfil">
+      <div class="marco"><div class="av" id="perfilAv" title="Cambiar la foto"></div></div>
+      <div class="datos">
+        <div class="nom" id="perfilNom">—</div>
+        <div class="pie" id="perfilPie"></div>
+      </div>
+    </div>
 
     <details class="acc" open><summary>FICHAS EN EL TABLERO</summary><div class="cnt2">
       <div id="panelFichaJug" style="display:none"></div>
@@ -1017,11 +1026,6 @@ footer code{background:#1c3a56;padding:2px 5px;color:#cfe0e6}
   </div>
 </aside>
 
-<div id="perfil">
-  <div class="marco"><div class="av" id="perfilAv" title="Cambiar la foto"></div></div>
-  <div class="nom" id="perfilNom">—</div>
-  <div class="pie" id="perfilPie"></div>
-</div>
 <input id="perfilFoto" type="file" accept="image/*" style="display:none">
 
 <div id="railIzq"></div>
@@ -2465,6 +2469,7 @@ $('#capTirar').onclick=()=>{
 function alternarEnfoque(){
   if(document.body.classList.contains('enfoque')) cerrarHerramienta();
   document.body.classList.toggle('enfoque');
+  moverPerfil();
   pintarRailes();
   $('#enfoque').classList.toggle('on', document.body.classList.contains('enfoque'));
 }
@@ -3376,6 +3381,15 @@ function sacarPokemonNpc(idNpc, i, x, y){
 }
 
 
+
+/* La columna izquierda se oculta en modo enfoque, así que la tarjeta sale
+   de ella y se cuelga del documento; al volver regresa a su hueco. */
+function moverPerfil(){
+  const c = $('#perfil'), hueco = $('#perfilHueco');
+  if(!c || !hueco) return;
+  if(document.body.classList.contains('enfoque')) document.body.appendChild(c);
+  else hueco.after(c);
+}
 
 /* ===================== TARJETA DE PERFIL ===================== */
 /* Muestra la foto y el nombre del personaje del jugador. La foto se guarda
