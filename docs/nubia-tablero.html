@@ -373,7 +373,21 @@ body.lateral-abierto #lateral{transform:none}
 
 /* ------------- modo enfoque con raíles ------------- */
 #railIzq,#railDer{position:fixed;top:50%;transform:translateY(-50%);z-index:70;display:none;
-  flex-direction:column;gap:14px;align-items:center}
+  flex-direction:column;gap:14px;align-items:center;max-height:96vh}
+/* Pantallas bajas: todo encoge en vez de solaparse */
+@media(max-height:900px){
+  #railIzq,#railDer{gap:9px}
+  .railbt,.railpk{width:54px;height:54px}
+  .railbt svg{width:27px;height:27px}
+  #railPC{font-size:9px;padding:8px 10px}
+}
+@media(max-height:760px){
+  #railIzq,#railDer{gap:6px}
+  .railbt,.railpk{width:44px;height:44px}
+  .railbt svg{width:22px;height:22px}
+  #railDinero{font-size:9px;padding:5px 7px}
+  #railPC{font-size:8px;padding:6px 8px}
+}
 #railIzq{left:18px} #railDer{right:18px}
 body.enfoque #railIzq,body.enfoque #railDer{display:flex}
 .railbt{width:64px;height:64px;border-radius:50%;border:3px solid var(--tinta);
@@ -517,13 +531,15 @@ body.conperfil #perfil{display:flex}
 #perfil .pie{font-family:'Alegreya Sans',sans-serif;font-size:12px;color:var(--tinta-suave);
   margin-top:5px;text-align:center}
 
-/* En enfoque se despega y baja a la derecha, bajo el equipo Pokémon */
-body.enfoque #perfil{position:fixed;right:18px;bottom:16px;z-index:72;
-  flex-direction:column;gap:6px;width:78px;padding:8px;margin:0;
-  box-shadow:0 6px 0 var(--sombra),0 10px 24px rgba(18,40,63,.28)}
-body.enfoque #perfil .marco{width:58px;height:58px}
+/* En enfoque va dentro del raíl derecho, justo bajo el equipo Pokémon */
+body.enfoque #perfil{flex-direction:column;gap:5px;width:auto;padding:7px;margin:0;
+  border-width:3px;box-shadow:0 4px 0 var(--sombra);align-items:center}
+body.enfoque #perfil .marco{width:58px;height:58px;padding:3px}
+@media(max-height:900px){ body.enfoque #perfil .marco{width:50px;height:50px} }
+@media(max-height:760px){ body.enfoque #perfil{padding:5px;gap:3px}
+  body.enfoque #perfil .marco{width:42px;height:42px;padding:2px} }
 body.enfoque #perfil .av span{font-size:14px}
-body.enfoque #perfil .datos{width:100%;text-align:center}
+body.enfoque #perfil .datos{width:100%;text-align:center;max-width:76px}
 body.enfoque #perfil .nom{font-size:8px;padding:4px 5px;text-align:center}
 body.enfoque #perfil .pie{display:none}
 
@@ -3387,7 +3403,9 @@ function sacarPokemonNpc(idNpc, i, x, y){
 function moverPerfil(){
   const c = $('#perfil'), hueco = $('#perfilHueco');
   if(!c || !hueco) return;
-  if(document.body.classList.contains('enfoque')) document.body.appendChild(c);
+  // En enfoque se cuelga del raíl derecho: así fluye bajo el equipo Pokémon
+  // y nunca puede taparlo, por corta que sea la pantalla.
+  if(document.body.classList.contains('enfoque')) $('#railDer').appendChild(c);
   else hueco.after(c);
 }
 
@@ -4447,6 +4465,7 @@ function pintarRailes(){
       : `<div class="railpk vacio"></div>`).join('');
   const pc = $('#railPC');
   if(pc) pc.onclick = ()=>{ $('#pcDlg').showModal(); pintarEquipo(); };
+  if(document.body.classList.contains('enfoque')) moverPerfil();
   $('#railDer').querySelectorAll('[data-rail]').forEach(n=>n.onclick=()=>{
     const pk = equipoLeer(yo).eq[+n.dataset.rail]; if(!pk) return;
     const t = S.tokens.find(x=>x.pk===pk.id);
