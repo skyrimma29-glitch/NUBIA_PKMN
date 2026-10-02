@@ -13,7 +13,7 @@
   --tinta:#104186; --tinta-suave:#6E8CAE; --mar:#3566AB;
   --arena:#DCE8F4; --arena-hueso:#FFFFFF; --oro:#82B8DE;
   --selva:#2E8B57; --fucsia:#3566AB; --peligro:#C0392B;
-  --gris:#808080; --fondo:#F1F1F1;
+  --gris:#808080; --carbon:#1C1C1C; --fondo:#F1F1F1;
   --sombra:rgba(16,65,134,.13);
   --elev-1:0 1px 3px rgba(16,65,134,.10), 0 1px 2px rgba(16,65,134,.06);
   --elev-2:0 3px 10px rgba(16,65,134,.11), 0 1px 3px rgba(16,65,134,.07);
@@ -136,6 +136,19 @@ body{background:var(--fondo)}
 input,select,textarea{border-radius:var(--r-s);border:1px solid #BCD2E6;padding:9px 10px}
 input:focus,select:focus,textarea:focus{outline:none;border-color:var(--mar);
   box-shadow:0 0 0 3px rgba(53,102,171,.16)}
+
+body{background:var(--fondo)}
+.bt,button.bt{border-radius:var(--r-s)}
+.card,.lider,.cl,.tilewrap,.panel,.box{border-radius:var(--r-m)}
+input,select,textarea{border-radius:var(--r-s);border:1px solid #BCD2E6;padding:9px 10px}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--mar);
+  box-shadow:0 0 0 3px rgba(53,102,171,.16)}
+
+/* ---- el carbón y el gris de la paleta, para leer mejor ---- */
+body{color:var(--carbon)}
+p,li,td,dd,blockquote,.desc,.act,.nota,.sub2{color:var(--carbon)}
+.nota,.sub2,.pcpie,small{color:var(--gris)}
+h1,h2,h3,h4,h5,summary,label,.eyeb{color:var(--tinta)}
 </style>
 </head>
 <body>

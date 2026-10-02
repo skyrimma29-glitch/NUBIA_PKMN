@@ -21,7 +21,7 @@
   --fucsia:#3566AB;        /* acción principal */
   --selva:#2E8B57;         /* salud y confirmación */
   --peligro:#C0392B;       /* solo para lo que destruye */
-  --gris:#808080;
+  --gris:#808080; --carbon:#1C1C1C;
   --fondo:#F1F1F1;
   --sombra:rgba(16,65,134,.13);
   --elev-1:0 1px 3px rgba(16,65,134,.10), 0 1px 2px rgba(16,65,134,.06);
@@ -73,6 +73,8 @@ button{font-family:'Silkscreen',monospace;cursor:pointer}
 .estado.viva{border-style:solid;border-color:var(--selva);color:var(--selva);background:#eaf6ee}
 .estado.mala{border-color:var(--fucsia);color:var(--fucsia)}
 #rol{font-family:'Silkscreen',monospace;font-size:10px;border-style:solid}
+#version{font-family:'Silkscreen',monospace;font-size:9px;border-style:solid;
+  background:var(--arena);color:var(--mar);border-color:#BCD2E6}
 #rol.dm{background:var(--tinta);color:var(--oro);border-color:var(--tinta)}
 
 main{flex:1 0 auto;padding:18px 0 44px}
@@ -632,7 +634,23 @@ body.enfoque #perfil .pie{display:block;font-size:10px;margin-top:4px;
   box-shadow:var(--elev-2);touch-action:none;user-select:none;overflow:hidden}
 #capaMapa{display:grid;width:100%}
 #capaMapa .c{aspect-ratio:1}
-#fondoImg{position:absolute;inset:0;background-size:100% 100%;background-repeat:no-repeat;display:none;image-rendering:pixelated;image-rendering:crisp-edges}
+#fondoImg{position:absolute;inset:0;background-size:100% 100%;background-repeat:no-repeat;
+  display:none;image-rendering:pixelated;image-rendering:crisp-edges}
+
+/* ---- ventana de encuadre ---- */
+#encDlg{border:0;background:transparent;padding:0;max-width:640px;width:94%;overflow:visible}
+#encDlg::backdrop{background:rgba(16,65,134,.6);backdrop-filter:blur(3px)}
+.enc-lienzo{position:relative;background:#E9EFF6 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20'%3E%3Cpath d='M0 0h10v10H0zM10 10h10v10H10z' fill='%23dde7f1'/%3E%3C/svg%3E");
+  border:2px solid var(--tinta);border-radius:var(--r-s);overflow:hidden;cursor:grab;
+  touch-action:none;user-select:none;margin-bottom:11px}
+.enc-lienzo.mov{cursor:grabbing}
+.enc-img{position:absolute;transform-origin:0 0;pointer-events:none;image-rendering:auto}
+.enc-rejilla{position:absolute;inset:0;pointer-events:none;
+  background-image:linear-gradient(rgba(16,65,134,.16) 1px,transparent 1px),
+                   linear-gradient(90deg,rgba(16,65,134,.16) 1px,transparent 1px)}
+.enc-mandos{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;margin-bottom:11px}
+.enc-mandos input[type=range]{width:100%;accent-color:var(--fucsia)}
+.enc-zoom{font-family:'Silkscreen',monospace;font-size:10px;color:var(--mar);min-width:48px;text-align:right}
 #capaNiebla{position:absolute;inset:0;display:grid}
 #capaNiebla .n.oculta{background:#0a1420}
 #capaNiebla.dm .n.oculta{background:rgba(10,20,32,.7);outline:1px solid rgba(255,255,255,.05);outline-offset:-1px}
@@ -747,6 +765,12 @@ footer code{background:#1c3a56;padding:2px 5px;color:#D7E6F4}
 .atras:hover{background:var(--oro);color:var(--tinta)}
 .atras:active{transform:translateX(-2px)}
 .atras:focus-visible{outline:3px solid var(--fucsia);outline-offset:3px}
+
+/* ---- el carbón y el gris de la paleta, para leer mejor ---- */
+body{color:var(--carbon)}
+p,li,td,dd,blockquote,.desc,.act,.nota,.sub2{color:var(--carbon)}
+.nota,.sub2,.pcpie,small{color:var(--gris)}
+h1,h2,h3,h4,h5,summary,label,.eyeb{color:var(--tinta)}
 </style>
 </head>
 <body>
@@ -763,6 +787,7 @@ footer code{background:#1c3a56;padding:2px 5px;color:#D7E6F4}
   <label class="campo"><span>TU NOMBRE</span><input id="nombre" maxlength="18" placeholder="Entrenador"></label>
   <div class="estado" id="rol">Jugador</div>
   <div class="estado" id="estado">Modo local</div>
+  <div class="estado" id="version" title="Versión del tablero. Si no coincide con la que esperas, recarga con Ctrl+Shift+R.">v6 · mapas</div>
   <button class="bt" id="copiar">COPIAR INVITACIÓN</button>
 </div></div>
 
@@ -835,8 +860,9 @@ footer code{background:#1c3a56;padding:2px 5px;color:#D7E6F4}
       </div>
       <label for="imgArch" style="margin-top:10px">IMAGEN DE ESTE ESCENARIO</label>
       <input id="imgArch" type="file" accept="image/png,image/webp,image/jpeg" style="padding:4px">
-      <div class="fila" style="margin-top:8px">
-        <button class="bt" id="quitarImg">QUITAR IMAGEN</button>
+      <div class="fila" style="margin-top:8px;display:flex;gap:6px">
+        <button class="bt" id="encuadrarImg" style="flex:1;white-space:nowrap">ENCUADRAR</button>
+        <button class="bt" id="quitarImg" style="flex:1;white-space:nowrap">QUITAR</button>
       </div>
     </div></details>
 
@@ -1137,6 +1163,28 @@ footer code{background:#1c3a56;padding:2px 5px;color:#D7E6F4}
   </div>
 </div></dialog>
 
+<dialog id="encDlg"><div class="confcaja" style="border-color:var(--mar);max-width:none">
+  <div class="cab" id="encTit">ENCUADRAR LA IMAGEN</div>
+  <div class="cnt" style="text-align:left">
+    <div class="enc-lienzo" id="encLienzo">
+      <img class="enc-img" id="encImg" alt="">
+      <div class="enc-rejilla" id="encRejilla"></div>
+    </div>
+    <div class="enc-mandos">
+      <span style="font-family:Silkscreen,monospace;font-size:9px;color:var(--tinta-suave)">ZOOM</span>
+      <input id="encZoom" type="range" min="20" max="400" value="100">
+      <span class="enc-zoom" id="encPct">100 %</span>
+    </div>
+    <p class="nota" style="margin:0 0 11px">Arrastra la imagen para moverla y usa la rueda o la barra para acercarla.
+      La rejilla marca las casillas del escenario.</p>
+    <div class="fila">
+      <button class="bt rosa" id="encOk">USAR ASÍ</button>
+      <button class="bt" id="encAjustar">AJUSTAR AL BORDE</button>
+      <button class="bt" id="encNo">CANCELAR</button>
+    </div>
+  </div>
+</div></dialog>
+
 <input id="perfilFoto" type="file" accept="image/*" style="display:none">
 
 <div id="railIzq"></div>
@@ -1432,7 +1480,7 @@ const MAPAS_IMG = {
 let S = { nombreMapa:'Pueblo Fundación', filas:MAPAS.Localidades['Pueblo Fundación'],
           img:'', tileset:'', tokens:[], niebla:[], nieblas:{}, fichas:[], areas:[], objetos:[],
           imgs:{}, piezas:{}, equipos:{}, npcs:[], mochilas:{}, dinero:{},
-          region:'nubia', propios:{}, turno:{i:0,ronda:1} };
+          region:'nubia', propios:{}, encuadres:{}, turno:{i:0,ronda:1} };
 let soyDM=false, yo='', canal=null, sel=null, pincel=0, tamPincel=1;
 let presentes = new Set();
 let filtro='todos', herramienta='', trazo=null;
@@ -1527,7 +1575,8 @@ function dibujarMapa(){
     }).join('')).join('');
 
     const fi=$('#fondoImg');
-    if(S.img){ fi.style.display='block'; fi.style.backgroundImage=`url("${S.img}")`; $('#capaMapa').style.visibility='hidden'; }
+    if(S.img){ fi.style.display='block'; fi.style.backgroundImage=`url("${S.img}")`;
+      aplicarEncuadre(); $('#capaMapa').style.visibility='hidden'; }
     else { fi.style.display='none'; $('#capaMapa').style.visibility='visible'; }
 
     cacheMapa = claveMapa;
@@ -2337,6 +2386,10 @@ $('#imgArch').onchange = async ()=>{
   const url = await subirImagen(f, 'mapas');
   if(url){
     S.img = url; S.imgs[S.nombreMapa] = url;
+    abrirEncuadre({ url, titulo:'ENCUADRAR «'+S.nombreMapa+'»',
+      encuadre: encuadreDe(S.nombreMapa),
+      alAceptar: r => { S.encuadres = S.encuadres||{}; S.encuadres[S.nombreMapa] = r;
+                        pintar(); enviar('estado', S); } });
     $('#imgInfo').textContent='Imagen guardada. Queda fijada a «'+S.nombreMapa+'» para siempre.';
   } else {
     const dato = await new Promise(r=>{ const fr=new FileReader();
@@ -2350,7 +2403,7 @@ $('#imgArch').onchange = async ()=>{
 };
 $('#quitarImg').onclick=()=>{
   S.imgs=S.imgs||{}; delete S.imgs[S.nombreMapa];
-  S.img=''; $('#imgArch').value='';
+  S.img=''; if(S.encuadres) delete S.encuadres[S.nombreMapa]; $('#imgArch').value='';
   $('#imgInfo').textContent='«'+S.nombreMapa+'» vuelve a su esquema de casillas.';
   pintar(); enviar('estado',S);
 };
@@ -2873,7 +2926,7 @@ async function cargarPartida(reintento){
   fijarRol(data.director === cuenta.id);
   if(data.estado && Object.keys(data.estado).length){
     S = Object.assign(S, data.estado);
-    S.areas = S.areas||[]; S.objetos = S.objetos||[]; S.imgs = S.imgs||{}; S.piezas = S.piezas||{}; S.equipos = S.equipos||{}; S.npcs = S.npcs||[]; S.mochilas = S.mochilas||{}; S.dinero = S.dinero||{}; S.nieblas = S.nieblas||{}; S.propios = S.propios||{}; S.region = S.region||'nubia'; S.turno = S.turno||{i:0,ronda:1};
+    S.areas = S.areas||[]; S.objetos = S.objetos||[]; S.imgs = S.imgs||{}; S.piezas = S.piezas||{}; S.equipos = S.equipos||{}; S.npcs = S.npcs||[]; S.mochilas = S.mochilas||{}; S.dinero = S.dinero||{}; S.nieblas = S.nieblas||{}; S.propios = S.propios||{}; S.encuadres = S.encuadres||{}; S.region = S.region||'nubia'; S.turno = S.turno||{i:0,ronda:1};
     pintar();
     anotar(`<b>Mesa restaurada</b> · ${esc(data.nombre)}`, false);
   }
@@ -2915,7 +2968,7 @@ function escucharPartida(){
           const antes = S.nombreMapa;
           S = Object.assign({}, S, fila.estado);
           S.areas=S.areas||[]; S.objetos=S.objetos||[]; S.imgs=S.imgs||{};
-          S.piezas=S.piezas||{}; S.equipos=S.equipos||{}; S.npcs=S.npcs||[]; S.mochilas=S.mochilas||{}; S.dinero=S.dinero||{}; S.nieblas=S.nieblas||{}; S.propios=S.propios||{}; S.region=S.region||'nubia';
+          S.piezas=S.piezas||{}; S.equipos=S.equipos||{}; S.npcs=S.npcs||[]; S.mochilas=S.mochilas||{}; S.dinero=S.dinero||{}; S.nieblas=S.nieblas||{}; S.propios=S.propios||{}; S.encuadres=S.encuadres||{}; S.region=S.region||'nubia';
           anclarLocal();
           pintar();
           if(S.nombreMapa !== antes && (S.objetos||[]).includes('mapa')) abrirMapaN(true);
@@ -3577,6 +3630,136 @@ function moverPerfil(){
   }
 }
 
+
+
+/* ===================== ENCUADRE DE IMÁGENES ===================== */
+/* Una imagen casi nunca tiene la proporción exacta del escenario. En vez de
+   deformarla, se guarda cómo colocarla: cuánto acercarla y dónde moverla. */
+function encuadreDe(nombre){
+  S.encuadres = S.encuadres || {};
+  return S.encuadres[nombre || S.nombreMapa] || null;
+}
+function aplicarEncuadre(){
+  const fi = $('#fondoImg'); if(!fi) return;
+  const e = encuadreDe(S.nombreMapa);
+  if(!e){ fi.style.backgroundSize = '100% 100%'; fi.style.backgroundPosition = '0 0'; return; }
+  fi.style.backgroundSize = (e.z*100) + '% auto';
+  fi.style.backgroundPosition = (e.x*100) + '% ' + (e.y*100) + '%';
+  fi.style.backgroundRepeat = 'no-repeat';
+}
+
+let encEstado = null;      // {url, z, x, y, destino, alAceptar}
+
+function abrirEncuadre({url, titulo, ancho, alto, encuadre, alAceptar}){
+  encEstado = {
+    url, alAceptar,
+    ancho: ancho || W(), alto: alto || H(),
+    z: encuadre ? encuadre.z : 1, x: encuadre ? encuadre.x : .5, y: encuadre ? encuadre.y : .5
+  };
+  $('#encTit').textContent = titulo || 'ENCUADRAR LA IMAGEN';
+  const lienzo = $('#encLienzo');
+  // el lienzo adopta la proporción del destino
+  lienzo.style.aspectRatio = encEstado.ancho + ' / ' + encEstado.alto;
+  $('#encRejilla').style.backgroundSize =
+    (100/encEstado.ancho) + '% ' + (100/encEstado.alto) + '%';
+  $('#encImg').src = url;
+  $('#encDlg').showModal();
+  const listo = () => requestAnimationFrame(()=>
+    requestAnimationFrame(()=> encuadre ? pintarEncuadre() : ajustarAlBorde()));
+  $('#encImg').onload = listo;
+  if($('#encImg').complete && $('#encImg').naturalWidth) listo();
+}
+
+/* Todo se calcula en porcentajes del lienzo, nunca en píxeles: así el
+   encuadre es el mismo mientras la ventana se abre, al cambiar de tamaño
+   la pantalla y al aplicarlo luego sobre el tablero. */
+function relacionLienzo(){ return encEstado.ancho / encEstado.alto; }
+
+/* Coloca la imagen de modo que cubra el escenario entero sin bordes vacíos. */
+function ajustarAlBorde(){
+  const im = $('#encImg');
+  if(!encEstado || !im.naturalWidth) return;
+  const rImg = im.naturalWidth / im.naturalHeight;
+  /* z es el ancho de la imagen como múltiplo del ancho del lienzo.
+     Para cubrir hacen falta las dos cosas: z >= 1 de ancho, y de alto
+     z * relación / rImg >= 1. El mínimo que cumple ambas es este. */
+  encEstado.z = Math.max(1, rImg / relacionLienzo());
+  encEstado.x = .5; encEstado.y = .5;
+  pintarEncuadre();
+}
+function pintarEncuadre(){
+  const im = $('#encImg');
+  if(!encEstado || !im.naturalWidth) return;
+  const z = encEstado.z, rImg = im.naturalWidth / im.naturalHeight;
+  // alto de la imagen, también como múltiplo del ALTO del lienzo
+  const zAlto = z * relacionLienzo() / rImg;
+  im.style.width  = (z * 100) + '%';
+  im.style.height = (zAlto * 100) + '%';
+  im.style.left = (-(z - 1) * encEstado.x * 100) + '%';
+  im.style.top  = (-(zAlto - 1) * encEstado.y * 100) + '%';
+  $('#encZoom').value = Math.round(z * 100);
+  $('#encPct').textContent = Math.round(z * 100) + ' %';
+}
+
+/* ---- arrastrar ---- */
+let encArr = null;
+/* La ventana entra con una animación, así que su tamaño real llega un
+   instante después. Se redibuja en cuanto el lienzo se asienta. */
+if(window.ResizeObserver)
+  new ResizeObserver(()=>{ if(encEstado) pintarEncuadre(); }).observe($('#encLienzo'));
+
+$('#encLienzo').addEventListener('pointerdown', e=>{
+  if(!encEstado) return;
+  encArr = { px:e.clientX, py:e.clientY, x:encEstado.x, y:encEstado.y };
+  $('#encLienzo').classList.add('mov');
+  try{ $('#encLienzo').setPointerCapture(e.pointerId); }catch{}
+});
+addEventListener('pointermove', e=>{
+  if(!encArr || !encEstado) return;
+  const im = $('#encImg'), l = $('#encLienzo').getBoundingClientRect();
+  if(!im.naturalWidth || !l.width) return;
+  const rImg = im.naturalWidth / im.naturalHeight;
+  const zAlto = encEstado.z * relacionLienzo() / rImg;
+  const sobraX = Math.max(1, (encEstado.z - 1) * l.width);
+  const sobraY = Math.max(1, (zAlto - 1) * l.height);
+  encEstado.x = Math.min(1, Math.max(0, encArr.x - (e.clientX - encArr.px) / sobraX));
+  encEstado.y = Math.min(1, Math.max(0, encArr.y - (e.clientY - encArr.py) / sobraY));
+  pintarEncuadre();
+});
+function soltarEnc(){ encArr = null; $('#encLienzo').classList.remove('mov'); }
+addEventListener('pointerup', soltarEnc);
+addEventListener('pointercancel', soltarEnc);
+
+/* ---- zoom ---- */
+$('#encLienzo').addEventListener('wheel', e=>{
+  if(!encEstado) return;
+  e.preventDefault();
+  encEstado.z = Math.min(4, Math.max(.2, encEstado.z * (e.deltaY < 0 ? 1.1 : .9)));
+  pintarEncuadre();
+}, {passive:false});
+$('#encZoom').addEventListener('input', ()=>{
+  if(!encEstado) return;
+  encEstado.z = (+$('#encZoom').value || 100) / 100;
+  pintarEncuadre();
+});
+$('#encuadrarImg').onclick = ()=>{
+  if(!S.img){ anotar('Este escenario todavía no tiene imagen.', false); return; }
+  abrirEncuadre({ url:S.img, titulo:'ENCUADRAR «'+S.nombreMapa+'»',
+    encuadre: encuadreDe(S.nombreMapa),
+    alAceptar: r => { S.encuadres = S.encuadres||{}; S.encuadres[S.nombreMapa] = r;
+                      pintar(); enviar('estado', S); } });
+};
+$('#encAjustar').onclick = ajustarAlBorde;
+$('#encNo').onclick = ()=>{ $('#encDlg').close(); encEstado = null; };
+$('#encDlg').addEventListener('cancel', e=>{ e.preventDefault(); $('#encNo').click(); });
+$('#encOk').onclick = ()=>{
+  if(!encEstado) return;
+  const r = { z:encEstado.z, x:encEstado.x, y:encEstado.y };
+  const f = encEstado.alAceptar;
+  $('#encDlg').close();
+  encEstado = null;
+  if(f) f(r);
+};
 
 /* ===================== MAPAS PROPIOS ===================== */
 /* El director puede construir su propia región. Un mapa propio es una
@@ -4917,7 +5100,7 @@ async function leerFila(){
   const antes = S.nombreMapa;
   S = Object.assign({}, S, data.estado);
   S.areas=S.areas||[]; S.objetos=S.objetos||[]; S.imgs=S.imgs||{};
-  S.piezas=S.piezas||{}; S.equipos=S.equipos||{}; S.npcs=S.npcs||[]; S.mochilas=S.mochilas||{}; S.dinero=S.dinero||{}; S.nieblas=S.nieblas||{}; S.propios=S.propios||{}; S.region=S.region||'nubia';
+  S.piezas=S.piezas||{}; S.equipos=S.equipos||{}; S.npcs=S.npcs||[]; S.mochilas=S.mochilas||{}; S.dinero=S.dinero||{}; S.nieblas=S.nieblas||{}; S.propios=S.propios||{}; S.encuadres=S.encuadres||{}; S.region=S.region||'nubia';
   if(!Array.isArray(S.filas) || !S.filas.length) S.filas = MAPAS.Localidades['Pueblo Fundación'];
   anclarLocal();
   pintar();
@@ -4929,7 +5112,7 @@ function recibir({tipo,dato,de}){
   if(tipo==='hola'){ if(soyDM) enviar('estado',S); return; }
   if(tipo==='estado'){ if(!soyDM){
       const cambio = S.nombreMapa !== dato.nombreMapa;
-      S=dato; S.areas=S.areas||[]; S.objetos=S.objetos||[]; S.imgs=S.imgs||{}; S.piezas=S.piezas||{}; S.equipos=S.equipos||{}; S.npcs=S.npcs||[]; S.mochilas=S.mochilas||{}; S.dinero=S.dinero||{}; S.nieblas=S.nieblas||{}; S.propios=S.propios||{}; S.region=S.region||'nubia'; pintar();
+      S=dato; S.areas=S.areas||[]; S.objetos=S.objetos||[]; S.imgs=S.imgs||{}; S.piezas=S.piezas||{}; S.equipos=S.equipos||{}; S.npcs=S.npcs||[]; S.mochilas=S.mochilas||{}; S.dinero=S.dinero||{}; S.nieblas=S.nieblas||{}; S.propios=S.propios||{}; S.encuadres=S.encuadres||{}; S.region=S.region||'nubia'; pintar();
       if(cambio && (S.objetos||[]).includes('mapa')) abrirMapaN(true);
     } return; }
   if(tipo==='tirada'){ verTirada(dato,false); return; }

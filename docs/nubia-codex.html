@@ -13,7 +13,7 @@
   --tinta:#104186; --tinta-suave:#6E8CAE; --mar:#3566AB;
   --arena:#DCE8F4; --arena-hueso:#FFFFFF; --oro:#82B8DE;
   --selva:#2E8B57; --fucsia:#3566AB; --peligro:#C0392B;
-  --gris:#808080; --fondo:#F1F1F1;
+  --gris:#808080; --carbon:#1C1C1C; --fondo:#F1F1F1;
   --sombra:rgba(16,65,134,.13);
   --elev-1:0 1px 3px rgba(16,65,134,.10), 0 1px 2px rgba(16,65,134,.06);
   --elev-2:0 3px 10px rgba(16,65,134,.11), 0 1px 3px rgba(16,65,134,.07);
@@ -191,6 +191,17 @@ body{background:var(--fondo)}
 input,select,textarea{border-radius:var(--r-s);border:1px solid #BCD2E6;padding:9px 10px}
 input:focus,select:focus,textarea:focus{outline:none;border-color:var(--mar);
   box-shadow:0 0 0 3px rgba(53,102,171,.16)}
+
+.mapa-mandos{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:11px}
+.mapa-mandos .nota{flex:1;min-width:220px;margin:0}
+.lienzoProp{width:100%;aspect-ratio:1000 / 780;background-repeat:no-repeat;
+  background-position:50% 50%;background-size:cover}
+
+/* ---- el carbón y el gris de la paleta, para leer mejor ---- */
+body{color:var(--carbon)}
+p,li,td,dd,blockquote,.desc,.act,.nota,.sub2{color:var(--carbon)}
+.nota,.sub2,.pcpie,small{color:var(--gris)}
+h1,h2,h3,h4,h5,summary,label,.eyeb{color:var(--tinta)}
 </style>
 
 <style>
@@ -241,7 +252,15 @@ tr,.punto,.npc{transition:background .14s}
   <div class="wrap">
     <h2 class="sec">La región</h2>
     <p class="lead">Nubia se recorre en herradura: sales del pueblo natal hacia el mar, bajas por el río hasta el valle de la caña, subes a la cordillera y regresas al norte para escalar la Sierra. Haz clic en cualquier localidad para abrir su ficha.</p>
+    <div class="mapa-mandos">
+      <button class="bt" id="mapaSubir">SUBIR MI MAPA</button>
+      <button class="bt" id="mapaEncuadrar" style="display:none">ENCUADRAR</button>
+      <button class="bt" id="mapaQuitar" style="display:none">VOLVER AL DE NUBIA</button>
+      <span class="nota" id="mapaNota">Puedes usar tu propio mapa. Se guarda en tu cuenta: los demás siguen viendo el de Nubia.</span>
+    </div>
     <div class="mapa-caja" id="mapa"></div>
+    <div class="mapa-caja" id="mapaPropio" style="display:none"><div class="lienzoProp" id="mapaProp"></div></div>
+    <input id="mapaArch" type="file" accept="image/*" style="display:none">
     <div class="leyenda">
       <span><i style="background:#3566AB"></i>Ciudad con gimnasio</span>
       <span><i style="background:#82B8DE"></i>Pueblo</span>
@@ -670,8 +689,160 @@ tr,.punto,.npc{transition:background .14s}
       m.nodo.style.background = overrides.get(clave + '@col');
   };
 
-  window.NubiaEditor = { marcar: marcar, imagen: imagen,
-    get activo(){ return editando; } };
+
+  /* ---------------- encuadre reutilizable ----------------
+     Mismo comportamiento que en el tablero: arrastrar para mover y rueda
+     o barra para acercar. Todo en proporciones, nunca en píxeles. */
+  const encCss = document.createElement('style');
+  encCss.textContent = `
+    #nbEnc{position:fixed;inset:0;z-index:340;display:none;place-items:center;
+      background:rgba(16,65,134,.6);backdrop-filter:blur(3px)}
+    #nbEnc.ver{display:grid}
+    #nbEnc .caja{background:#fff;border:2px solid #104186;border-radius:12px;width:min(620px,94vw);
+      box-shadow:0 18px 50px rgba(16,65,134,.3);overflow:hidden}
+    #nbEnc .cab{background:#104186;color:#fff;font-family:'Silkscreen',monospace;font-size:11px;padding:13px 15px}
+    #nbEnc .cue{padding:15px}
+    #nbEnc .lienzo{position:relative;overflow:hidden;border:2px solid #104186;border-radius:7px;
+      background:#E9EFF6;cursor:grab;touch-action:none;user-select:none;margin-bottom:11px}
+    #nbEnc .lienzo.mov{cursor:grabbing}
+    #nbEnc .lienzo img{position:absolute;pointer-events:none}
+    #nbEnc .mandos{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;margin-bottom:11px}
+    #nbEnc .mandos span{font-family:'Silkscreen',monospace;font-size:9px;color:#6E8CAE}
+    #nbEnc .mandos input{width:100%;accent-color:#3566AB}
+    #nbEnc .pct{font-family:'Silkscreen',monospace;font-size:10px;color:#3566AB;min-width:48px;text-align:right}
+    #nbEnc .pie{display:flex;gap:8px;flex-wrap:wrap}
+    #nbEnc .pie button{font-family:'Silkscreen',monospace;font-size:10px;padding:9px 12px;
+      border:2px solid #104186;border-radius:7px;background:#fff;color:#104186;cursor:pointer}
+    #nbEnc .pie button.ppal{background:#3566AB;border-color:#3566AB;color:#fff}`;
+  (document.head || document.documentElement).appendChild(encCss);
+
+  const encCapa = document.createElement('div');
+  encCapa.id = 'nbEnc';
+  encCapa.innerHTML = `<div class="caja">
+    <div class="cab" id="nbEncTit">ENCUADRAR</div>
+    <div class="cue">
+      <div class="lienzo" id="nbEncLienzo"><img id="nbEncImg" alt=""></div>
+      <div class="mandos"><span>ZOOM</span>
+        <input id="nbEncZoom" type="range" min="20" max="400" value="100">
+        <span class="pct" id="nbEncPct">100 %</span></div>
+      <div class="pie">
+        <button class="ppal" id="nbEncOk">USAR ASÍ</button>
+        <button id="nbEncFit">AJUSTAR AL BORDE</button>
+        <button id="nbEncNo">CANCELAR</button>
+      </div>
+    </div></div>`;
+  function montarEnc(){ if(document.body && !document.body.contains(encCapa)) document.body.appendChild(encCapa); }
+  if(document.body) montarEnc(); else addEventListener('DOMContentLoaded', montarEnc);
+
+  let enc = null;
+  const rel = () => enc.ancho / enc.alto;
+  function encPintar(){
+    const im = document.getElementById('nbEncImg');
+    if(!enc || !im.naturalWidth) return;
+    const rImg = im.naturalWidth / im.naturalHeight;
+    const zAlto = enc.z * rel() / rImg;
+    im.style.width  = (enc.z * 100) + '%';
+    im.style.height = (zAlto * 100) + '%';
+    im.style.left = (-(enc.z - 1) * enc.x * 100) + '%';
+    im.style.top  = (-(zAlto - 1) * enc.y * 100) + '%';
+    document.getElementById('nbEncZoom').value = Math.round(enc.z * 100);
+    document.getElementById('nbEncPct').textContent = Math.round(enc.z * 100) + ' %';
+  }
+  function encFit(){
+    const im = document.getElementById('nbEncImg');
+    if(!enc || !im.naturalWidth) return;
+    enc.z = Math.max(1, (im.naturalWidth / im.naturalHeight) / rel());
+    enc.x = .5; enc.y = .5;
+    encPintar();
+  }
+  function encuadrar({url, titulo, ancho, alto, encuadre, alAceptar}){
+    montarEnc();
+    enc = { url, ancho: ancho||4, alto: alto||3, alAceptar,
+            z: encuadre ? encuadre.z : 1, x: encuadre ? encuadre.x : .5, y: encuadre ? encuadre.y : .5 };
+    document.getElementById('nbEncTit').textContent = titulo || 'ENCUADRAR';
+    document.getElementById('nbEncLienzo').style.aspectRatio = enc.ancho + ' / ' + enc.alto;
+    const im = document.getElementById('nbEncImg');
+    im.src = url;
+    encCapa.classList.add('ver');
+    const listo = () => requestAnimationFrame(()=>
+      requestAnimationFrame(()=> encuadre ? encPintar() : encFit()));
+    im.onload = listo;
+    if(im.complete && im.naturalWidth) listo();
+  }
+  let encArr = null;
+  document.addEventListener('pointerdown', e=>{
+    if(!enc || !e.target.closest('#nbEncLienzo')) return;
+    encArr = { px:e.clientX, py:e.clientY, x:enc.x, y:enc.y };
+    document.getElementById('nbEncLienzo').classList.add('mov');
+  });
+  addEventListener('pointermove', e=>{
+    if(!encArr || !enc) return;
+    const L = document.getElementById('nbEncLienzo'), im = document.getElementById('nbEncImg');
+    if(!im.naturalWidth) return;
+    const rImg = im.naturalWidth / im.naturalHeight;
+    const zAlto = enc.z * rel() / rImg;
+    const sx = Math.max(1, (enc.z - 1) * L.clientWidth);
+    const sy = Math.max(1, (zAlto - 1) * L.clientHeight);
+    enc.x = Math.min(1, Math.max(0, encArr.x - (e.clientX - encArr.px) / sx));
+    enc.y = Math.min(1, Math.max(0, encArr.y - (e.clientY - encArr.py) / sy));
+    encPintar();
+  });
+  addEventListener('pointerup', ()=>{ encArr=null;
+    const L=document.getElementById('nbEncLienzo'); if(L) L.classList.remove('mov'); });
+  document.addEventListener('wheel', e=>{
+    if(!enc || !e.target.closest('#nbEncLienzo')) return;
+    e.preventDefault();
+    enc.z = Math.min(4, Math.max(.2, enc.z * (e.deltaY < 0 ? 1.1 : .9)));
+    encPintar();
+  }, {passive:false});
+  document.addEventListener('input', e=>{
+    if(e.target.id === 'nbEncZoom' && enc){ enc.z = (+e.target.value||100)/100; encPintar(); }
+  });
+  document.addEventListener('click', e=>{
+    if(e.target.id === 'nbEncFit'){ encFit(); return; }
+    if(e.target.id === 'nbEncNo'){ encCapa.classList.remove('ver'); enc = null; return; }
+    if(e.target.id === 'nbEncOk'){
+      const r = { z:enc.z, x:enc.x, y:enc.y }, f = enc.alAceptar;
+      encCapa.classList.remove('ver'); enc = null;
+      if(f) f(r);
+    }
+  });
+  if(window.ResizeObserver) addEventListener('DOMContentLoaded', ()=>{
+    const L = document.getElementById('nbEncLienzo');
+    if(L) new ResizeObserver(()=>{ if(enc) encPintar(); }).observe(L);
+  });
+
+  /* Lee un archivo de imagen y lo reduce al lado máximo pedido. */
+  function leerArchivo(arch, lado){
+    const L = lado || 256;
+    return new Promise(res=>{
+      const l = new FileReader();
+      l.onload = () => {
+        const im = new Image();
+        im.onload = () => {
+          const e = Math.min(1, L / Math.max(im.width, im.height));
+          const w = Math.round(im.width * e), h = Math.round(im.height * e);
+          const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+          const g = cv.getContext('2d');
+          g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high';
+          g.drawImage(im, 0, 0, w, h);
+          res(cv.toDataURL('image/jpeg', .9));
+        };
+        im.onerror = () => res('');
+        im.src = l.result;
+      };
+      l.onerror = () => res('');
+      l.readAsDataURL(arch);
+    });
+  }
+
+  window.NubiaEditor = {
+    marcar: marcar, imagen: imagen, encuadrar: encuadrar, leerArchivo: leerArchivo,
+    leer: c => overrides.has(c) ? overrides.get(c) : null,
+    guardarClave: (c,v) => guardar(c,v),
+    borrarClave: c => quitar(c),
+    get activo(){ return editando; }
+  };
   iniciar();
 })();
 
@@ -1196,52 +1367,52 @@ function mapaSVG(){
   const P=Object.fromEntries(NODOS.map(n=>[n.id,n]));
   P.liga={x:800,y:200};
   let s=`<svg viewBox="0 0 1000 780" role="img" aria-label="Mapa de la región de Nubia">
-  <rect width="1000" height="780" fill="#FFFFFF"/>
+  <rect width="1000" height="780" fill="#fdf6e6"/>
   <path d="M0,0 H1000 V130 Q840,168 700,150 Q560,130 470,200 Q360,286 240,318 Q120,348 0,420 Z" fill="#3f9ed6" opacity=".92"/>
-  <path d="M0,420 Q120,348 240,318 Q360,286 470,200 Q560,130 700,150 Q840,168 1000,130" fill="none" stroke="#104186" stroke-width="3"/>
-  <text x="42" y="52" font-family="Silkscreen,monospace" font-size="15" fill="#FFFFFF">MAR CARIBE DE NUBIA</text>
+  <path d="M0,420 Q120,348 240,318 Q360,286 470,200 Q560,130 700,150 Q840,168 1000,130" fill="none" stroke="#12283f" stroke-width="3"/>
+  <text x="42" y="52" font-family="Silkscreen,monospace" font-size="15" fill="#fdf6e6">MAR CARIBE DE NUBIA</text>
 
   <path d="M620,210 L720,120 L820,190 L900,180 L870,360 L740,400 L640,320 Z" fill="#7a6a58"/>
   <path d="M746,182 L784,138 L820,196 L776,214 Z" fill="#eef4f7"/>
-  <text x="892" y="270" text-anchor="middle" font-family="Silkscreen,monospace" font-size="13" fill="#104186">SIERRA</text>
-  <text x="892" y="288" text-anchor="middle" font-family="Silkscreen,monospace" font-size="13" fill="#104186">NEVADA</text>
+  <text x="892" y="270" text-anchor="middle" font-family="Silkscreen,monospace" font-size="13" fill="#12283f">SIERRA</text>
+  <text x="892" y="288" text-anchor="middle" font-family="Silkscreen,monospace" font-size="13" fill="#12283f">NEVADA</text>
 
   <path d="M40,700 Q110,620 168,556 Q210,510 252,470" fill="none" stroke="#5e8a5e" stroke-width="30" opacity=".38" stroke-linecap="round"/>
   <path d="M380,760 Q420,660 452,580 Q484,500 520,430" fill="none" stroke="#5e8a5e" stroke-width="30" opacity=".38" stroke-linecap="round"/>
   <path d="M408,258 Q430,400 434,520 Q438,650 470,760" fill="none" stroke="#3f9ed6" stroke-width="11"/>
   <path d="M330,700 Q372,610 410,540 Q424,512 430,500" fill="none" stroke="#3f9ed6" stroke-width="8"/>
-  <text x="474" y="742" font-family="Alegreya Sans,sans-serif" font-size="14" fill="#3566AB">Río Magdalena</text>
-  <text x="196" y="672" font-family="Alegreya Sans,sans-serif" font-size="14" fill="#3566AB">Río Cauca</text>
+  <text x="474" y="742" font-family="Alegreya Sans,sans-serif" font-size="14" fill="#0e7c8b">Río Magdalena</text>
+  <text x="196" y="672" font-family="Alegreya Sans,sans-serif" font-size="14" fill="#0e7c8b">Río Cauca</text>
 
-  <g font-family="Silkscreen,monospace" font-size="11" fill="#104186" opacity=".75">
-    <path d="M930,600 L930,660 M930,600 L922,614 M930,600 L938,614" stroke="#104186" stroke-width="3" fill="none"/>
+  <g font-family="Silkscreen,monospace" font-size="11" fill="#12283f" opacity=".75">
+    <path d="M930,600 L930,660 M930,600 L922,614 M930,600 L938,614" stroke="#12283f" stroke-width="3" fill="none"/>
     <text x="930" y="596" text-anchor="middle">N</text>
   </g>`;
 
   CAMINOS.forEach(([a,b,num])=>{
     const A=P[a],B=P[b];
     const mar=(b==='sietecolores'), liga=(b==='liga');
-    const col = liga?'#3566AB' : mar?'#3566AB' : '#104186';
+    const col = liga?'#c6386b' : mar?'#0e7c8b' : '#12283f';
     s+=`<line x1="${A.x}" y1="${A.y}" x2="${B.x}" y2="${B.y}" stroke="${col}" stroke-width="${liga?5:4}" stroke-dasharray="${mar?'4 9':'10 7'}" opacity=".8"/>`;
     const mx=(A.x+B.x)/2, my=(A.y+B.y)/2;
-    s+=`<circle cx="${mx}" cy="${my}" r="12" fill="#FFFFFF" stroke="${col}" stroke-width="2.5"/>
+    s+=`<circle cx="${mx}" cy="${my}" r="12" fill="#fdf6e6" stroke="${col}" stroke-width="2.5"/>
         <text x="${mx}" y="${my+4}" text-anchor="middle" font-family="Silkscreen,monospace" font-size="10" fill="${col}">${num}</text>`;
   });
 
   LEGEND.forEach(l=>{
     s+=`<g opacity=".9"><polygon points="${l.x},${l.y-11} ${l.x+10},${l.y} ${l.x},${l.y+11} ${l.x-10},${l.y}"
-      fill="#82B8DE" stroke="#104186" stroke-width="2.5"/>
+      fill="#e0951c" stroke="#12283f" stroke-width="2.5"/>
       <text x="${l.x}" y="${l.y+26}" text-anchor="middle" font-family="Silkscreen,monospace" font-size="9" fill="#8a6410">${l.n}</text></g>`;
   });
 
-  s+=`<g class="nodo" data-id="liga"><rect class="pin" x="784" y="184" width="32" height="32" fill="#DCE8F4" stroke="#3566AB" stroke-width="4"/>
+  s+=`<g class="nodo" data-id="liga"><rect class="pin" x="784" y="184" width="32" height="32" fill="#f6e7c4" stroke="#c6386b" stroke-width="4"/>
     <text x="800" y="174" text-anchor="middle">LIGA NUBIA</text>
     <text class="sub" x="800" y="236" text-anchor="middle">Picos Gemelos</text></g>`;
 
   NODOS.forEach(n=>{
     const pueblo=n.s.includes('Pueblo');
     s+=`<g class="nodo" data-id="${n.id}" tabindex="0" role="button" aria-label="${n.t}">
-      <circle class="pin" cx="${n.x}" cy="${n.y}" r="${pueblo?11:15}" fill="${pueblo?'#82B8DE':'#3566AB'}" stroke="#104186" stroke-width="3.5"/>
+      <circle class="pin" cx="${n.x}" cy="${n.y}" r="${pueblo?11:15}" fill="${pueblo?'#e0951c':'#c6386b'}" stroke="#12283f" stroke-width="3.5"/>
       <text x="${n.x}" y="${n.y-22}" text-anchor="middle">${n.t}</text>
       <text class="sub" x="${n.x}" y="${n.y+30}" text-anchor="middle">${n.s}</text>
     </g>`;
@@ -1403,6 +1574,73 @@ function registrarFotos(){
   document.querySelectorAll('[data-foto]').forEach(n=>
     window.NubiaEditor.imagen(n, 'img:' + n.dataset.foto));
 }
+/* ===================== MAPA PROPIO DE LA REGIÓN =====================
+   Quien dirija puede usar su propio mapa en vez del de Nubia. Se guarda
+   con su cuenta, igual que los textos: los demás siguen viendo el de siempre. */
+const CLAVE_MAPA = 'img:mapa-region';
+const CLAVE_ENC  = 'img:mapa-region@enc';
+
+function mapaPropioURL(){ return window.NubiaEditor ? window.NubiaEditor.leer(CLAVE_MAPA) : null; }
+function mapaPropioEnc(){
+  const v = window.NubiaEditor ? window.NubiaEditor.leer(CLAVE_ENC) : null;
+  try{ return v ? JSON.parse(v) : null; }catch{ return null; }
+}
+function pintarMapaPropio(){
+  const url = mapaPropioURL();
+  const caja = document.getElementById('mapaPropio');
+  const svg  = document.getElementById('mapa');
+  if(!caja || !svg) return;
+  if(url){
+    const e = mapaPropioEnc() || {z:1,x:.5,y:.5};
+    const l = document.getElementById('mapaProp');
+    l.style.backgroundImage = 'url("'+url+'")';
+    l.style.backgroundSize = (e.z*100) + '% auto';
+    l.style.backgroundPosition = (e.x*100) + '% ' + (e.y*100) + '%';
+    caja.style.display = ''; svg.style.display = 'none';
+    document.getElementById('mapaQuitar').style.display = '';
+    document.getElementById('mapaEncuadrar').style.display = '';
+    document.getElementById('mapaSubir').textContent = 'CAMBIAR MI MAPA';
+    document.getElementById('mapaNota').textContent = 'Estás viendo tu mapa. Solo tú lo ves.';
+  } else {
+    caja.style.display = 'none'; svg.style.display = '';
+    document.getElementById('mapaQuitar').style.display = 'none';
+    document.getElementById('mapaEncuadrar').style.display = 'none';
+    document.getElementById('mapaSubir').textContent = 'SUBIR MI MAPA';
+    document.getElementById('mapaNota').textContent =
+      'Puedes usar tu propio mapa. Se guarda en tu cuenta: los demás siguen viendo el de Nubia.';
+  }
+}
+document.getElementById('mapaSubir').onclick = ()=> document.getElementById('mapaArch').click();
+document.getElementById('mapaArch').onchange = async function(){
+  const f = this.files && this.files[0]; if(!f || !window.NubiaEditor) return;
+  const url = await window.NubiaEditor.leerArchivo(f, 1400);
+  this.value = '';
+  if(!url) return;
+  await window.NubiaEditor.guardarClave(CLAVE_MAPA, url);
+  pintarMapaPropio();
+  abrirEncuadreMapa();
+};
+document.getElementById('mapaEncuadrar').onclick = abrirEncuadreMapa;
+document.getElementById('mapaQuitar').onclick = async ()=>{
+  if(!window.NubiaEditor) return;
+  if(!confirm('¿Volver al mapa de Nubia? Tu imagen se borra de tu cuenta.')) return;
+  await window.NubiaEditor.borrarClave(CLAVE_MAPA);
+  await window.NubiaEditor.borrarClave(CLAVE_ENC);
+  pintarMapaPropio();
+};
+function abrirEncuadreMapa(){
+  const url = mapaPropioURL(); if(!url || !window.NubiaEditor) return;
+  window.NubiaEditor.encuadrar({
+    url, titulo:'ENCUADRAR TU MAPA', ancho:1000, alto:780,
+    encuadre: mapaPropioEnc(),
+    alAceptar: async r => {
+      await window.NubiaEditor.guardarClave(CLAVE_ENC, JSON.stringify(r));
+      pintarMapaPropio();
+    }
+  });
+}
+addEventListener('load', ()=> setTimeout(pintarMapaPropio, 300));
+
 </script>
 </body>
 </html>

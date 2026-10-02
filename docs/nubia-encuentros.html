@@ -13,7 +13,7 @@
   --tinta:#104186; --tinta-suave:#6E8CAE; --mar:#3566AB;
   --arena:#DCE8F4; --arena-hueso:#FFFFFF; --oro:#82B8DE;
   --selva:#2E8B57; --fucsia:#3566AB; --peligro:#C0392B;
-  --gris:#808080; --fondo:#F1F1F1;
+  --gris:#808080; --carbon:#1C1C1C; --fondo:#F1F1F1;
   --sombra:rgba(16,65,134,.13);
   --elev-1:0 1px 3px rgba(16,65,134,.10), 0 1px 2px rgba(16,65,134,.06);
   --elev-2:0 3px 10px rgba(16,65,134,.11), 0 1px 3px rgba(16,65,134,.07);
@@ -114,6 +114,12 @@ body{background:var(--fondo)}
 input,select,textarea{border-radius:var(--r-s);border:1px solid #BCD2E6;padding:9px 10px}
 input:focus,select:focus,textarea:focus{outline:none;border-color:var(--mar);
   box-shadow:0 0 0 3px rgba(53,102,171,.16)}
+
+/* ---- el carbón y el gris de la paleta, para leer mejor ---- */
+body{color:var(--carbon)}
+p,li,td,dd,blockquote,.desc,.act,.nota,.sub2{color:var(--carbon)}
+.nota,.sub2,.pcpie,small{color:var(--gris)}
+h1,h2,h3,h4,h5,summary,label,.eyeb{color:var(--tinta)}
 </style>
 
 <style>
@@ -723,8 +729,160 @@ pintar();
       m.nodo.style.background = overrides.get(clave + '@col');
   };
 
-  window.NubiaEditor = { marcar: marcar, imagen: imagen,
-    get activo(){ return editando; } };
+
+  /* ---------------- encuadre reutilizable ----------------
+     Mismo comportamiento que en el tablero: arrastrar para mover y rueda
+     o barra para acercar. Todo en proporciones, nunca en píxeles. */
+  const encCss = document.createElement('style');
+  encCss.textContent = `
+    #nbEnc{position:fixed;inset:0;z-index:340;display:none;place-items:center;
+      background:rgba(16,65,134,.6);backdrop-filter:blur(3px)}
+    #nbEnc.ver{display:grid}
+    #nbEnc .caja{background:#fff;border:2px solid #104186;border-radius:12px;width:min(620px,94vw);
+      box-shadow:0 18px 50px rgba(16,65,134,.3);overflow:hidden}
+    #nbEnc .cab{background:#104186;color:#fff;font-family:'Silkscreen',monospace;font-size:11px;padding:13px 15px}
+    #nbEnc .cue{padding:15px}
+    #nbEnc .lienzo{position:relative;overflow:hidden;border:2px solid #104186;border-radius:7px;
+      background:#E9EFF6;cursor:grab;touch-action:none;user-select:none;margin-bottom:11px}
+    #nbEnc .lienzo.mov{cursor:grabbing}
+    #nbEnc .lienzo img{position:absolute;pointer-events:none}
+    #nbEnc .mandos{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;margin-bottom:11px}
+    #nbEnc .mandos span{font-family:'Silkscreen',monospace;font-size:9px;color:#6E8CAE}
+    #nbEnc .mandos input{width:100%;accent-color:#3566AB}
+    #nbEnc .pct{font-family:'Silkscreen',monospace;font-size:10px;color:#3566AB;min-width:48px;text-align:right}
+    #nbEnc .pie{display:flex;gap:8px;flex-wrap:wrap}
+    #nbEnc .pie button{font-family:'Silkscreen',monospace;font-size:10px;padding:9px 12px;
+      border:2px solid #104186;border-radius:7px;background:#fff;color:#104186;cursor:pointer}
+    #nbEnc .pie button.ppal{background:#3566AB;border-color:#3566AB;color:#fff}`;
+  (document.head || document.documentElement).appendChild(encCss);
+
+  const encCapa = document.createElement('div');
+  encCapa.id = 'nbEnc';
+  encCapa.innerHTML = `<div class="caja">
+    <div class="cab" id="nbEncTit">ENCUADRAR</div>
+    <div class="cue">
+      <div class="lienzo" id="nbEncLienzo"><img id="nbEncImg" alt=""></div>
+      <div class="mandos"><span>ZOOM</span>
+        <input id="nbEncZoom" type="range" min="20" max="400" value="100">
+        <span class="pct" id="nbEncPct">100 %</span></div>
+      <div class="pie">
+        <button class="ppal" id="nbEncOk">USAR ASÍ</button>
+        <button id="nbEncFit">AJUSTAR AL BORDE</button>
+        <button id="nbEncNo">CANCELAR</button>
+      </div>
+    </div></div>`;
+  function montarEnc(){ if(document.body && !document.body.contains(encCapa)) document.body.appendChild(encCapa); }
+  if(document.body) montarEnc(); else addEventListener('DOMContentLoaded', montarEnc);
+
+  let enc = null;
+  const rel = () => enc.ancho / enc.alto;
+  function encPintar(){
+    const im = document.getElementById('nbEncImg');
+    if(!enc || !im.naturalWidth) return;
+    const rImg = im.naturalWidth / im.naturalHeight;
+    const zAlto = enc.z * rel() / rImg;
+    im.style.width  = (enc.z * 100) + '%';
+    im.style.height = (zAlto * 100) + '%';
+    im.style.left = (-(enc.z - 1) * enc.x * 100) + '%';
+    im.style.top  = (-(zAlto - 1) * enc.y * 100) + '%';
+    document.getElementById('nbEncZoom').value = Math.round(enc.z * 100);
+    document.getElementById('nbEncPct').textContent = Math.round(enc.z * 100) + ' %';
+  }
+  function encFit(){
+    const im = document.getElementById('nbEncImg');
+    if(!enc || !im.naturalWidth) return;
+    enc.z = Math.max(1, (im.naturalWidth / im.naturalHeight) / rel());
+    enc.x = .5; enc.y = .5;
+    encPintar();
+  }
+  function encuadrar({url, titulo, ancho, alto, encuadre, alAceptar}){
+    montarEnc();
+    enc = { url, ancho: ancho||4, alto: alto||3, alAceptar,
+            z: encuadre ? encuadre.z : 1, x: encuadre ? encuadre.x : .5, y: encuadre ? encuadre.y : .5 };
+    document.getElementById('nbEncTit').textContent = titulo || 'ENCUADRAR';
+    document.getElementById('nbEncLienzo').style.aspectRatio = enc.ancho + ' / ' + enc.alto;
+    const im = document.getElementById('nbEncImg');
+    im.src = url;
+    encCapa.classList.add('ver');
+    const listo = () => requestAnimationFrame(()=>
+      requestAnimationFrame(()=> encuadre ? encPintar() : encFit()));
+    im.onload = listo;
+    if(im.complete && im.naturalWidth) listo();
+  }
+  let encArr = null;
+  document.addEventListener('pointerdown', e=>{
+    if(!enc || !e.target.closest('#nbEncLienzo')) return;
+    encArr = { px:e.clientX, py:e.clientY, x:enc.x, y:enc.y };
+    document.getElementById('nbEncLienzo').classList.add('mov');
+  });
+  addEventListener('pointermove', e=>{
+    if(!encArr || !enc) return;
+    const L = document.getElementById('nbEncLienzo'), im = document.getElementById('nbEncImg');
+    if(!im.naturalWidth) return;
+    const rImg = im.naturalWidth / im.naturalHeight;
+    const zAlto = enc.z * rel() / rImg;
+    const sx = Math.max(1, (enc.z - 1) * L.clientWidth);
+    const sy = Math.max(1, (zAlto - 1) * L.clientHeight);
+    enc.x = Math.min(1, Math.max(0, encArr.x - (e.clientX - encArr.px) / sx));
+    enc.y = Math.min(1, Math.max(0, encArr.y - (e.clientY - encArr.py) / sy));
+    encPintar();
+  });
+  addEventListener('pointerup', ()=>{ encArr=null;
+    const L=document.getElementById('nbEncLienzo'); if(L) L.classList.remove('mov'); });
+  document.addEventListener('wheel', e=>{
+    if(!enc || !e.target.closest('#nbEncLienzo')) return;
+    e.preventDefault();
+    enc.z = Math.min(4, Math.max(.2, enc.z * (e.deltaY < 0 ? 1.1 : .9)));
+    encPintar();
+  }, {passive:false});
+  document.addEventListener('input', e=>{
+    if(e.target.id === 'nbEncZoom' && enc){ enc.z = (+e.target.value||100)/100; encPintar(); }
+  });
+  document.addEventListener('click', e=>{
+    if(e.target.id === 'nbEncFit'){ encFit(); return; }
+    if(e.target.id === 'nbEncNo'){ encCapa.classList.remove('ver'); enc = null; return; }
+    if(e.target.id === 'nbEncOk'){
+      const r = { z:enc.z, x:enc.x, y:enc.y }, f = enc.alAceptar;
+      encCapa.classList.remove('ver'); enc = null;
+      if(f) f(r);
+    }
+  });
+  if(window.ResizeObserver) addEventListener('DOMContentLoaded', ()=>{
+    const L = document.getElementById('nbEncLienzo');
+    if(L) new ResizeObserver(()=>{ if(enc) encPintar(); }).observe(L);
+  });
+
+  /* Lee un archivo de imagen y lo reduce al lado máximo pedido. */
+  function leerArchivo(arch, lado){
+    const L = lado || 256;
+    return new Promise(res=>{
+      const l = new FileReader();
+      l.onload = () => {
+        const im = new Image();
+        im.onload = () => {
+          const e = Math.min(1, L / Math.max(im.width, im.height));
+          const w = Math.round(im.width * e), h = Math.round(im.height * e);
+          const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+          const g = cv.getContext('2d');
+          g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high';
+          g.drawImage(im, 0, 0, w, h);
+          res(cv.toDataURL('image/jpeg', .9));
+        };
+        im.onerror = () => res('');
+        im.src = l.result;
+      };
+      l.onerror = () => res('');
+      l.readAsDataURL(arch);
+    });
+  }
+
+  window.NubiaEditor = {
+    marcar: marcar, imagen: imagen, encuadrar: encuadrar, leerArchivo: leerArchivo,
+    leer: c => overrides.has(c) ? overrides.get(c) : null,
+    guardarClave: (c,v) => guardar(c,v),
+    borrarClave: c => quitar(c),
+    get activo(){ return editando; }
+  };
   iniciar();
 })();
 
