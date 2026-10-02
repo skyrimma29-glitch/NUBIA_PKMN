@@ -10,13 +10,28 @@
 <link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=Alegreya:wght@400;700&family=Alegreya+Sans:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  --tinta:#12283f; --tinta-suave:#3d556e; --mar:#0e7c8b;
-  --arena:#f6e7c4; --arena-hueso:#fdf6e6; --oro:#e0951c;
-  --selva:#2e7d4f; --fucsia:#c6386b; --sombra:rgba(18,40,63,.18);
+  /* Paleta azul de Nubia. Los nombres se mantienen para no romper nada:
+     --oro es ahora el azul claro de realce y --fucsia el azul de acción. */
+  --tinta:#104186;         /* azul profundo: estructura, bordes, cabeceras */
+  --tinta-suave:#6E8CAE;   /* texto secundario */
+  --mar:#3566AB;           /* azul medio: etiquetas y enlaces */
+  --arena:#DCE8F4;         /* superficie tintada */
+  --arena-hueso:#FFFFFF;   /* fondo de panel */
+  --oro:#82B8DE;           /* azul claro de realce sobre fondo oscuro */
+  --fucsia:#3566AB;        /* acción principal */
+  --selva:#2E8B57;         /* salud y confirmación */
+  --peligro:#C0392B;       /* solo para lo que destruye */
+  --gris:#808080;
+  --fondo:#F1F1F1;
+  --sombra:rgba(16,65,134,.13);
+  --elev-1:0 1px 3px rgba(16,65,134,.10), 0 1px 2px rgba(16,65,134,.06);
+  --elev-2:0 3px 10px rgba(16,65,134,.11), 0 1px 3px rgba(16,65,134,.07);
+  --elev-3:0 8px 26px rgba(16,65,134,.15), 0 2px 6px rgba(16,65,134,.08);
+  --r-s:7px; --r-m:11px; --r-l:15px;
 }
 *{box-sizing:border-box}
 html,body{height:100%}
-body{margin:0;background:var(--arena);color:var(--tinta);
+body{margin:0;background:var(--fondo);color:var(--tinta);
   font-family:'Alegreya',Georgia,serif;font-size:16px;line-height:1.55;
   display:flex;flex-direction:column;min-height:100%}
 .wrap{max-width:1820px;margin:0 auto;padding:0 18px;width:100%}
@@ -25,24 +40,28 @@ h1,h2,h3{font-family:'Silkscreen','Courier New',monospace;line-height:1.3}
   repeating-linear-gradient(135deg,var(--tinta) 0 7px,transparent 7px 14px),
   repeating-linear-gradient(45deg,var(--tinta) 0 7px,var(--arena-hueso) 7px 14px)}
 
-header{background:var(--tinta);color:var(--arena-hueso);padding:16px 0;flex:0 0 auto}
+header{background:var(--tinta);color:#fff;padding:16px 0;flex:0 0 auto;box-shadow:var(--elev-2)}
 .logo{width:34px;height:34px;image-rendering:pixelated;display:block}
 header .f{display:flex;justify-content:space-between;align-items:baseline;gap:18px;flex-wrap:wrap}
 header h1{margin:0;display:flex;align-items:center;gap:11px;font-size:clamp(18px,2.6vw,25px);color:var(--arena-hueso)}
 header h1 span{color:var(--oro)}
-header a{color:#8fc8d3;font-family:'Alegreya Sans',sans-serif;font-size:14px;text-decoration:none;border-bottom:1px solid #4d7183}
+header a{color:#9FC7E8;font-family:'Alegreya Sans',sans-serif;font-size:14px;text-decoration:none;border-bottom:1px solid #4d7183}
 header a:hover{color:var(--arena-hueso)}
 
-input,select,textarea{font-family:'Alegreya Sans',sans-serif;font-size:14px;padding:7px 8px;
-  border:2px solid var(--tinta);background:#fff;color:var(--tinta);max-width:100%}
+input,select,textarea{font-family:'Alegreya Sans',sans-serif;font-size:14px;padding:9px 10px;
+  border:1px solid #BCD2E6;background:#fff;color:var(--tinta);max-width:100%;
+  border-radius:var(--r-s);transition:border-color .13s,box-shadow .13s}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--mar);
+  box-shadow:0 0 0 3px rgba(53,102,171,.16)}
 input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--mar);outline-offset:1px}
 button{font-family:'Silkscreen',monospace;cursor:pointer}
-.bt{font-size:10px;padding:8px 10px;border:2px solid var(--tinta);background:var(--arena-hueso);color:var(--tinta)}
-.bt:hover{background:#fff}
+.bt{font-size:10px;padding:9px 12px;border:2px solid var(--tinta);background:var(--arena-hueso);
+  color:var(--tinta);border-radius:var(--r-s);transition:background .13s,color .13s,border-color .13s,box-shadow .13s}
+.bt:hover:not(:disabled){background:var(--arena);border-color:var(--mar)}
+.bt.rosa{background:var(--fucsia);border-color:var(--fucsia);color:#fff}
+.bt.rosa:hover:not(:disabled){background:var(--tinta);border-color:var(--tinta)}
+.bt:disabled{opacity:.4;cursor:default}
 .bt.on{background:var(--tinta);color:var(--arena-hueso)}
-.bt.rosa{background:var(--fucsia);color:#fff}
-.bt.rosa:hover{background:#d8437c}
-.bt:disabled{background:#cec7b8;color:#807869;cursor:not-allowed}
 .bt:focus-visible{outline:3px solid var(--fucsia);outline-offset:2px}
 
 .sala{background:var(--arena-hueso);border-bottom:3px solid var(--tinta);flex:0 0 auto}
@@ -61,7 +80,7 @@ main{flex:1 0 auto;padding:18px 0 44px}
 @media(max-width:1280px){.tres{grid-template-columns:230px minmax(0,1fr)}}
 @media(max-width:860px){.tres{grid-template-columns:1fr}}
 
-.panel{background:var(--arena-hueso);border:3px solid var(--tinta);padding:13px;box-shadow:5px 5px 0 var(--sombra);margin-bottom:15px}
+.panel{background:var(--arena-hueso);border:2px solid var(--tinta);padding:13px;box-shadow:var(--elev-2);margin-bottom:15px}
 .panel h2{font-size:11px;margin:0 0 10px;color:var(--mar)}
 .panel .fila{display:flex;gap:6px;flex-wrap:wrap;align-items:end;margin-bottom:8px}
 .panel .fila:last-child{margin-bottom:0}
@@ -130,15 +149,15 @@ body.escaneando #tablero::after{content:'ESCÁNER DE POKÉDEX ACTIVO · TOCA UN 
 .cbox{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:10px}
 .cbox label{display:flex;align-items:center;gap:6px;font-family:'Alegreya Sans',sans-serif;
   font-size:12px;color:var(--tinta);background:#fff;border:2px solid var(--tinta);padding:5px 7px;cursor:pointer;margin:0}
-.cbox label:hover{background:#fff6df}
+.cbox label:hover{background:#EEF5FC}
 .cbox input{width:auto;margin:0}
 .cbox b{width:10px;height:10px;border:1px solid var(--tinta);display:block;flex:0 0 auto}
 .dlgtiros{display:flex;gap:6px;flex-wrap:wrap;background:#fff;border:2px solid var(--tinta);padding:8px;margin-bottom:10px}
 .dlgtiros button{font-size:9px;padding:8px 9px;border:2px solid var(--tinta);background:var(--arena-hueso);color:var(--tinta)}
-.dlgtiros button:hover{background:#fff6df}
+.dlgtiros button:hover{background:#EEF5FC}
 
 /* ------------- notas del registro ------------- */
-.nota-log{background:#eef3f6;padding:8px 11px;font-family:'Alegreya Sans',sans-serif;
+.nota-log{background:#F1F6FB;padding:8px 11px;font-family:'Alegreya Sans',sans-serif;
   font-size:13px;color:var(--tinta);border-left:4px solid var(--mar);animation:surgir .22s ease both}
 .nota-log b{font-family:'Silkscreen',monospace;font-size:10px}
 
@@ -159,7 +178,7 @@ body.enfoque main{padding-top:10px}
 /* ------------- objeto recibido ------------- */
 #capaObjeto{position:fixed;inset:0;z-index:90;display:none;place-items:center;pointer-events:none}
 #capaObjeto.ver{display:grid}
-.sello{background:var(--arena-hueso);border:5px solid var(--tinta);box-shadow:0 14px 40px rgba(0,0,0,.45);
+.sello{background:var(--arena-hueso);border:5px solid var(--tinta);box-shadow:var(--elev-3);
   padding:26px 38px;text-align:center;animation:sellar .42s cubic-bezier(.2,1.5,.4,1) both}
 .sello svg{width:96px;height:96px;display:block;margin:0 auto 12px}
 .sello .txt{font-family:'Silkscreen',monospace;font-size:15px;color:var(--tinta)}
@@ -173,20 +192,20 @@ body.enfoque main{padding-top:10px}
 #capaMapaN{position:fixed;inset:0;z-index:80;display:none;background:rgba(11,22,34,.35);
   place-items:center;backdrop-filter:blur(1px)}
 #capaMapaN.ver{display:grid;animation:brotar .25s ease both}
-.mapaN{background:var(--arena-hueso);border:5px solid var(--tinta);box-shadow:0 16px 46px rgba(0,0,0,.5);
+.mapaN{background:var(--arena-hueso);border:5px solid var(--tinta);box-shadow:var(--elev-3);
   width:min(92vw,880px);max-height:92vh;overflow:auto}
 .mapaN .cab{background:var(--tinta);color:var(--arena-hueso);padding:12px 16px;display:flex;
   justify-content:space-between;align-items:center;gap:12px}
 .mapaN .cab b{font-family:'Silkscreen',monospace;font-size:13px}
-.mapaN .cab span{font-family:'Alegreya Sans',sans-serif;font-size:13px;color:#8fc8d3}
+.mapaN .cab span{font-family:'Alegreya Sans',sans-serif;font-size:13px;color:#9FC7E8}
 .mapaN svg{display:block;width:100%;height:auto}
-.faroTxt{font-family:'Silkscreen',monospace;font-size:13px;fill:#12283f}
-.faroTxt{font-family:'Silkscreen',monospace;font-size:13px;fill:#12283f}
+.faroTxt{font-family:'Silkscreen',monospace;font-size:13px;fill:#104186}
+.faroTxt{font-family:'Silkscreen',monospace;font-size:13px;fill:#104186}
 
 /* ------------- pokédex ------------- */
 .contador{display:flex;align-items:baseline;gap:8px;background:var(--tinta);color:var(--oro);
   padding:9px 12px;font-family:'Silkscreen',monospace;margin-bottom:10px}
-.contador b{font-size:19px} .contador span{font-size:10px;color:#8fc8d3}
+.contador b{font-size:19px} .contador span{font-size:10px;color:#9FC7E8}
 .barrap{height:9px;background:#d8d2c4;border:2px solid var(--tinta);margin-bottom:11px}
 .barrap i{display:block;height:100%;background:var(--oro);transition:width .5s ease}
 .regs{max-height:190px;overflow:auto;display:grid;gap:2px;background:var(--tinta);border:2px solid var(--tinta)}
@@ -196,7 +215,7 @@ body.enfoque main{padding-top:10px}
 #dexDlg{max-width:400px}
 .dexcab{background:var(--e0524f,#e0524f);background:#e0524f;color:#fff;padding:12px 15px;
   font-family:'Silkscreen',monospace;font-size:12px;display:flex;justify-content:space-between;align-items:center}
-.dexcab i{width:13px;height:13px;background:#8fd6e8;border:2px solid #12283f;border-radius:50%;display:block}
+.dexcab i{width:13px;height:13px;background:#8fd6e8;border:2px solid #104186;border-radius:50%;display:block}
 .dexcuerpo{padding:16px;text-align:center}
 .dexcuerpo img{width:150px;height:150px;object-fit:contain;margin:0 auto 6px;display:block;
   animation:brotar .3s ease both}
@@ -214,12 +233,12 @@ body.enfoque main{padding-top:10px}
 
 /* ------------- equipo y caja ------------- */
 .slots{display:grid;grid-template-columns:repeat(3,1fr);gap:16px 14px}
-.slot{aspect-ratio:1;border-radius:50%;border:3px solid var(--tinta);background:#e4dcc6;
+.slot{aspect-ratio:1;border-radius:50%;border:2px solid var(--tinta);background:#DCE8F4;
   display:grid;place-items:center;position:relative;cursor:pointer;overflow:visible;
   transition:transform .14s,box-shadow .14s,border-color .14s}
-.slot.vacio{border-style:dashed;border-color:#a89f8c;background:rgba(0,0,0,.04);cursor:default}
-.slot.vacio::after{content:'';width:34%;height:34%;border-radius:50%;background:#c9c0a8}
-.slot:not(.vacio):hover{transform:translateY(-3px);box-shadow:0 5px 0 var(--sombra);border-color:var(--oro)}
+.slot.vacio{border-style:dashed;border-color:#A9C2DA;background:rgba(0,0,0,.04);cursor:default}
+.slot.vacio::after{content:'';width:34%;height:34%;border-radius:50%;background:#BCD2E6}
+.slot:not(.vacio):hover{transform:translateY(-3px);box-shadow:var(--elev-2);border-color:var(--oro)}
 .slot img{width:88%;height:88%;object-fit:contain;image-rendering:auto}
 .slot .lv{position:absolute;bottom:-6px;right:-4px;font-family:'Silkscreen',monospace;font-size:8px;
   background:var(--fucsia);color:#fff;padding:2px 4px;border:2px solid var(--tinta)}
@@ -241,27 +260,27 @@ body.enfoque main{padding-top:10px}
 @media(max-width:720px){.pc .lado+.lado{border-left:0;border-top:3px solid var(--tinta)}}
 .pc h4{font-family:'Silkscreen',monospace;font-size:11px;margin:0 0 12px;color:var(--mar)}
 .caja{display:grid;grid-template-columns:repeat(6,1fr);gap:7px;max-height:340px;overflow:auto;
-  background:#e9f0f4;border:3px solid var(--tinta);padding:9px}
+  background:#F1F6FB;border:2px solid var(--tinta);padding:9px}
 @media(max-width:720px){.caja{grid-template-columns:repeat(4,1fr)}}
-.cel{aspect-ratio:1;border:2px solid #9fb3c0;background:#fff;display:grid;place-items:center;
+.cel{aspect-ratio:1;border:2px solid #BCD2E6;background:#fff;display:grid;place-items:center;
   cursor:grab;position:relative;transition:border-color .12s,transform .12s}
 .cel:hover{border-color:var(--fucsia);transform:translateY(-2px)}
 .cel img{width:92%;height:92%;object-fit:contain}
 .cel.hueco{border-style:dashed;background:rgba(0,0,0,.03);cursor:default}
-.cel.encima{border-color:var(--fucsia);box-shadow:0 0 0 3px rgba(198,56,107,.22)}
+.cel.encima{border-color:var(--fucsia);box-shadow:0 0 0 3px rgba(53,102,171,.22)}
 .pcpie{font-family:'Alegreya Sans',sans-serif;font-size:12px;color:var(--tinta-suave);margin-top:10px}
 
-.menuslot{position:fixed;z-index:120;background:var(--arena-hueso);border:3px solid var(--tinta);
-  box-shadow:6px 6px 0 rgba(0,0,0,.32);padding:8px;display:none;animation:brotar .14s ease both}
+.menuslot{position:fixed;z-index:120;background:var(--arena-hueso);border:2px solid var(--tinta);
+  box-shadow:var(--elev-2);padding:8px;display:none;animation:brotar .14s ease both}
 .menuslot.ver{display:grid;gap:5px}
 .menuslot button{font-size:9px;padding:9px 11px;border:2px solid var(--tinta);
   background:var(--arena-hueso);color:var(--tinta);text-align:left}
-.menuslot button:hover{background:#fff6df}
+.menuslot button:hover{background:#EEF5FC}
 .menuslot .tit{font-family:'Silkscreen',monospace;font-size:10px;color:var(--mar);padding:2px 4px 5px}
 
 /* ------------- ficha única del jugador ------------- */
 .fichaya{border:3px solid var(--oro);background:#fff8e8;padding:11px;display:flex;gap:11px;align-items:center}
-.fichaya .av{width:44px;height:44px;border-radius:50%;border:3px solid var(--tinta);
+.fichaya .av{width:44px;height:44px;border-radius:50%;border:2px solid var(--tinta);
   display:grid;place-items:center;font-family:'Silkscreen',monospace;font-size:12px;color:#fff;flex:0 0 auto;overflow:hidden}
 .fichaya .av img{width:100%;height:100%;object-fit:cover}
 .fichaya b{font-family:'Silkscreen',monospace;font-size:11px;display:block}
@@ -272,7 +291,7 @@ body.enfoque main{padding-top:10px}
 .npc-it{background:var(--arena-hueso);padding:8px 9px;display:grid;
   grid-template-columns:32px 1fr auto;gap:9px;align-items:center;cursor:grab;
   transition:background .12s,transform .12s}
-.npc-it:hover{background:#fff6df}
+.npc-it:hover{background:#EEF5FC}
 .npc-it.arrastrado{opacity:.4}
 .npc-it .av{width:32px;height:32px;border-radius:50%;border:2px solid var(--tinta);
   display:grid;place-items:center;overflow:hidden;font-family:'Silkscreen',monospace;font-size:9px;color:#fff}
@@ -300,22 +319,22 @@ body.enfoque main{padding-top:10px}
 #confirmar{border:0;padding:0;background:transparent;max-width:380px;width:92%;overflow:visible}
 #confirmar::backdrop{background:rgba(10,20,32,.66);backdrop-filter:blur(2px)}
 #confirmar[open]{animation:brotar .18s ease both}
-.confcaja{background:var(--arena-hueso);border:4px solid var(--fucsia);width:100%;
-  box-shadow:0 16px 44px rgba(0,0,0,.5)}
+.confcaja{background:var(--arena-hueso);border:2px solid var(--fucsia);width:100%;
+  box-shadow:var(--elev-3)}
 .confcaja .cab{background:var(--fucsia);color:#fff;padding:11px 15px;
   font-family:'Silkscreen',monospace;font-size:12px}
 .confcaja .cnt{padding:18px;text-align:center}
 .confcaja .av{width:84px;height:84px;margin:0 auto 12px;border-radius:50%;
-  border:3px solid var(--tinta);display:grid;place-items:center;overflow:hidden}
+  border:2px solid var(--tinta);display:grid;place-items:center;overflow:hidden}
 .confcaja .av img{width:100%;height:100%;object-fit:contain}
 .confcaja p{margin:0 0 16px;font-size:16px}
 .confcaja .fila{display:flex;gap:9px}
 .confcaja .fila button{flex:1}
 
 /* ------------- jugadores ------------- */
-.jug{background:var(--arena-hueso);border-bottom:2px solid #e2d5b4;padding:9px 10px;cursor:pointer;
+.jug{background:var(--arena-hueso);border-bottom:2px solid #D9E6F2;padding:9px 10px;cursor:pointer;
   transition:background .12s}
-.jug:hover{background:#fff6df}
+.jug:hover{background:#EEF5FC}
 .jug b{font-family:'Silkscreen',monospace;font-size:10px;display:block}
 .jug span{font-family:'Alegreya Sans',sans-serif;font-size:11px;color:var(--tinta-suave)}
 .jugdet{background:#fff8e8;border:2px solid var(--oro);padding:10px;margin-top:8px}
@@ -332,11 +351,11 @@ body.enfoque main{padding-top:10px}
 #abrirLateral{position:fixed;right:14px;top:14px;z-index:100;display:none;
   background:var(--tinta);color:var(--oro);border:3px solid var(--oro);
   font-family:'Silkscreen',monospace;font-size:11px;padding:10px 13px;cursor:pointer;
-  box-shadow:4px 4px 0 rgba(0,0,0,.3);transition:background .14s,transform .1s;
+  box-shadow:var(--elev-2);transition:background .14s,transform .1s;
   align-items:center;gap:8px}
 body.dm #abrirLateral{display:inline-flex}
-#abrirLateral:hover{background:#1b3a58}
-#abrirLateral:active{transform:translate(2px,2px);box-shadow:2px 2px 0 rgba(0,0,0,.3)}
+#abrirLateral:hover{background:#0C3267}
+#abrirLateral:active{transform:translateY(1px);box-shadow:var(--elev-1)}
 body.lateral-abierto #abrirLateral{display:none}
 
 #lateral{position:fixed;top:0;right:0;bottom:0;width:min(360px,92vw);z-index:110;
@@ -365,7 +384,7 @@ body.lateral-abierto #lateral{transform:none}
 .obj .cant{font-family:'Silkscreen',monospace;font-size:12px;background:var(--tinta);color:var(--oro);padding:3px 6px}
 .obj button{font-size:8px;padding:4px 6px;border:2px solid var(--tinta-suave);background:#fff;color:var(--tinta)}
 .obj button:hover{border-color:var(--fucsia);color:var(--fucsia)}
-.cat{background:var(--arena-hueso);border-bottom:2px solid #e2d5b4;padding:7px 9px;
+.cat{background:var(--arena-hueso);border-bottom:2px solid #D9E6F2;padding:7px 9px;
   display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center}
 .cat b{font-family:'Silkscreen',monospace;font-size:9px}
 .cat small{display:block;font-family:'Alegreya Sans',sans-serif;font-size:11px;color:var(--tinta-suave)}
@@ -392,10 +411,10 @@ body.lateral-abierto #lateral{transform:none}
   #railPC{font-size:8px;padding:6px 8px}
 }
 body.enfoque #railIzq,body.enfoque #railDer{display:flex}
-.railbt{width:64px;height:64px;border-radius:50%;border:3px solid var(--tinta);
+.railbt{width:64px;height:64px;border-radius:50%;border:2px solid var(--tinta);
   background:var(--arena-hueso);display:grid;place-items:center;cursor:pointer;
-  box-shadow:0 4px 0 var(--sombra);transition:transform .14s,background .14s,box-shadow .14s}
-.railbt:hover{transform:translateY(-3px);background:#fff;box-shadow:0 7px 0 var(--sombra)}
+  box-shadow:var(--elev-2);transition:transform .14s,background .14s,box-shadow .14s}
+.railbt:hover{transform:translateY(-3px);background:#fff;box-shadow:var(--elev-2)}
 .railbt.on{background:var(--tinta);border-color:var(--oro)}
 .railbt.on svg{stroke:var(--oro)}
 .railbt svg{width:32px;height:32px;stroke:var(--tinta);fill:none;stroke-width:2.1;
@@ -406,14 +425,14 @@ body.enfoque #railIzq,body.enfoque #railDer{display:flex}
 .railbt{position:relative}
 .railbt:hover span{opacity:1}
 #railDer .railbt span{left:auto;right:74px}
-.railpk{width:64px;height:64px;border-radius:50%;border:3px solid var(--tinta);
-  background:#dfe8ee;display:grid;place-items:center;overflow:hidden;position:relative;
-  box-shadow:0 4px 0 var(--sombra);cursor:pointer;transition:transform .14s,border-color .14s}
+.railpk{width:64px;height:64px;border-radius:50%;border:2px solid var(--tinta);
+  background:#E4EDF6;display:grid;place-items:center;overflow:hidden;position:relative;
+  box-shadow:var(--elev-2);cursor:pointer;transition:transform .14s,border-color .14s}
 .railpk.vacio{opacity:.5;border-style:dashed;cursor:default}
 .railpk img{width:88%;height:88%;object-fit:contain}
 .railpk:not(.vacio):hover{transform:translateY(-3px);border-color:var(--oro)}
-#railPC{font-family:'Silkscreen',monospace;font-size:10px;padding:11px 12px;border:3px solid var(--tinta);
-  background:var(--arena-hueso);color:var(--tinta);cursor:pointer;box-shadow:0 4px 0 var(--sombra)}
+#railPC{font-family:'Silkscreen',monospace;font-size:10px;padding:11px 12px;border:2px solid var(--tinta);
+  background:var(--arena-hueso);color:var(--tinta);cursor:pointer;box-shadow:var(--elev-2)}
 #railPC:hover{background:#fff}
 
 #cajonHerr{position:fixed;left:0;top:0;bottom:0;width:min(350px,92vw);z-index:115;
@@ -431,7 +450,7 @@ body.herr-abierta #cajonHerr{display:flex;transform:none}
 /* ------------- tienda y cartera ------------- */
 .cartera{display:flex;justify-content:space-between;align-items:center;background:var(--tinta);
   color:var(--oro);padding:9px 12px;margin-bottom:10px;font-family:'Silkscreen',monospace}
-.cartera span{font-size:9px;color:#8fc8d3} .cartera b{font-size:16px}
+.cartera span{font-size:9px;color:#9FC7E8} .cartera b{font-size:16px}
 .saldos{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:11px}
 .saldo{font-family:'Silkscreen',monospace;font-size:9px;background:var(--tinta);color:var(--oro);padding:5px 7px}
 .catgrp{border:2px solid var(--tinta);margin-bottom:7px;background:var(--arena-hueso)}
@@ -439,12 +458,12 @@ body.herr-abierta #cajonHerr{display:flex;transform:none}
   padding:9px 11px;display:flex;justify-content:space-between;align-items:center;color:var(--mar)}
 .catgrp>summary::-webkit-details-marker{display:none}
 .catgrp>summary b{font-size:9px;background:var(--tinta);color:var(--oro);padding:3px 6px}
-.catgrp>summary:hover{background:#fff6df}
-.catgrp[open]>summary{border-bottom:2px solid #e2d5b4}
+.catgrp>summary:hover{background:#EEF5FC}
+.catgrp[open]>summary{border-bottom:2px solid #D9E6F2}
 .cat{grid-template-columns:1fr auto auto!important}
 .precio{font-family:'Silkscreen',monospace;font-size:10px;color:var(--fucsia);white-space:nowrap}
 #railDinero{font-family:'Silkscreen',monospace;font-size:10px;background:var(--tinta);color:var(--oro);
-  border:3px solid var(--oro);padding:8px 10px;text-align:center;box-shadow:0 4px 0 var(--sombra)}
+  border:3px solid var(--oro);padding:8px 10px;text-align:center;box-shadow:var(--elev-2)}
 
 .premio{font-family:'Silkscreen',monospace;font-size:23px;background:var(--tinta);color:var(--oro);
   padding:14px;text-align:center;margin-top:11px}
@@ -458,11 +477,11 @@ body.herr-abierta #cajonHerr{display:flex;transform:none}
 #catBuscar{font-family:'Alegreya Sans',sans-serif;font-size:13px}
 
 .destino{display:flex;align-items:center;gap:9px;background:var(--tinta);padding:9px 11px;margin-bottom:10px}
-.destino span{font-family:'Silkscreen',monospace;font-size:9px;color:#8fc8d3;white-space:nowrap}
+.destino span{font-family:'Silkscreen',monospace;font-size:9px;color:#9FC7E8;white-space:nowrap}
 .destino select{flex:1;font-family:'Silkscreen',monospace;font-size:12px;border-color:var(--oro)}
 #brindis{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);z-index:150;
   background:var(--selva);color:#fff;font-family:'Silkscreen',monospace;font-size:11px;
-  padding:12px 18px;border:3px solid var(--tinta);box-shadow:0 8px 22px rgba(0,0,0,.4);
+  padding:12px 18px;border:2px solid var(--tinta);box-shadow:var(--elev-3);
   opacity:0;pointer-events:none;transition:opacity .2s,transform .2s}
 #brindis.ver{opacity:1;transform:translateX(-50%)}
 
@@ -484,14 +503,14 @@ body.herr-abierta #cajonHerr{display:flex;transform:none}
 .npceq .it{background:var(--arena-hueso);padding:6px 8px;display:grid;
   grid-template-columns:26px 1fr auto;gap:8px;align-items:center}
 .npceq .mini{width:26px;height:26px;border-radius:50%;border:2px solid var(--tinta);
-  overflow:hidden;display:grid;place-items:center;background:#0e7c8b}
+  overflow:hidden;display:grid;place-items:center;background:#3566AB}
 .npceq .mini img{width:100%;height:100%;object-fit:contain}
 .npceq b{font-family:'Silkscreen',monospace;font-size:9px}
 .npceq button{font-size:8px;padding:4px 6px;border:2px solid var(--tinta-suave);background:#fff;color:var(--fucsia)}
-.npc-eq{background:#eef3f6;border-top:2px solid var(--tinta);padding:7px 9px;display:grid;gap:4px}
+.npc-eq{background:#F1F6FB;border-top:2px solid var(--tinta);padding:7px 9px;display:grid;gap:4px}
 .npc-eq .fila2{display:flex;align-items:center;gap:7px}
 .npc-eq .fila2 .mini{width:24px;height:24px;border-radius:50%;border:2px solid var(--tinta);
-  overflow:hidden;display:grid;place-items:center;background:#0e7c8b;flex:0 0 auto}
+  overflow:hidden;display:grid;place-items:center;background:#3566AB;flex:0 0 auto}
 .npc-eq .fila2 .mini img{width:100%;height:100%;object-fit:contain}
 .npc-eq b{font-family:'Silkscreen',monospace;font-size:9px;flex:1}
 .npc-eq button{font-size:8px;padding:4px 6px;border:2px solid var(--selva);background:#fff;color:var(--selva)}
@@ -514,21 +533,21 @@ body.herr-abierta #cajonHerr{display:flex;transform:none}
 
 /* ------------- tarjeta de perfil ------------- */
 #perfil{display:none;align-items:center;gap:13px;margin-bottom:15px;padding:14px;
-  background:var(--arena-hueso);border:3px solid var(--tinta);box-shadow:5px 5px 0 var(--sombra)}
+  background:var(--arena-hueso);border:2px solid var(--tinta);box-shadow:var(--elev-2)}
 body.conperfil #perfil{display:flex}
 #perfil .marco{width:94px;height:94px;border-radius:50%;padding:4px;flex:0 0 auto;
   background:linear-gradient(145deg,var(--oro),#b8770f);
-  box-shadow:0 4px 0 var(--sombra);transition:transform .16s,box-shadow .16s}
-#perfil .marco:hover{transform:translateY(-2px);box-shadow:0 6px 0 var(--sombra)}
+  box-shadow:var(--elev-2);transition:transform .16s,box-shadow .16s}
+#perfil .marco:hover{transform:translateY(-2px);box-shadow:var(--elev-2)}
 #perfil .av{width:100%;height:100%;border-radius:50%;overflow:hidden;background:var(--tinta);
-  display:grid;place-items:center;cursor:pointer;border:3px solid var(--tinta)}
+  display:grid;place-items:center;cursor:pointer;border:2px solid var(--tinta)}
 #perfil .av img{width:100%;height:100%;object-fit:cover;image-rendering:auto}
 #perfil .av span{font-family:'Silkscreen',monospace;font-size:24px;color:var(--oro)}
 #perfil .datos{min-width:0;flex:1}
 #perfil .nom{font-family:'Silkscreen',monospace;font-size:11px;cursor:text;
   background:var(--tinta);color:var(--arena-hueso);padding:6px 8px;border:2px solid var(--oro);
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block}
-#perfil .nom:hover{background:#1b3a58}
+#perfil .nom:hover{background:#0C3267}
 #perfil input.nom{background:#fff;color:var(--tinta);border-color:var(--fucsia);width:100%}
 #perfil .pie{font-family:'Silkscreen',monospace;font-size:11px;color:var(--selva);
   margin-top:5px;text-align:center}
@@ -536,7 +555,7 @@ body.conperfil #perfil{display:flex}
 /* En enfoque se va sola a la esquina de abajo a la izquierda, bajo el raíl */
 body.enfoque #perfil{position:fixed;left:18px;bottom:16px;z-index:71;margin:0;
   flex-direction:column;gap:6px;width:96px;padding:9px;align-items:center;
-  box-shadow:0 5px 0 var(--sombra),0 10px 24px rgba(18,40,63,.26)}
+  box-shadow:var(--elev-3)}
 body.enfoque #perfil .marco{width:66px;height:66px;padding:3px}
 body.enfoque #perfil .av span{font-size:16px}
 @media(max-height:900px){ body.enfoque #perfil{width:84px;padding:7px}
@@ -550,14 +569,46 @@ body.enfoque #perfil .pie{display:block;font-size:10px;margin-top:4px;
   font-family:'Silkscreen',monospace;color:var(--selva)}
 @media(max-height:760px){ body.enfoque #perfil .pie{font-size:8px;margin-top:3px} }
 
+/* ------------- pulido general ------------- */
+.confcaja,#cajonHerr,.objs,.npceq,.catgrp,#perfil,.tilewrap,#marco{border-radius:var(--r-m)}
+.saldo,.cartera,.premio,.destino,#railDinero,.cat,.obj,.jug{border-radius:var(--r-s)}
+.cab{border-radius:var(--r-m) var(--r-m) 0 0}
+#marco{overflow:hidden}
+
+/* control segmentado, como las pestañas de los juegos nuevos */
+.segm{display:flex;gap:0;background:var(--arena);border-radius:var(--r-s);padding:3px;
+  border:1px solid #CBDCEC}
+.segm button{flex:1;font-family:'Silkscreen',monospace;font-size:9px;letter-spacing:.3px;
+  padding:9px 8px;border:0;background:transparent;color:var(--tinta-suave);cursor:pointer;
+  border-radius:calc(var(--r-s) - 2px);transition:background .15s,color .15s,box-shadow .15s}
+.segm button:hover{color:var(--tinta)}
+.segm button[aria-pressed="true"]{background:#fff;color:var(--tinta);box-shadow:var(--elev-1)}
+
+/* medidas del mapa */
+.medidas{display:flex;align-items:flex-end;gap:9px}
+.medidas>div{flex:1}
+.medidas span{display:block;font-family:'Silkscreen',monospace;font-size:8px;
+  color:var(--tinta-suave);margin-bottom:4px}
+.medidas input{width:100%;text-align:center;font-family:'Silkscreen',monospace;font-size:15px}
+.medidas .x{flex:0 0 auto;font-family:'Silkscreen',monospace;font-size:13px;
+  color:var(--tinta-suave);padding-bottom:10px}
+.medidas .tot{flex:0 0 auto;font-family:'Silkscreen',monospace;font-size:9px;color:var(--mar);
+  background:var(--arena);padding:9px 10px;border-radius:var(--r-s);white-space:nowrap}
+
 /* ------------- acordeones ------------- */
-.acc{background:var(--arena-hueso);border:3px solid var(--tinta);box-shadow:5px 5px 0 var(--sombra);margin-bottom:13px}
-.acc>summary{list-style:none;cursor:pointer;font-family:'Silkscreen',monospace;font-size:11px;
-  color:var(--mar);padding:11px 13px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.acc{background:var(--arena-hueso);border:1px solid #D3E0EE;border-radius:var(--r-m);
+  box-shadow:var(--elev-1);margin-bottom:11px;overflow:hidden;transition:box-shadow .16s}
+.acc:hover{box-shadow:var(--elev-2)}
+.acc[open]{box-shadow:var(--elev-2)}
+.acc>summary{list-style:none;cursor:pointer;font-family:'Silkscreen',monospace;font-size:10px;
+  letter-spacing:.4px;color:var(--tinta);padding:13px 15px;display:flex;justify-content:space-between;
+  align-items:center;gap:8px;transition:background .13s}
+.acc>summary:hover{background:var(--arena)}
+.acc[open]>summary{border-bottom:1px solid #E3EDF6;background:#F7FAFD}
 .acc>summary::-webkit-details-marker{display:none}
 .acc>summary::after{content:'\25BC';font-size:8px;color:var(--tinta-suave);transition:transform .16s}
 .acc[open]>summary::after{transform:rotate(180deg)}
-.acc[open]>summary{border-bottom:2px solid #e2d5b4}
+.acc[open]>summary{border-bottom:2px solid #D9E6F2}
 .acc>summary:hover{background:#fff}
 .acc>summary:focus-visible{outline:3px solid var(--fucsia);outline-offset:-3px}
 .acc .cnt2{padding:13px}
@@ -566,7 +617,7 @@ body.enfoque #perfil .pie{display:block;font-size:10px;margin-top:4px;
 .acc label{display:block;font-family:'Silkscreen',monospace;font-size:9px;color:var(--tinta-suave);margin:0 0 3px}
 .acc input,.acc select,.acc textarea{width:100%}
 .solojug{display:block} body.dm .solojug{display:none}
-.aviso{border:3px dashed var(--fucsia);background:#fdeaf1;padding:11px 13px;margin-bottom:13px;
+.aviso{border:1px solid #BCD2E6;border-left:4px solid var(--mar);border-radius:var(--r-s);background:#EDF4FB;padding:11px 13px;margin-bottom:13px;
   font-family:'Alegreya Sans',sans-serif;font-size:13px;color:var(--tinta)}
 .c.ts{image-rendering:pixelated;background-repeat:no-repeat}
 
@@ -577,8 +628,8 @@ body.enfoque #perfil .pie{display:block;font-size:10px;margin-top:4px;
 .tbarra .izq,.tbarra .der{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
 .tbarra .nom{font-family:'Silkscreen',monospace;font-size:12px}
 #marco{width:100%;max-width:1080px;transition:max-width .18s}
-#tablero{position:relative;border:3px solid var(--tinta);background:var(--tinta);
-  box-shadow:7px 7px 0 var(--sombra);touch-action:none;user-select:none;overflow:hidden}
+#tablero{position:relative;border:2px solid var(--tinta);background:var(--tinta);
+  box-shadow:var(--elev-2);touch-action:none;user-select:none;overflow:hidden}
 #capaMapa{display:grid;width:100%}
 #capaMapa .c{aspect-ratio:1}
 #fondoImg{position:absolute;inset:0;background-size:100% 100%;background-repeat:no-repeat;display:none;image-rendering:pixelated;image-rendering:crisp-edges}
@@ -588,14 +639,14 @@ body.enfoque #perfil .pie{display:block;font-size:10px;margin-top:4px;
 #capaNiebla.pintando{cursor:crosshair}
 #capaTokens{position:absolute;inset:0;pointer-events:none}
 .tk{position:absolute;pointer-events:auto;cursor:grab;display:grid;place-items:center;
-  border-radius:50%;border:3px solid var(--tinta);overflow:visible;
+  border-radius:50%;border:2px solid var(--tinta);overflow:visible;
   font-family:'Silkscreen',monospace;font-size:11px;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.65);
   box-shadow:0 2px 0 rgba(0,0,0,.35);background-clip:padding-box}
 .tk .rd{position:absolute;inset:0;border-radius:50%;overflow:hidden;display:grid;place-items:center}
 .tk img{width:112%;height:112%;object-fit:contain;image-rendering:auto}
 .tk .rd img{width:100%;height:100%;object-fit:cover}
 .tk.pk .rd img{width:112%;height:112%;object-fit:contain}
-.tk.arrastrando{cursor:grabbing;z-index:30;box-shadow:0 9px 15px rgba(0,0,0,.42);transform:scale(1.09)}
+.tk.arrastrando{cursor:grabbing;z-index:30;box-shadow:var(--elev-3);transform:scale(1.09)}
 .tk.mio{border-color:var(--oro)}
 .tk.sel{outline:3px solid var(--fucsia);outline-offset:2px}
 .tk .nm{position:absolute;bottom:-16px;left:50%;transform:translateX(-50%);white-space:nowrap;
@@ -606,8 +657,8 @@ body.enfoque #perfil .pie{display:block;font-size:10px;margin-top:4px;
   font-family:'Alegreya Sans',sans-serif;font-size:13px;color:var(--tinta-suave);margin-top:8px}
 
 /* ------------- mesa de dados integrada ------------- */
-.mesa{width:100%;margin-top:18px;border:3px solid var(--tinta);background:var(--arena-hueso);
-  box-shadow:6px 6px 0 var(--sombra);display:grid;grid-template-columns:minmax(0,1fr) 330px}
+.mesa{width:100%;margin-top:18px;border:2px solid var(--tinta);background:var(--arena-hueso);
+  box-shadow:var(--elev-2);display:grid;grid-template-columns:minmax(0,1fr) 330px}
 @media(max-width:900px){.mesa{grid-template-columns:1fr}}
 .mesa .lado{padding:14px 16px}
 .mesa .lado+.lado{border-left:3px solid var(--tinta)}
@@ -616,8 +667,8 @@ body.enfoque #perfil .pie{display:block;font-size:10px;margin-top:4px;
 .dchips{display:flex;flex-wrap:wrap;gap:6px}
 .dado{position:relative;border:2px solid var(--tinta);background:#fff;padding:9px 11px;
   font-family:'Silkscreen',monospace;font-size:12px;color:var(--tinta)}
-.dado:hover{background:#fff6df}
-.dado.activo{background:#fff6df;box-shadow:2px 2px 0 var(--sombra)}
+.dado:hover{background:#EEF5FC}
+.dado.activo{background:#EEF5FC;box-shadow:var(--elev-2)}
 .dado .cnt{position:absolute;top:-9px;right:-9px;min-width:20px;height:20px;background:var(--fucsia);
   color:#fff;border:2px solid var(--tinta);border-radius:50%;font-size:9px;display:none;place-items:center}
 .dado.activo .cnt{display:grid}
@@ -636,7 +687,7 @@ body.enfoque #perfil .pie{display:block;font-size:10px;margin-top:4px;
 .datajos button:hover{border-style:solid;border-color:var(--tinta);color:var(--tinta);background:#fff}
 #log{max-height:300px;overflow-y:auto;display:grid;gap:2px;background:var(--tinta);border:2px solid var(--tinta)}
 .tir{background:var(--arena-hueso);padding:9px 11px}
-.tir.mia{background:#fff6df}
+.tir.mia{background:#EEF5FC}
 .tir .t1{display:flex;justify-content:space-between;align-items:center;gap:8px}
 .tir .q{font-family:'Silkscreen',monospace;font-size:10px}
 .tir .tot{font-family:'Silkscreen',monospace;font-size:20px}
@@ -646,15 +697,15 @@ body.enfoque #perfil .pie{display:block;font-size:10px;margin-top:4px;
 .cara{font-family:'Silkscreen',monospace;font-size:9px;min-width:22px;text-align:center;
   padding:3px;border:2px solid var(--tinta-suave);background:#fff}
 .cara.max{border-color:var(--selva);background:#e6f5ea;color:var(--selva)}
-.cara.min{border-color:var(--fucsia);background:#fdeaf1;color:var(--fucsia)}
+.cara.min{border-color:var(--fucsia);background:#EDF4FB;color:var(--fucsia)}
 .cara.desc{opacity:.32;text-decoration:line-through}
 .fmu{font-family:'Alegreya Sans',sans-serif;font-size:11px;color:var(--tinta-suave);margin-top:4px}
 
 /* ------------- listas ------------- */
-.lista{display:grid;gap:2px;background:var(--tinta);border:3px solid var(--tinta)}
+.lista{display:grid;gap:2px;background:var(--tinta);border:2px solid var(--tinta)}
 .item{background:var(--arena-hueso);padding:9px 11px}
-.item.mia{background:#fff6df}
-.item.poke{background:#eef3f6}
+.item.mia{background:#EEF5FC}
+.item.poke{background:#F1F6FB}
 .item .top{display:flex;justify-content:space-between;align-items:center;gap:8px}
 .item .nom{font-family:'Silkscreen',monospace;font-size:11px}
 .item .ini{font-family:'Silkscreen',monospace;font-size:14px;color:var(--fucsia)}
@@ -670,8 +721,8 @@ body.enfoque #perfil .pie{display:block;font-size:10px;margin-top:4px;
   font-family:'Alegreya Sans',sans-serif;font-size:13px;color:var(--tinta-suave)}
 
 /* ------------- diálogo ------------- */
-dialog{border:3px solid var(--tinta);background:var(--arena-hueso);padding:0;
-  box-shadow:8px 8px 0 rgba(0,0,0,.3);max-width:380px;width:92%}
+dialog{border:2px solid var(--tinta);background:var(--arena-hueso);padding:0;
+  box-shadow:var(--elev-2);max-width:380px;width:92%}
 dialog::backdrop{background:rgba(10,20,32,.55)}
 dialog .cab{background:var(--tinta);color:var(--arena-hueso);padding:11px 15px;
   font-family:'Silkscreen',monospace;font-size:12px}
@@ -686,7 +737,7 @@ dialog input,dialog select{width:100%}
 
 footer{flex:0 0 auto;background:var(--tinta);color:#a8c2ce;padding:18px 0;
   font-family:'Alegreya Sans',sans-serif;font-size:13px}
-footer code{background:#1c3a56;padding:2px 5px;color:#cfe0e6}
+footer code{background:#1c3a56;padding:2px 5px;color:#D7E6F4}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 
 .atras{display:inline-grid;place-items:center;width:40px;height:40px;color:var(--oro);
@@ -736,7 +787,7 @@ footer code{background:#1c3a56;padding:2px 5px;color:#cfe0e6}
         <label for="tkNom">NOMBRE</label>
         <input id="tkNom" maxlength="16" placeholder="Chispa">
         <div class="fila" style="margin-top:8px">
-          <input id="tkColor" type="color" value="#c6386b" style="width:48px;height:34px;padding:2px">
+          <input id="tkColor" type="color" value="#3566AB" style="width:48px;height:34px;padding:2px">
           <input id="tkArch" type="file" accept="image/*" style="flex:1;min-width:0;padding:4px">
         </div>
         <div class="fila"><button class="bt rosa" id="crearTk">CREAR FICHA</button></div>
@@ -765,9 +816,20 @@ footer code{background:#1c3a56;padding:2px 5px;color:#cfe0e6}
     </div></details>
 
     <details class="acc solodm" id="panelMapa" open><summary>MAPA</summary><div class="cnt2">
-      <label for="selMapa">ESCENARIO</label>
+      <label>REGIÓN</label>
+      <div class="segm" id="segRegion">
+        <button data-region="nubia" aria-pressed="true">NUBIA</button>
+        <button data-region="propia" aria-pressed="false">LA MÍA</button>
+      </div>
+      <p class="nota" id="regionInfo">Los 66 mapas de Nubia, más los que tú crees.</p>
+
+      <label for="selMapa" style="margin-top:12px">ESCENARIO</label>
       <select id="selMapa"></select>
-      <p class="nota" id="imgInfo">Al elegir un escenario, la mesa entera cambia sola. Las fichas que dejes en cada uno se quedan ahí.</p>
+      <div class="fila" style="margin-top:8px;display:flex;gap:6px">
+        <button class="bt rosa" id="mapaNuevo" style="flex:1;white-space:nowrap">+ MAPA</button>
+        <button class="bt" id="mapaEditar" style="flex:1;white-space:nowrap">EDITAR</button>
+      </div>
+      <p class="nota" id="imgInfo">Al elegir un escenario, la mesa entera cambia sola. Las fichas y la niebla que dejes en cada uno se quedan ahí.</p>
       <div class="fila" style="margin-top:8px">
         <button class="bt" id="traerJugadoresPokemon">TRAER JUGADORES Y POKÉMON</button>
       </div>
@@ -978,7 +1040,7 @@ footer code{background:#1c3a56;padding:2px 5px;color:#cfe0e6}
         <button data-t="" style="visibility:hidden"></button>
       </div>
       <div class="fila" style="margin-top:9px">
-        <div><label for="areaColor">COLOR</label><input id="areaColor" type="color" value="#e0951c" style="width:48px;height:32px;padding:2px"></div>
+        <div><label for="areaColor">COLOR</label><input id="areaColor" type="color" value="#82B8DE" style="width:48px;height:32px;padding:2px"></div>
         <div style="flex:1"><label for="pingTxt">ETIQUETA DE SEÑAL</label><input id="pingTxt" maxlength="18" placeholder="¡Aquí!"></div>
       </div>
       <div class="fila"><button class="bt" id="limpiarAreas">BORRAR TODAS LAS ÁREAS</button></div>
@@ -1048,6 +1110,32 @@ footer code{background:#1c3a56;padding:2px 5px;color:#cfe0e6}
     <p class="nota">Arrastra un nombre al tablero para colocarlo. Las fichas de aquí se guardan en la partida y no se pierden al cambiar de escenario.</p>
   </div>
 </aside>
+
+<dialog id="mapaDlg"><div class="confcaja" style="border-color:var(--mar);max-width:430px">
+  <div class="cab" id="mapaDlgTit">NUEVO MAPA</div>
+  <div class="cnt">
+    <label for="mapaNom">NOMBRE</label>
+    <input id="mapaNom" maxlength="42" placeholder="Mapa 1" autocomplete="off">
+
+    <label style="margin-top:10px">TAMAÑO EN CASILLAS</label>
+    <div class="medidas">
+      <div><span>ANCHO</span><input id="mapaW" type="number" min="4" max="80" value="20"></div>
+      <div class="x">×</div>
+      <div><span>ALTO</span><input id="mapaH" type="number" min="4" max="80" value="20"></div>
+      <div class="tot" id="mapaTot">400 casillas</div>
+    </div>
+
+    <label for="mapaTag" style="margin-top:10px">CARPETA</label>
+    <select id="mapaTag"></select>
+    <p class="nota" id="mapaAviso">El mapa aparece en el desplegable dentro de esa carpeta.</p>
+
+    <div class="fila" style="margin-top:12px">
+      <button class="bt rosa" id="mapaOk">CREAR Y ABRIR</button>
+      <button class="bt" id="mapaNo">CANCELAR</button>
+      <button class="bt" id="mapaBorrar" style="display:none;border-color:#c0392b;color:#c0392b">BORRAR</button>
+    </div>
+  </div>
+</div></dialog>
 
 <input id="perfilFoto" type="file" accept="image/*" style="display:none">
 
@@ -1183,10 +1271,10 @@ let sb = null, cuenta = null, partida = null, guardando = null;
 
 const COLORES = {
  '.':'#7ec46b', ',':'#d6ac74', '=':'#c6bfae', '~':'#3f9ed6', 's':'#efd9a2',
- 'h':'#3f8f45', 'T':'#2e7d4f', 'f':'#e86a9b', '^':'#9a8f7f', 'b':'#b98a52',
+ 'h':'#3f8f45', 'T':'#2E8B57', 'f':'#e86a9b', '^':'#9a8f7f', 'b':'#b98a52',
  'o':'#463a30', 'x':'#6b4f33', 'n':'#eef4f7', 'i':'#bfe0ee', '#':'#8a7f72',
- 'C':'#e0524f', 'M':'#3b7fd1', 'G':'#7b5ba6', 'H':'#c1854a', 'L':'#e0951c',
- 'D':'#26262b', 'P':'#a9784a', 'E':'#f6e7c4'
+ 'C':'#e0524f', 'M':'#3b7fd1', 'G':'#7b5ba6', 'H':'#c1854a', 'L':'#82B8DE',
+ 'D':'#26262b', 'P':'#a9784a', 'E':'#DCE8F4'
 };
 
 const MAPAS = {
@@ -1342,7 +1430,9 @@ const MAPAS_IMG = {
 
 /* ===================== ESTADO ===================== */
 let S = { nombreMapa:'Pueblo Fundación', filas:MAPAS.Localidades['Pueblo Fundación'],
-          img:'', tileset:'', tokens:[], niebla:[], fichas:[], areas:[], objetos:[], imgs:{}, piezas:{}, equipos:{}, npcs:[], mochilas:{}, dinero:{}, turno:{i:0,ronda:1} };
+          img:'', tileset:'', tokens:[], niebla:[], nieblas:{}, fichas:[], areas:[], objetos:[],
+          imgs:{}, piezas:{}, equipos:{}, npcs:[], mochilas:{}, dinero:{},
+          region:'nubia', propios:{}, turno:{i:0,ronda:1} };
 let soyDM=false, yo='', canal=null, sel=null, pincel=0, tamPincel=1;
 let presentes = new Set();
 let filtro='todos', herramienta='', trazo=null;
@@ -1370,9 +1460,48 @@ const W = () => Math.max(...S.filas.map(f=>f.length));
 const H = () => S.filas.length;
 
 /* ===================== MAPA ===================== */
-$('#selMapa').innerHTML = Object.entries(MAPAS).map(([g,ms])=>
-  `<optgroup label="${g}">${Object.keys(ms).map(n=>`<option>${n}</option>`).join('')}</optgroup>`).join('');
-const buscarMapa = n => { for(const g of Object.values(MAPAS)) if(g[n]) return g[n]; return null; };
+const TAGS = ['Localidades','Rutas','Interiores','Zonas legendarias','Sin carpeta'];
+
+/* Un mapa puede venir de la biblioteca de Nubia o haberlo creado el director.
+   Los propios mandan sobre los de Nubia si comparten nombre. */
+const buscarMapa = n => {
+  const mio = (S.propios||{})[n];
+  if(mio && Array.isArray(mio.filas)) return mio.filas;
+  if((S.region||'nubia') === 'nubia')
+    for(const g of Object.values(MAPAS)) if(g[n]) return g[n];
+  return null;
+};
+function esMapaPropio(n){ return !!(S.propios||{})[n]; }
+
+/* Agrupa todo lo disponible por carpeta, respetando el orden de TAGS. */
+function bibliotecaMapas(){
+  const grupos = {};
+  if((S.region||'nubia') === 'nubia')
+    for(const [g, ms] of Object.entries(MAPAS)){
+      grupos[g] = grupos[g] || [];
+      for(const n of Object.keys(ms)) grupos[g].push(n);
+    }
+  for(const [n, m] of Object.entries(S.propios||{})){
+    const t = TAGS.includes(m.tag) ? m.tag : 'Sin carpeta';
+    grupos[t] = grupos[t] || [];
+    if(!grupos[t].includes(n)) grupos[t].push(n);
+  }
+  // se ordenan las carpetas conocidas primero y las inventadas después
+  const orden = TAGS.filter(t=>grupos[t]).concat(Object.keys(grupos).filter(t=>!TAGS.includes(t)));
+  return orden.map(t=>[t, grupos[t]]);
+}
+
+const RELLENO = '.';
+function pintarSelMapa(){
+  const sel = $('#selMapa'); if(!sel) return;
+  const antes = S.nombreMapa;
+  sel.innerHTML = bibliotecaMapas().map(([g, ms])=>
+    `<optgroup label="${esc(g)}">${ms.map(n=>
+      `<option${esMapaPropio(n)?' data-mio="1"':''}>${esc(n)}</option>`).join('')}</optgroup>`).join('')
+    || '<option value="">— sin mapas —</option>';
+  if([...sel.options].some(o=>o.value===antes)) sel.value = antes;
+}
+pintarSelMapa();
 
 let cacheMapa = null, cacheNiebla = null;
 function dibujarMapa(){
@@ -1615,6 +1744,8 @@ function pintar(){
   pintarPremios();
   pintarMochila();
   pintarCatalogo();
+  pintarSelMapa();
+  pintarRegion();
   pintarRailes();
   moverPerfil();
   pintarPerfil();
@@ -1657,7 +1788,7 @@ $('#capaTokens').addEventListener('pointermove', e=>{
   drag.n.style.left=(x/w)*100+'%'; drag.n.style.top=(y/h)*100+'%';
   drag.destino={x,y};
   const o=drag.inicio;
-  dibujarAreas({t:'regla', color:'#e0951c',
+  dibujarAreas({t:'regla', color:'#82B8DE',
     o:{x:o.x+.5,y:o.y+.5}, d:{x:x+.5,y:y+.5},
     cas:Math.max(Math.abs(x-o.x),Math.abs(y-o.y))});
 });
@@ -1727,7 +1858,7 @@ function abrirDlg(t){
   const f=S.fichas.find(x=>x.tokenId===t.id);
   $('#dlgTit').textContent = t.especie ? ('POKÉMON · '+t.especie.toUpperCase()) : 'FICHA · '+t.nombre.toUpperCase();
   $('#dNom').value=t.nombre; $('#dDueno').value=t.dueno||'';
-  $('#dNivel').value=t.nivel||0; $('#dColor').value=t.color||'#c6386b';
+  $('#dNivel').value=t.nivel||0; $('#dColor').value=t.color||'#3566AB';
   $('#dAtk').value=t.atk||0; $('#dDmg').value=t.dmg||'';
   const cond=t.cond||[];
   $('#dCond').innerHTML = CONDICIONES.map(([k,n,c])=>
@@ -1735,7 +1866,7 @@ function abrirDlg(t){
   $('#dPv').value=f?f.pv:0; $('#dPvMax').value=f?f.pvMax:0; $('#dIni').value=f?f.ini:0;
   $('#dIni').dataset.tirada='';
   const pv=$('#dPrev');
-  pv.style.background = t.color || '#c6386b';
+  pv.style.background = t.color || '#3566AB';
   pv.innerHTML = t.img ? `<img src="${t.img}" alt="">`
                        : esc((t.nombre||'?').slice(0,2).toUpperCase());
   const p=$('#dlgPrev');
@@ -1847,7 +1978,7 @@ $('#pkAdd').onclick = async ()=>{
 
   const nivel=Math.max(1,+$('#pkNivel').value||1), dado=+$('#pkDado').value;
   const ps=Math.round(nivel*PROM[dado]);
-  const t={ id:id8(), nombre, especie:nombre, tipos, nivel, img, color:'#0e7c8b',
+  const t={ id:id8(), nombre, especie:nombre, tipos, nivel, img, color:'#3566AB',
             x:Math.min(2,W()-1), y:Math.min(2,H()-1), dueno:$('#pkDueno').value||'' };
   S.tokens.push(t);
   S.fichas.push({ id:id8(), tokenId:t.id, nombre, especie:nombre, nivel,
@@ -1973,7 +2104,7 @@ function extraerPokemon(raiz){
       nivel: Number(o.level || o.nivel || o.lvl || 1) || 1,
       img: '',
       tipos: [].concat(o.types || o.tipos || []).join(' / '),
-      color: '#0e7c8b'
+      color: '#3566AB'
     };
   };
 
@@ -2077,7 +2208,7 @@ $('#guardarFicha').onclick=async()=>{
   let t = S.tokens.find(x=>x.id===f.tokenId)
        || S.tokens.find(x=>x.dueno===yo && !x.especie);
   if(!t){
-    t = { id:id8(), nombre:nombre, color:'#c6386b', img:f.img||'',
+    t = { id:id8(), nombre:nombre, color:'#3566AB', img:f.img||'',
           x:Math.min(2,W()-1), y:Math.min(2,H()-1), nivel:0, dueno:yo };
     S.tokens.push(t);
     enviar('token', t);
@@ -2110,12 +2241,16 @@ function brocha(e){
   const cx=+c.dataset.x, cy=+c.dataset.y, r=tamPincel-1, set=new Set(S.niebla);
   for(let y=cy-r;y<=cy+r;y++) for(let x=cx-r;x<=cx+r;x++)
     e.shiftKey ? set.add(x+','+y) : set.delete(x+','+y);
-  S.niebla=[...set]; dibujarMapa();
+  S.niebla=[...set]; guardarNieblaActual(); dibujarMapa();
+}
+function guardarNieblaActual(){
+  S.nieblas = S.nieblas || {};
+  S.nieblas[S.nombreMapa] = S.niebla;
 }
 $('#cubrir').onclick=()=>{ const s=[];
   for(let y=0;y<H();y++) for(let x=0;x<W();x++) s.push(x+','+y);
-  S.niebla=s; pintar(); enviar('estado',S); };
-$('#revelar').onclick=()=>{ S.niebla=[]; pintar(); enviar('estado',S); };
+  S.niebla=s; guardarNieblaActual(); pintar(); enviar('estado',S); };
+$('#revelar').onclick=()=>{ S.niebla=[]; guardarNieblaActual(); pintar(); enviar('estado',S); };
 
 function tokenEsJugadorOPokemon(t){
   if(!t || !t.id) return false;
@@ -2143,13 +2278,14 @@ function actualizarBotonTraerJugadoresPokemon(){
 
 function irAlEscenario(n){
   const m = buscarMapa(n); if(!m) return;
-  S.piezas = S.piezas || {}; S.imgs = S.imgs || {};
-  S.piezas[S.nombreMapa] = S.tokens;        // guarda lo que había en el escenario anterior
+  S.piezas = S.piezas || {}; S.imgs = S.imgs || {}; S.nieblas = S.nieblas || {};
+  S.piezas[S.nombreMapa]  = S.tokens;       // guarda lo que había en el escenario anterior
+  S.nieblas[S.nombreMapa] = S.niebla;       // y la niebla tal como la dejaste
   S.nombreMapa = n;
   S.filas = m;
   S.img = S.imgs[n] || MAPAS_IMG[n] || '';
   S.tokens = S.piezas[n] || [];             // recupera lo que ya estaba puesto aquí
-  S.niebla = [];
+  S.niebla = S.nieblas[n] || [];            // y la niebla que tenía este escenario
   const an = m[0].length, al = m.length;
   S.tokens.forEach(t=>{ t.x=Math.min(t.x,an-1); t.y=Math.min(t.y,al-1); });
   pintar(); enviar('estado',S);
@@ -2508,26 +2644,26 @@ addEventListener('keydown', e=>{
 
 /* ===================== OBJETOS CLAVE Y MAPA DE NUBIA ===================== */
 const OBJETOS = [
-  ['mapa','Mapa de Nubia','#0e7c8b',
-   '<path d="M8 16 L24 10 L40 16 L56 10 V48 L40 54 L24 48 L8 54 Z" fill="#f6e7c4" stroke="#12283f" stroke-width="3"/>'
-  +'<path d="M24 10 V48 M40 16 V54" stroke="#12283f" stroke-width="2.5"/>'
-  +'<circle cx="18" cy="30" r="4" fill="#c6386b" stroke="#12283f" stroke-width="2"/>'
-  +'<circle cx="46" cy="26" r="4" fill="#c6386b" stroke="#12283f" stroke-width="2"/>'],
+  ['mapa','Mapa de Nubia','#3566AB',
+   '<path d="M8 16 L24 10 L40 16 L56 10 V48 L40 54 L24 48 L8 54 Z" fill="#DCE8F4" stroke="#104186" stroke-width="3"/>'
+  +'<path d="M24 10 V48 M40 16 V54" stroke="#104186" stroke-width="2.5"/>'
+  +'<circle cx="18" cy="30" r="4" fill="#3566AB" stroke="#104186" stroke-width="2"/>'
+  +'<circle cx="46" cy="26" r="4" fill="#3566AB" stroke="#104186" stroke-width="2"/>'],
   ['pokedex','Pokédex de Nubia','#e0524f',
-   '<rect x="10" y="8" width="44" height="48" rx="4" fill="#e0524f" stroke="#12283f" stroke-width="3"/>'
-  +'<circle cx="22" cy="20" r="7" fill="#8fd6e8" stroke="#12283f" stroke-width="3"/>'
-  +'<rect x="16" y="34" width="32" height="14" fill="#f6e7c4" stroke="#12283f" stroke-width="2.5"/>'],
+   '<rect x="10" y="8" width="44" height="48" rx="4" fill="#e0524f" stroke="#104186" stroke-width="3"/>'
+  +'<circle cx="22" cy="20" r="7" fill="#8fd6e8" stroke="#104186" stroke-width="3"/>'
+  +'<rect x="16" y="34" width="32" height="14" fill="#DCE8F4" stroke="#104186" stroke-width="2.5"/>'],
   ['trofeoAM','Trofeo del Alto Mando','#8fb8e0',
-   '<path d="M20 12 H44 V26 A12 12 0 0 1 20 26 Z" fill="#8fb8e0" stroke="#12283f" stroke-width="3"/>'
-  +'<path d="M14 14 A7 7 0 0 0 20 22 M50 14 A7 7 0 0 1 44 22" stroke="#12283f" stroke-width="3" fill="none"/>'
-  +'<rect x="28" y="38" width="8" height="10" fill="#8fb8e0" stroke="#12283f" stroke-width="3"/>'
-  +'<rect x="20" y="48" width="24" height="7" fill="#8fb8e0" stroke="#12283f" stroke-width="3"/>'],
-  ['trofeoCA','Trofeo de Campeón','#e0951c',
-   '<path d="M20 10 H44 V26 A12 12 0 0 1 20 26 Z" fill="#e0951c" stroke="#12283f" stroke-width="3"/>'
-  +'<path d="M12 12 A8 8 0 0 0 20 22 M52 12 A8 8 0 0 1 44 22" stroke="#12283f" stroke-width="3" fill="none"/>'
-  +'<path d="M32 30 l3 6 7 1 -5 5 1 7 -6 -3 -6 3 1 -7 -5 -5 7 -1 Z" fill="#f6e7c4" stroke="#12283f" stroke-width="2"/>'
-  +'<rect x="28" y="42" width="8" height="8" fill="#e0951c" stroke="#12283f" stroke-width="3"/>'
-  +'<rect x="19" y="50" width="26" height="7" fill="#e0951c" stroke="#12283f" stroke-width="3"/>']
+   '<path d="M20 12 H44 V26 A12 12 0 0 1 20 26 Z" fill="#8fb8e0" stroke="#104186" stroke-width="3"/>'
+  +'<path d="M14 14 A7 7 0 0 0 20 22 M50 14 A7 7 0 0 1 44 22" stroke="#104186" stroke-width="3" fill="none"/>'
+  +'<rect x="28" y="38" width="8" height="10" fill="#8fb8e0" stroke="#104186" stroke-width="3"/>'
+  +'<rect x="20" y="48" width="24" height="7" fill="#8fb8e0" stroke="#104186" stroke-width="3"/>'],
+  ['trofeoCA','Trofeo de Campeón','#82B8DE',
+   '<path d="M20 10 H44 V26 A12 12 0 0 1 20 26 Z" fill="#82B8DE" stroke="#104186" stroke-width="3"/>'
+  +'<path d="M12 12 A8 8 0 0 0 20 22 M52 12 A8 8 0 0 1 44 22" stroke="#104186" stroke-width="3" fill="none"/>'
+  +'<path d="M32 30 l3 6 7 1 -5 5 1 7 -6 -3 -6 3 1 -7 -5 -5 7 -1 Z" fill="#DCE8F4" stroke="#104186" stroke-width="2"/>'
+  +'<rect x="28" y="42" width="8" height="8" fill="#82B8DE" stroke="#104186" stroke-width="3"/>'
+  +'<rect x="19" y="50" width="26" height="7" fill="#82B8DE" stroke="#104186" stroke-width="3"/>']
 ];
 
 function pintarObjetos(){
@@ -2659,35 +2795,35 @@ const TRAMOS = [
 function svgNubia(){
   const u = UBIC[S.nombreMapa];
   let g=`<svg viewBox="0 0 1000 780">
-   <rect width="1000" height="780" fill="#fdf6e6"/>
+   <rect width="1000" height="780" fill="#FFFFFF"/>
    <path d="M0,0 H1000 V130 Q840,168 700,150 Q560,130 470,200 Q360,286 240,318 Q120,348 0,420 Z" fill="#3f9ed6" opacity=".9"/>
    <path d="M620,210 L720,120 L820,190 L900,180 L870,360 L740,400 L640,320 Z" fill="#7a6a58"/>
    <path d="M746,182 L784,138 L820,196 L776,214 Z" fill="#eef4f7"/>
    <path d="M408,258 Q430,400 434,520 Q438,650 470,760" fill="none" stroke="#3f9ed6" stroke-width="10"/>
    <path d="M330,700 Q372,610 410,540 Q424,512 430,500" fill="none" stroke="#3f9ed6" stroke-width="7"/>`;
   TRAMOS.forEach(([x1,y1,x2,y2,n])=>{
-    g+=`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#12283f" stroke-width="4" stroke-dasharray="10 7" opacity=".7"/>`;
+    g+=`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#104186" stroke-width="4" stroke-dasharray="10 7" opacity=".7"/>`;
     const mx=(x1+x2)/2,my=(y1+y2)/2;
-    g+=`<circle cx="${mx}" cy="${my}" r="11" fill="#fdf6e6" stroke="#12283f" stroke-width="2.5"/>
-        <text x="${mx}" y="${my+4}" text-anchor="middle" font-family="Silkscreen,monospace" font-size="10" fill="#12283f">${n}</text>`;
+    g+=`<circle cx="${mx}" cy="${my}" r="11" fill="#FFFFFF" stroke="#104186" stroke-width="2.5"/>
+        <text x="${mx}" y="${my+4}" text-anchor="middle" font-family="Silkscreen,monospace" font-size="10" fill="#104186">${n}</text>`;
   });
   NODOS_N.forEach(([n,x,y])=>{
     const aqui = S.nombreMapa===n;
-    g+=`<circle cx="${x}" cy="${y}" r="${aqui?15:12}" fill="${aqui?'#e0951c':'#c6386b'}" stroke="#12283f" stroke-width="3"/>
+    g+=`<circle cx="${x}" cy="${y}" r="${aqui?15:12}" fill="${aqui?'#82B8DE':'#3566AB'}" stroke="#104186" stroke-width="3"/>
         <text class="faroTxt" x="${x}" y="${y-21}" text-anchor="middle">${n.replace(/^(Ciudad|Pueblo|Isla) /,'')}</text>`;
   });
   if(u){
-    g+=`<circle cx="${u[0]}" cy="${u[1]}" r="12" fill="none" stroke="#e0951c" stroke-width="5">
+    g+=`<circle cx="${u[0]}" cy="${u[1]}" r="12" fill="none" stroke="#82B8DE" stroke-width="5">
           <animate attributeName="r" values="10;30;10" dur="1.6s" repeatCount="indefinite"/>
           <animate attributeName="opacity" values="1;0.15;1" dur="1.6s" repeatCount="indefinite"/>
         </circle>
-        <circle cx="${u[0]}" cy="${u[1]}" r="9" fill="none" stroke="#e0951c" stroke-width="3">
+        <circle cx="${u[0]}" cy="${u[1]}" r="9" fill="none" stroke="#82B8DE" stroke-width="3">
           <animate attributeName="r" values="7;20;7" dur="1.6s" begin="0.5s" repeatCount="indefinite"/>
           <animate attributeName="opacity" values="0.9;0;0.9" dur="1.6s" begin="0.5s" repeatCount="indefinite"/>
         </circle>
-        <circle cx="${u[0]}" cy="${u[1]}" r="7" fill="#e0951c" stroke="#12283f" stroke-width="3"/>`;
+        <circle cx="${u[0]}" cy="${u[1]}" r="7" fill="#82B8DE" stroke="#104186" stroke-width="3"/>`;
   } else {
-    g+=`<text class="faroTxt" x="500" y="756" text-anchor="middle" font-size="15" fill="#c6386b">Zona sin ubicar en el mapa regional</text>`;
+    g+=`<text class="faroTxt" x="500" y="756" text-anchor="middle" font-size="15" fill="#3566AB">Zona sin ubicar en el mapa regional</text>`;
   }
   return g+'</svg>';
 }
@@ -2737,7 +2873,7 @@ async function cargarPartida(reintento){
   fijarRol(data.director === cuenta.id);
   if(data.estado && Object.keys(data.estado).length){
     S = Object.assign(S, data.estado);
-    S.areas = S.areas||[]; S.objetos = S.objetos||[]; S.imgs = S.imgs||{}; S.piezas = S.piezas||{}; S.equipos = S.equipos||{}; S.npcs = S.npcs||[]; S.mochilas = S.mochilas||{}; S.dinero = S.dinero||{}; S.turno = S.turno||{i:0,ronda:1};
+    S.areas = S.areas||[]; S.objetos = S.objetos||[]; S.imgs = S.imgs||{}; S.piezas = S.piezas||{}; S.equipos = S.equipos||{}; S.npcs = S.npcs||[]; S.mochilas = S.mochilas||{}; S.dinero = S.dinero||{}; S.nieblas = S.nieblas||{}; S.propios = S.propios||{}; S.region = S.region||'nubia'; S.turno = S.turno||{i:0,ronda:1};
     pintar();
     anotar(`<b>Mesa restaurada</b> · ${esc(data.nombre)}`, false);
   }
@@ -2779,7 +2915,7 @@ function escucharPartida(){
           const antes = S.nombreMapa;
           S = Object.assign({}, S, fila.estado);
           S.areas=S.areas||[]; S.objetos=S.objetos||[]; S.imgs=S.imgs||{};
-          S.piezas=S.piezas||{}; S.equipos=S.equipos||{}; S.npcs=S.npcs||[]; S.mochilas=S.mochilas||{}; S.dinero=S.dinero||{};
+          S.piezas=S.piezas||{}; S.equipos=S.equipos||{}; S.npcs=S.npcs||[]; S.mochilas=S.mochilas||{}; S.dinero=S.dinero||{}; S.nieblas=S.nieblas||{}; S.propios=S.propios||{}; S.region=S.region||'nubia';
           anclarLocal();
           pintar();
           if(S.nombreMapa !== antes && (S.objetos||[]).includes('mapa')) abrirMapaN(true);
@@ -2984,7 +3120,7 @@ function alEquipo(jugador, pk){
 }
 function pkDesdeToken(t){
   return { id:id8(), especie:t.especie||t.nombre, nombre:t.nombre, nivel:t.nivel||1,
-           img:t.img||'', tipos:t.tipos||'', color:t.color||'#0e7c8b' };
+           img:t.img||'', tipos:t.tipos||'', color:t.color||'#3566AB' };
 }
 
 function celda(pk, zona, i, clase){
@@ -3128,7 +3264,7 @@ function pintarPanelFicha(){
   const ini=(f.nombre||'?').slice(0,2).toUpperCase();
   c.innerHTML = `
     <div class="fichaya">
-      <div class="av" style="background:${t?t.color:'#c6386b'}">${(f.img||(t&&t.img))?`<img src="${f.img||t.img}" alt="">`:esc(ini)}</div>
+      <div class="av" style="background:${t?t.color:'#3566AB'}">${(f.img||(t&&t.img))?`<img src="${f.img||t.img}" alt="">`:esc(ini)}</div>
       <div><b>${esc(f.nombre)}</b><span>${f.pv} / ${f.pvMax} PS · iniciativa ${f.ini||0}</span></div>
     </div>
     <div class="fila" style="margin-top:9px">
@@ -3142,7 +3278,7 @@ function pintarPanelFicha(){
   if($('#editarMiFicha')) $('#editarMiFicha').onclick = ()=>{ sel=t.id; abrirDlg(t); };
   if($('#alTablero')) $('#alTablero').onclick = ()=>{
     if(S.tokens.some(x=>x.id===f.tokenId)) { pintar(); return; }   // ya está puesta
-    const nt = { id:id8(), nombre:f.nombre, color:'#c6386b', img:f.img||'', nivel:0, dueno:yo,
+    const nt = { id:id8(), nombre:f.nombre, color:'#3566AB', img:f.img||'', nivel:0, dueno:yo,
                  x:Math.min(2,W()-1), y:Math.min(2,H()-1) };
     S.tokens.push(nt); f.tokenId = nt.id;
     pintar(); enviar('token', nt); enviar('ficha', f);
@@ -3208,7 +3344,7 @@ function pintarNpcs(){
     </div>${ npcAbierto===n.id && (n.equipo||[]).length ? `
     <div class="npc-eq">${n.equipo.map((pk,i)=>`
       <div class="fila2">
-        <div class="mini" style="background:${pk.color||'#0e7c8b'}">${pk.img?`<img src="${pk.img}" alt="">`:''}</div>
+        <div class="mini" style="background:${pk.color||'#3566AB'}">${pk.img?`<img src="${pk.img}" alt="">`:''}</div>
         <b>${esc(pk.nombre)} · Nv ${pk.nivel||1}${pk.objeto?' · '+esc(pk.objeto.nombre):''}</b>
         <button data-sacar="${n.id}|${i}">SACAR</button>
       </div>`).join('')}</div>` : '' }`;
@@ -3353,7 +3489,7 @@ function pintarEquipoNpc(n){
   const L = n.equipo || [];
   c.innerHTML = L.length ? L.map((pk,i)=>`
     <div class="it">
-      <div class="mini" style="background:${pk.color||'#0e7c8b'}">${pk.img?`<img src="${pk.img}" alt="">`:''}</div>
+      <div class="mini" style="background:${pk.color||'#3566AB'}">${pk.img?`<img src="${pk.img}" alt="">`:''}</div>
       <b>${esc(pk.nombre)} · Nv ${pk.nivel||1}</b>
       <button data-eqdel="${i}">✕</button>
     </div>`).join('')
@@ -3383,7 +3519,7 @@ if($('#dEqAdd')) $('#dEqAdd').onclick = async ()=>{
   b.disabled = false; b.textContent = 'AÑADIR';
   n.equipo = n.equipo || [];
   n.equipo.push({ id:id8(), especie:nombre, nombre, nivel:Math.max(1,+$('#dEqNivel').value||1),
-                  img, tipos, color:'#0e7c8b' });
+                  img, tipos, color:'#3566AB' });
   $('#dEqNom').value='';
   pintarEquipoNpc(n); pintarNpcs(); enviar('estado', S);
 };
@@ -3394,7 +3530,7 @@ function sacarPokemonNpc(idNpc, i, x, y){
   const pk = (n.equipo||[])[i]; if(!pk) return;
   const ps = Math.round((pk.nivel||1)*4.5);
   const t = { id:id8(), npc:n.id, nombre:pk.nombre, especie:pk.especie, tipos:pk.tipos,
-              nivel:pk.nivel, img:pk.img, color:pk.color||'#0e7c8b', dueno:'',
+              nivel:pk.nivel, img:pk.img, color:pk.color||'#3566AB', dueno:'',
               objeto: pk.objeto || null, movs: pk.movs || [],
               x: x!==undefined?x:Math.min(5,W()-1), y: y!==undefined?y:Math.min(5,H()-1) };
   S.tokens.push(t);
@@ -3441,6 +3577,199 @@ function moverPerfil(){
   }
 }
 
+
+/* ===================== MAPAS PROPIOS ===================== */
+/* El director puede construir su propia región. Un mapa propio es una
+   rejilla de caracteres igual que los de Nubia, más la carpeta donde vive. */
+function rejillaNueva(w, h){
+  const g = [];
+  for(let y=0; y<h; y++){
+    let fila = '';
+    for(let x=0; x<w; x++){
+      const borde = (x===0 || y===0 || x===w-1 || y===h-1);
+      fila += borde ? 'T' : RELLENO;     // marco de árboles para ver los límites
+    }
+    g.push(fila);
+  }
+  return g;
+}
+
+/* Cambia el tamaño conservando lo ya dibujado: recorta lo que sobra
+   y rellena lo que falta. */
+function redimensionar(filas, w, h){
+  const g = [];
+  for(let y=0; y<h; y++){
+    const vieja = filas[y] || '';
+    let fila = '';
+    for(let x=0; x<w; x++) fila += vieja[x] || RELLENO;
+    g.push(fila);
+  }
+  return g;
+}
+
+function nombreLibre(base){
+  if(!buscarMapa(base)) return base;
+  let i = 2;
+  while(buscarMapa(base + ' ' + i)) i++;
+  return base + ' ' + i;
+}
+function siguienteNombre(){
+  let i = 1;
+  while(buscarMapa('Mapa ' + i)) i++;
+  return 'Mapa ' + i;
+}
+
+/* ---------- la ventana ---------- */
+let mapaEditando = null;          // null = estamos creando uno nuevo
+
+function refrescarTotal(){
+  const w = Math.max(4, +$('#mapaW').value || 0), h = Math.max(4, +$('#mapaH').value || 0);
+  $('#mapaTot').textContent = (w*h).toLocaleString('es-CO') + ' casillas';
+}
+['mapaW','mapaH'].forEach(id=>{ const n=$('#'+id); if(n) n.addEventListener('input', refrescarTotal); });
+
+function abrirMapaDlg(editar){
+  mapaEditando = editar || null;
+  const tags = TAGS.map(t=>`<option>${esc(t)}</option>`).join('');
+  $('#mapaTag').innerHTML = tags;
+
+  if(editar){
+    const m = buscarMapa(editar); if(!m) return;
+    const propio = (S.propios||{})[editar];
+    $('#mapaDlgTit').textContent = 'EDITAR MAPA';
+    $('#mapaNom').value = editar;
+    $('#mapaW').value = m[0].length;
+    $('#mapaH').value = m.length;
+    $('#mapaTag').value = (propio && TAGS.includes(propio.tag)) ? propio.tag : carpetaDe(editar);
+    $('#mapaOk').textContent = 'GUARDAR CAMBIOS';
+    $('#mapaBorrar').style.display = esMapaPropio(editar) ? '' : 'none';
+    $('#mapaAviso').innerHTML = esMapaPropio(editar)
+      ? 'Al reducir el tamaño se recorta lo que quede fuera. Al ampliarlo, lo nuevo entra vacío.'
+      : 'Este es un mapa de Nubia. Al guardar se crea <b>tu propia copia</b> y el original queda intacto.';
+  } else {
+    $('#mapaDlgTit').textContent = 'NUEVO MAPA';
+    $('#mapaNom').value = siguienteNombre();
+    $('#mapaW').value = 20; $('#mapaH').value = 20;
+    $('#mapaTag').value = 'Sin carpeta';
+    $('#mapaOk').textContent = 'CREAR Y ABRIR';
+    $('#mapaBorrar').style.display = 'none';
+    $('#mapaAviso').textContent = 'El mapa aparece en el desplegable dentro de esa carpeta.';
+  }
+  refrescarTotal();
+  $('#mapaDlg').showModal();
+  $('#mapaNom').focus(); $('#mapaNom').select();
+}
+function carpetaDe(n){
+  for(const [g, ms] of Object.entries(MAPAS)) if(ms[n]) return TAGS.includes(g) ? g : 'Sin carpeta';
+  return 'Sin carpeta';
+}
+
+$('#mapaNuevo').onclick  = ()=> abrirMapaDlg(null);
+$('#mapaEditar').onclick = ()=> abrirMapaDlg(S.nombreMapa);
+$('#mapaNo').onclick     = ()=> $('#mapaDlg').close();
+$('#mapaDlg').addEventListener('cancel', e=>{ e.preventDefault(); $('#mapaDlg').close(); });
+
+$('#mapaOk').onclick = ()=>{
+  const w = Math.max(4, Math.min(80, +$('#mapaW').value || 20));
+  const h = Math.max(4, Math.min(80, +$('#mapaH').value || 20));
+  const tag = $('#mapaTag').value;
+  let nom = $('#mapaNom').value.trim();
+  S.propios = S.propios || {};
+
+  if(mapaEditando){
+    const viejo = mapaEditando;
+    const base  = buscarMapa(viejo); if(!base) return;
+    if(!nom) nom = viejo;
+    // nombre nuevo ya usado por otro mapa: se busca uno libre
+    if(nom !== viejo && buscarMapa(nom)) nom = nombreLibre(nom);
+
+    S.propios[nom] = { filas: redimensionar(base, w, h), tag };
+
+    if(nom !== viejo){
+      // lo guardado bajo el nombre viejo se muda al nuevo
+      if(S.piezas  && S.piezas[viejo]!==undefined){ S.piezas[nom]=S.piezas[viejo]; delete S.piezas[viejo]; }
+      if(S.nieblas && S.nieblas[viejo]!==undefined){ S.nieblas[nom]=S.nieblas[viejo]; delete S.nieblas[viejo]; }
+      if(S.imgs    && S.imgs[viejo]!==undefined){ S.imgs[nom]=S.imgs[viejo]; delete S.imgs[viejo]; }
+      if(esMapaPropio(viejo)) delete S.propios[viejo];
+      if(S.nombreMapa === viejo) S.nombreMapa = nom;
+    }
+    // la niebla se recorta a las casillas que siguen existiendo
+    const dentro = p => { const [x,y]=p.split(',').map(Number); return x<w && y<h; };
+    if(S.nieblas && Array.isArray(S.nieblas[nom])) S.nieblas[nom] = S.nieblas[nom].filter(dentro);
+    S.niebla = (S.niebla||[]).filter(dentro);
+
+    anotar(`Mapa <b>${esc(nom)}</b> · ${w} × ${h} casillas · ${esc(tag)}`, false);
+  } else {
+    if(!nom) nom = siguienteNombre();
+    if(buscarMapa(nom)) nom = nombreLibre(nom);
+    S.propios[nom] = { filas: rejillaNueva(w, h), tag };
+    anotar(`Mapa nuevo: <b>${esc(nom)}</b> · ${w} × ${h} casillas`, false);
+  }
+
+  $('#mapaDlg').close();
+  pintarSelMapa();
+  irAlEscenario(mapaEditando && S.nombreMapa === (mapaEditando) ? S.nombreMapa : nom);
+};
+
+$('#mapaBorrar').onclick = async ()=>{
+  const n = mapaEditando; if(!n || !esMapaPropio(n)) return;
+  $('#mapaDlg').close();
+  const si = await confirmarNubia({
+    titulo:'BORRAR MAPA',
+    texto:`Se borra <b>${esc(n)}</b> y todo lo que tenga puesto encima.<br>Esto no se puede deshacer.`,
+    si:'BORRAR', no:'CANCELAR' });
+  if(!si){ abrirMapaDlg(n); return; }
+  delete S.propios[n];
+  if(S.piezas)  delete S.piezas[n];
+  if(S.nieblas) delete S.nieblas[n];
+  if(S.imgs)    delete S.imgs[n];
+  anotar(`Mapa <b>${esc(n)}</b> borrado`, false);
+  pintarSelMapa();
+  const quedan = bibliotecaMapas().flatMap(([,ms])=>ms);
+  if(S.nombreMapa === n){
+    if(quedan.length) irAlEscenario(quedan[0]);
+    else { crearPrimerMapa(); }
+  } else { pintar(); enviar('estado', S); }
+};
+
+/* ---------- elegir región ---------- */
+function crearPrimerMapa(){
+  S.propios = S.propios || {};
+  const n = siguienteNombre();
+  S.propios[n] = { filas: rejillaNueva(20, 20), tag:'Sin carpeta' };
+  pintarSelMapa();
+  irAlEscenario(n);
+}
+function pintarRegion(){
+  const c = $('#segRegion'); if(!c) return;
+  const r = S.region || 'nubia';
+  c.querySelectorAll('[data-region]').forEach(b=>
+    b.setAttribute('aria-pressed', String(b.dataset.region === r)));
+  const propios = Object.keys(S.propios||{}).length;
+  $('#regionInfo').innerHTML = r === 'nubia'
+    ? `Los mapas de Nubia${propios?', más tus '+propios+' propios':', más los que tú crees'}.`
+    : `Solo tus mapas. ${propios ? propios+' creado'+(propios>1?'s':'') : 'Crea el primero con «nuevo mapa».'}`;
+}
+$('#segRegion').addEventListener('click', async e=>{
+  const b = e.target.closest('[data-region]'); if(!b) return;
+  const nueva = b.dataset.region;
+  if(nueva === (S.region||'nubia')) return;
+  if(nueva === 'propia'){
+    const si = await confirmarNubia({
+      titulo:'TU PROPIA REGIÓN',
+      texto:'Los mapas de Nubia dejan de aparecer en el desplegable.<br>'
+          + 'No se borra nada: puedes volver a Nubia cuando quieras.',
+      si:'EMPEZAR LA MÍA', no:'CANCELAR' });
+    if(!si) return;
+  }
+  S.region = nueva;
+  pintarSelMapa(); pintarRegion();
+  const quedan = bibliotecaMapas().flatMap(([,ms])=>ms);
+  if(!quedan.length){ crearPrimerMapa(); return; }
+  if(!quedan.includes(S.nombreMapa)) irAlEscenario(quedan[0]);
+  else { pintar(); enviar('estado', S); }
+});
+
 /* ===================== TARJETA DE PERFIL ===================== */
 /* Muestra la foto y el nombre del personaje del jugador. La foto se guarda
    en la ficha, así que sobrevive a los cambios de escenario y de sesión.
@@ -3454,7 +3783,7 @@ function pintarPerfil(){
   const img = f.img || (t && t.img) || '';
   const ini = (f.nombre||'?').slice(0,2).toUpperCase();
   const av = $('#perfilAv');
-  av.style.background = t ? (t.color||'#12283f') : '#12283f';
+  av.style.background = t ? (t.color||'#104186') : '#104186';
   av.innerHTML = img ? `<img src="${img}" alt="">` : `<span>${esc(ini)}</span>`;
   const n = $('#perfilNom');
   if(n.tagName !== 'INPUT') n.textContent = f.nombre || '—';
@@ -3621,13 +3950,14 @@ $('#fichas').addEventListener('click', e=>{
 
 /* ===================== CONFIRMACIÓN PROPIA ===================== */
 let confResolver = null;
-function confirmarNubia({titulo, texto, si, imagen, color}){
+function confirmarNubia({titulo, texto, si, no, imagen, color}){
   $('#confTit').textContent = titulo || 'CONFIRMAR';
   $('#confTxt').innerHTML = texto || '';
   $('#confSi').textContent = si || 'SÍ';
+  $('#confNo').textContent = no || 'CANCELAR';
   const av = $('#confAv');
   if(imagen !== undefined){
-    av.style.display='grid'; av.style.background = color || '#0e7c8b';
+    av.style.display='grid'; av.style.background = color || '#3566AB';
     av.innerHTML = imagen ? `<img src="${imagen}" alt="">` : '';
   } else av.style.display='none';
   $('#confirmar').showModal();
@@ -3728,7 +4058,7 @@ function pintarJugadores(){
         <h5 style="margin-top:10px">POKÉMON · ${cuantos}</h5>
         ${lista.length ? lista.map(({p,z,i})=>`
           <div class="jugpk">
-            <div class="mini" style="background:${p.color||'#0e7c8b'}">${p.img?`<img src="${p.img}" alt="">`:''}</div>
+            <div class="mini" style="background:${p.color||'#3566AB'}">${p.img?`<img src="${p.img}" alt="">`:''}</div>
             <b>${esc(p.nombre)} · Nv ${p.nivel||1}</b>
             <button data-quitapk="${esc(n)}|${z}|${i}">QUITAR</button>
           </div>`).join('')
@@ -3803,7 +4133,7 @@ async function importarEquipoPoke5e(datos){
         pv: c.pv || 0, pvMax: c.pvMax || 0,
         img: j.sprites?.other?.['official-artwork']?.front_default || j.sprites?.front_default || '',
         tipos: j.types.map(t=>t.type.name).join(' / '),
-        color: '#0e7c8b'
+        color: '#3566AB'
       });
     }catch{}
   }));
@@ -4497,7 +4827,7 @@ function pintarRailes(){
 
   const e = equipoLeer(yo);
   $('#railDer').innerHTML = `<button id="railPC">PC BOX</button>` + e.eq.map((p,i)=>
-    p ? `<div class="railpk" data-rail="${i}" style="background:${p.color||'#dfe8ee'}">
+    p ? `<div class="railpk" data-rail="${i}" style="background:${p.color||'#E4EDF6'}">
            ${p.img?`<img src="${p.img}" alt="">`:''}<span class="nm"></span></div>`
       : `<div class="railpk vacio"></div>`).join('');
   const pc = $('#railPC');
@@ -4587,7 +4917,7 @@ async function leerFila(){
   const antes = S.nombreMapa;
   S = Object.assign({}, S, data.estado);
   S.areas=S.areas||[]; S.objetos=S.objetos||[]; S.imgs=S.imgs||{};
-  S.piezas=S.piezas||{}; S.equipos=S.equipos||{}; S.npcs=S.npcs||[]; S.mochilas=S.mochilas||{}; S.dinero=S.dinero||{};
+  S.piezas=S.piezas||{}; S.equipos=S.equipos||{}; S.npcs=S.npcs||[]; S.mochilas=S.mochilas||{}; S.dinero=S.dinero||{}; S.nieblas=S.nieblas||{}; S.propios=S.propios||{}; S.region=S.region||'nubia';
   if(!Array.isArray(S.filas) || !S.filas.length) S.filas = MAPAS.Localidades['Pueblo Fundación'];
   anclarLocal();
   pintar();
@@ -4599,7 +4929,7 @@ function recibir({tipo,dato,de}){
   if(tipo==='hola'){ if(soyDM) enviar('estado',S); return; }
   if(tipo==='estado'){ if(!soyDM){
       const cambio = S.nombreMapa !== dato.nombreMapa;
-      S=dato; S.areas=S.areas||[]; S.objetos=S.objetos||[]; S.imgs=S.imgs||{}; S.piezas=S.piezas||{}; S.equipos=S.equipos||{}; S.npcs=S.npcs||[]; S.mochilas=S.mochilas||{}; S.dinero=S.dinero||{}; pintar();
+      S=dato; S.areas=S.areas||[]; S.objetos=S.objetos||[]; S.imgs=S.imgs||{}; S.piezas=S.piezas||{}; S.equipos=S.equipos||{}; S.npcs=S.npcs||[]; S.mochilas=S.mochilas||{}; S.dinero=S.dinero||{}; S.nieblas=S.nieblas||{}; S.propios=S.propios||{}; S.region=S.region||'nubia'; pintar();
       if(cambio && (S.objetos||[]).includes('mapa')) abrirMapaN(true);
     } return; }
   if(tipo==='tirada'){ verTirada(dato,false); return; }

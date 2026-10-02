@@ -10,9 +10,15 @@
 <link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=Alegreya:ital,wght@0,400;0,700;1,400&family=Alegreya+Sans:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  --tinta:#12283f; --tinta-suave:#3d556e; --mar:#0e7c8b;
-  --arena:#f6e7c4; --arena-hueso:#fdf6e6; --oro:#e0951c;
-  --selva:#2e7d4f; --fucsia:#c6386b; --sombra:rgba(18,40,63,.18);
+  --tinta:#104186; --tinta-suave:#6E8CAE; --mar:#3566AB;
+  --arena:#DCE8F4; --arena-hueso:#FFFFFF; --oro:#82B8DE;
+  --selva:#2E8B57; --fucsia:#3566AB; --peligro:#C0392B;
+  --gris:#808080; --fondo:#F1F1F1;
+  --sombra:rgba(16,65,134,.13);
+  --elev-1:0 1px 3px rgba(16,65,134,.10), 0 1px 2px rgba(16,65,134,.06);
+  --elev-2:0 3px 10px rgba(16,65,134,.11), 0 1px 3px rgba(16,65,134,.07);
+  --elev-3:0 8px 26px rgba(16,65,134,.15), 0 2px 6px rgba(16,65,134,.08);
+  --r-s:7px; --r-m:11px; --r-l:15px;
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
@@ -28,9 +34,9 @@ header{background:var(--tinta);color:var(--arena-hueso);padding:30px 0 24px}
 header .fila{display:flex;justify-content:space-between;align-items:baseline;gap:20px;flex-wrap:wrap}
 header h1{margin:0;font-size:clamp(24px,4.6vw,40px);color:var(--arena-hueso)}
 header h1 span{color:var(--oro)}
-header a{color:#8fc8d3;font-family:'Alegreya Sans',sans-serif;font-size:14px;text-decoration:none;border-bottom:1px solid #4d7183}
+header a{color:#9FC7E8;font-family:'Alegreya Sans',sans-serif;font-size:14px;text-decoration:none;border-bottom:1px solid #4d7183}
 header a:hover{color:var(--arena-hueso)}
-header p{max-width:64ch;margin:12px 0 0;color:#cfe0e6}
+header p{max-width:64ch;margin:12px 0 0;color:#D7E6F4}
 
 nav{position:sticky;top:0;z-index:30;background:var(--arena-hueso);border-bottom:3px solid var(--tinta)}
 nav .wrap{display:flex;gap:5px;overflow-x:auto;padding:11px 20px}
@@ -45,7 +51,7 @@ nav button[data-id^='lg'][aria-pressed="true"]{background:var(--oro);color:var(-
 nav button.cv[aria-pressed="true"]{background:var(--fucsia);color:#fff}
 
 main{padding:32px 0 70px}
-.intro{border:3px solid var(--tinta);background:var(--arena-hueso);padding:22px 24px;box-shadow:6px 6px 0 var(--sombra);margin-bottom:36px}
+.intro{border:2px solid var(--tinta);background:var(--arena-hueso);padding:22px 24px;box-shadow:var(--elev-2);margin-bottom:36px}
 .intro h2{font-size:16px;margin:0 0 12px;color:var(--mar)}
 .intro ol{margin:0;padding-left:20px}
 .intro li{margin-bottom:9px}
@@ -60,7 +66,7 @@ main{padding:32px 0 70px}
 .dos{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:30px;align-items:start}
 @media(max-width:960px){.dos{grid-template-columns:1fr}}
 
-.tilewrap{border:3px solid var(--tinta);background:var(--tinta);box-shadow:6px 6px 0 var(--sombra);overflow:auto;max-width:100%}
+.tilewrap{border:2px solid var(--tinta);background:var(--tinta);box-shadow:var(--elev-2);overflow:auto;max-width:100%}
 .tiles{display:grid;gap:0;width:100%;max-width:100%}
 .t{position:relative;min-width:0;min-height:0;overflow:visible}
 .t.pt{cursor:pointer}
@@ -73,14 +79,14 @@ main{padding:32px 0 70px}
   font-family:'Alegreya Sans',sans-serif;font-size:13px;color:var(--tinta-suave)}
 .leg i{display:inline-block;width:13px;height:13px;border:1px solid var(--tinta);margin-right:6px;vertical-align:-2px;font-style:normal}
 
-.bloque{border:3px solid var(--tinta);background:var(--arena-hueso);padding:17px 19px;margin-bottom:20px;box-shadow:6px 6px 0 var(--sombra)}
+.bloque{border:2px solid var(--tinta);background:var(--arena-hueso);padding:17px 19px;margin-bottom:20px;box-shadow:var(--elev-2)}
 .bloque h4{font-size:12px;margin:0 0 10px;color:var(--mar)}
 .bloque.rosa{border-color:var(--fucsia)} .bloque.rosa h4{color:var(--fucsia)}
 .bloque p{margin:0 0 10px} .bloque p:last-child{margin:0}
 .bloque ol,.bloque ul{margin:0;padding-left:19px}
 .bloque li{margin-bottom:8px} .bloque li:last-child{margin-bottom:0}
 
-.puntos{display:grid;gap:2px;background:var(--tinta);border:3px solid var(--tinta);margin-bottom:20px}
+.puntos{display:grid;gap:2px;background:var(--tinta);border:2px solid var(--tinta);margin-bottom:20px}
 .punto{background:var(--arena-hueso);padding:12px 15px}
 .punto.sel{background:#fff8e2}
 .punto .fila2{display:flex;gap:9px;align-items:baseline;flex-wrap:wrap}
@@ -106,6 +112,14 @@ header h1,.hero h1{display:flex;align-items:center;gap:12px}
 .atras:hover{background:var(--oro);color:var(--tinta)}
 .atras:active{transform:translateX(-2px)}
 .atras:focus-visible{outline:3px solid var(--fucsia);outline-offset:3px}
+
+/* ---- pulido compartido con el tablero ---- */
+body{background:var(--fondo)}
+.bt,button.bt{border-radius:var(--r-s)}
+.card,.lider,.cl,.tilewrap,.caja2,.panel,.box{border-radius:var(--r-m)}
+input,select,textarea{border-radius:var(--r-s);border:1px solid #BCD2E6;padding:9px 10px}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--mar);
+  box-shadow:0 0 0 3px rgba(53,102,171,.16)}
 </style>
 
 <style>
@@ -164,7 +178,369 @@ tr,.punto,.npc{transition:background .14s}
 
 <script src="nubia-config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="nubia-editor.js"></script>
+<script>
+/* EDITOR DE TEXTOS · incrustado para que no dependa de ningún archivo suelto */
+/* =====================================================================
+   EDITOR DE TEXTOS DE NUBIA
+   Reescribe cualquier texto del códice, el atlas, los planos y las tablas
+   de encuentro. Lo que cambies es tuyo: los demás siguen viendo el texto
+   original.
+
+   Con cuenta iniciada se guarda en Supabase y te sigue en cualquier
+   dispositivo. Sin cuenta se guarda en este navegador, para que puedas
+   trabajar igual mientras tanto.
+   ===================================================================== */
+(function(){
+  const CFG = window.NUBIA || {};
+  const LLAVE = 'nubia-textos';
+  let sb = null, cuenta = null, editando = false, enNube = false;
+  const overrides = new Map();     // clave -> texto propio
+  const marcados  = new Map();     // clave -> {nodo, original}
+
+  /* ---------------- estilos ---------------- */
+  const css = document.createElement('style');
+  css.textContent = `
+    #nbBar{position:fixed;right:16px;bottom:16px;z-index:300;display:flex;gap:8px;
+      align-items:flex-end;flex-direction:column}
+    #nbBar .fila{display:flex;gap:8px;align-items:center}
+    #nbBar button{font-family:'Silkscreen',monospace;font-size:10px;padding:11px 13px;
+      border:3px solid #104186;background:#FFFFFF;color:#104186;cursor:pointer;
+      box-shadow:var(--elev-2)}
+    #nbBar button:hover{background:#fff}
+    #nbBar button:active{transform:translate(2px,2px);box-shadow:var(--elev-2)}
+    #nbBar button.on{background:#3566AB;color:#fff}
+    #nbEstado{font-family:'Alegreya Sans',sans-serif;font-size:11px;background:#104186;
+      color:#D7E6F4;padding:7px 10px;max-width:280px;line-height:1.35}
+    body.nb-edit [data-nbedit]{outline:2px dashed #3566AB;outline-offset:3px;cursor:text}
+    body.nb-edit [data-nbedit]:hover{background:#fff1f5}
+    body.nb-edit [data-nbedit]:focus{outline:3px solid #3566AB;background:#fff}
+    [data-nbedit].nb-mio{box-shadow:inset 4px 0 0 #82B8DE;background:#fffaee}
+    #nbToast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(18px);
+      z-index:310;background:#2E8B57;color:#fff;font-family:'Silkscreen',monospace;font-size:10px;
+      padding:11px 16px;border:3px solid #104186;opacity:0;pointer-events:none;
+      transition:opacity .2s,transform .2s}
+    #nbToast.ver{opacity:1;transform:translateX(-50%)}
+    [data-nbimg]{position:relative;cursor:default}
+    body.nb-edit [data-nbimg]{cursor:pointer;outline:2px dashed #3566AB;outline-offset:3px}
+    body.nb-edit [data-nbimg]:hover{outline-color:#104186;filter:brightness(1.04)}
+    body.nb-edit [data-nbimg]::after{content:'CAMBIAR';position:absolute;inset:auto 0 0 0;
+      font-family:'Silkscreen',monospace;font-size:7px;text-align:center;padding:3px 0;
+      background:rgba(16,65,134,.86);color:#fff;pointer-events:none}
+    .nb-foto{display:grid;place-items:center;overflow:hidden;background:#DCE8F4;
+      border:2px solid #104186;color:#6E8CAE;font-family:'Silkscreen',monospace;font-size:9px}
+    .nb-foto img{width:100%;height:100%;object-fit:cover;display:block}
+    .nb-tipos{position:fixed;z-index:320;background:#fff;border:2px solid #104186;border-radius:10px;
+      box-shadow:0 10px 30px rgba(16,65,134,.22);padding:8px;display:none;
+      grid-template-columns:repeat(3,1fr);gap:5px;max-width:300px}
+    .nb-tipos.ver{display:grid}
+    .nb-tipos button{font-family:'Silkscreen',monospace;font-size:8px;padding:7px 5px;border:0;
+      border-radius:6px;color:#fff;cursor:pointer;text-shadow:0 1px 0 rgba(0,0,0,.25)}
+    .nb-tipos button:hover{filter:brightness(1.12)}
+    @media (prefers-reduced-motion:reduce){#nbToast{transition:none}}`;
+  (document.head || document.documentElement).appendChild(css);
+
+  /* ---------------- barra ---------------- */
+  const barra = document.createElement('div');
+  barra.id = 'nbBar';
+  barra.innerHTML = `<div id="nbEstado">Cargando…</div>
+    <div class="fila">
+      <button id="nbRestaurar" style="display:none">RESTAURAR</button>
+      <button id="nbEditar">EDITAR TEXTOS</button>
+    </div>`;
+  const toast = document.createElement('div');
+  toast.id = 'nbToast';
+
+  function montar(){
+    if(document.body && !document.getElementById('nbBar')){
+      document.body.appendChild(barra);
+      document.body.appendChild(toast);
+      estado();
+    }
+  }
+  if(document.body) montar(); else addEventListener('DOMContentLoaded', montar);
+
+  let tT = null;
+  function avisar(txt){
+    toast.textContent = txt; toast.classList.add('ver');
+    clearTimeout(tT); tT = setTimeout(()=>toast.classList.remove('ver'), 2200);
+  }
+  function estado(){
+    const n = document.getElementById('nbEstado'); if(!n) return;
+    const propios = [...marcados.keys()].filter(k=>overrides.has(k)).length;
+    n.textContent = (enNube
+      ? 'Tus textos se guardan en tu cuenta.'
+      : 'Sin cuenta: tus textos se guardan solo en este navegador.')
+      + (propios ? ' ' + propios + ' cambiados aquí.' : '');
+    const r = document.getElementById('nbRestaurar');
+    if(r){ r.style.display = propios ? '' : 'none'; r.textContent = 'RESTAURAR ' + propios; }
+  }
+
+  /* ---------------- almacenamiento ---------------- */
+  function local(){
+    try{ return JSON.parse(localStorage.getItem(LLAVE) || '{}'); }catch{ return {}; }
+  }
+  function guardarLocal(){
+    try{ localStorage.setItem(LLAVE, JSON.stringify(Object.fromEntries(overrides))); }catch{}
+  }
+  async function cargar(){
+    Object.entries(local()).forEach(([k,v])=>overrides.set(k,v));
+    if(sb && cuenta){
+      try{
+        const { data, error } = await sb.from('textos').select('clave,valor').eq('jugador', cuenta.id);
+        if(!error){
+          enNube = true;
+          (data||[]).forEach(r=>overrides.set(r.clave, r.valor));
+        }
+      }catch{}
+    }
+    marcados.forEach((_,k)=>aplicar(k));
+    imgs.forEach((_,k)=>pintarImg(k));
+    estado();
+  }
+  async function guardar(clave, valor){
+    overrides.set(clave, valor);
+    guardarLocal();
+    if(enNube){
+      try{
+        const { error } = await sb.from('textos')
+          .upsert({ jugador: cuenta.id, clave, valor }, { onConflict:'jugador,clave' });
+        if(error) return 'Guardado solo en este navegador';
+      }catch{ return 'Guardado solo en este navegador'; }
+      return 'Guardado en tu cuenta';
+    }
+    return 'Guardado en este navegador';
+  }
+  async function quitar(clave){
+    overrides.delete(clave);
+    guardarLocal();
+    if(enNube){
+      try{ await sb.from('textos').delete().eq('jugador', cuenta.id).eq('clave', clave); }catch{}
+    }
+  }
+
+  async function iniciar(){
+    if(CFG.SUPABASE_URL && CFG.SUPABASE_KEY && window.supabase){
+      try{
+        sb = window.supabase.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_KEY);
+        const ses = await sb.auth.getSession();
+        cuenta = (ses && ses.data && ses.data.session && ses.data.session.user) || null;
+        sb.auth.onAuthStateChange(function(_e, s){
+          if(s && s.user && !cuenta){ cuenta = s.user; cargar(); }
+        });
+      }catch{}
+    }
+    await cargar();
+  }
+
+  /* ---------------- marcado ---------------- */
+  let aplicar = function(clave){
+    const m = marcados.get(clave); if(!m || !m.nodo.isConnected) return;
+    if(overrides.has(clave)){
+      m.nodo.innerHTML = overrides.get(clave);
+      m.nodo.classList.add('nb-mio');
+    } else {
+      m.nodo.innerHTML = m.original;
+      m.nodo.classList.remove('nb-mio');
+    }
+  };
+
+  const SELECTOR = 'p, li, blockquote, h1, h2, h3, h4, h5, td, th, summary, '
+                 + 'dd, dt, figcaption, .desc, .act, .dial, .sub, .nota, .cl, .lead, '
+                 + '.orden, .tipo, .med, .cnom, .sub2, .eyeb, .nom';
+  /* Marca los textos de un contenedor. El prefijo debe ser estable entre
+     repintados para que el mismo párrafo conserve su clave. `excluir` deja
+     fuera las zonas que se repintan con su propio prefijo. */
+  function marcar(contenedor, prefijo, excluir){
+    if(!contenedor) return 0;
+    let i = 0, n = 0;
+    contenedor.querySelectorAll(SELECTOR).forEach(function(nodo){
+      if(nodo.closest('#nbBar')) return;
+      if(excluir && nodo.closest(excluir)) return;
+      if(nodo.querySelector(SELECTOR)) return;             // solo las hojas
+      const txt = (nodo.textContent||'').trim();
+      if(txt.length < 3) return;
+      const clave = prefijo + ':' + (i++);
+      nodo.setAttribute('data-nbedit', clave);
+      nodo.setAttribute('spellcheck','false');
+      if(!marcados.has(clave) || marcados.get(clave).nodo !== nodo)
+        marcados.set(clave, { nodo: nodo, original: nodo.innerHTML });
+      if(editando) nodo.setAttribute('contenteditable','true');
+      aplicar(clave);
+      n++;
+    });
+    estado();
+    return n;
+  }
+
+  /* ---------------- modo edición ---------------- */
+  function alternar(){
+    editando = !editando;
+    document.body.classList.toggle('nb-edit', editando);
+    const b = document.getElementById('nbEditar');
+    b.classList.toggle('on', editando);
+    b.textContent = editando ? 'TERMINAR' : 'EDITAR TEXTOS';
+    marcados.forEach(function(m){
+      if(!m.nodo.isConnected) return;
+      if(editando) m.nodo.setAttribute('contenteditable','true');
+      else m.nodo.removeAttribute('contenteditable');
+    });
+    avisar(editando ? 'Toca cualquier texto y escribe' : 'Edición terminada');
+  }
+
+  document.addEventListener('click', async function(e){
+    if(e.target.closest('#nbEditar')){ alternar(); return; }
+    if(e.target.closest('#nbRestaurar')){
+      const propios = [...marcados.keys()].filter(k=>overrides.has(k));
+      if(!propios.length) return;
+      if(!confirm('¿Devolver '+propios.length+' textos de esta pantalla a su versión original?')) return;
+      for(const k of propios){ await quitar(k); aplicar(k); }
+      estado(); avisar('Textos restaurados');
+    }
+  });
+
+  document.addEventListener('focusout', async function(e){
+    if(!editando) return;
+    const nodo = e.target && e.target.closest && e.target.closest('[data-nbedit]');
+    if(!nodo) return;
+    const clave = nodo.getAttribute('data-nbedit');
+    const m = marcados.get(clave); if(!m) return;
+    const valor = nodo.innerHTML.trim();
+    if(valor === m.original.trim()){
+      if(overrides.has(clave)){ await quitar(clave); nodo.classList.remove('nb-mio'); }
+    } else {
+      nodo.classList.add('nb-mio');
+      avisar(await guardar(clave, valor));
+    }
+    estado();
+  });
+
+  /* ---------------- imágenes propias ----------------
+     Mismo almacén que los textos: con cuenta van a Supabase, sin ella al
+     navegador. La clave empieza por img: para distinguirlas. */
+  const imgs = new Map();
+  let subiendo = null;
+  const entrada = document.createElement('input');
+  entrada.type = 'file'; entrada.accept = 'image/*'; entrada.style.display = 'none';
+  addEventListener('DOMContentLoaded', ()=>document.body.appendChild(entrada));
+  if(document.body) document.body.appendChild(entrada);
+
+  function reducirImg(arch){
+    return new Promise(res=>{
+      const l = new FileReader();
+      l.onload = () => {
+        const im = new Image();
+        im.onload = () => {
+          const L = 256, cv = document.createElement('canvas');
+          cv.width = cv.height = L;
+          const g = cv.getContext('2d'), m = Math.min(im.width, im.height);
+          g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high';
+          g.drawImage(im, (im.width-m)/2, (im.height-m)/2, m, m, 0, 0, L, L);
+          res(cv.toDataURL('image/jpeg', .88));
+        };
+        im.onerror = () => res('');
+        im.src = l.result;
+      };
+      l.onerror = () => res('');
+      l.readAsDataURL(arch);
+    });
+  }
+  function pintarImg(clave){
+    const n = imgs.get(clave); if(!n || !n.isConnected) return;
+    const url = overrides.get(clave);
+    if(url) n.innerHTML = '<img src="'+url+'" alt="">';
+    else if(!n.dataset.nbvacio) n.dataset.nbvacio = n.innerHTML;
+    if(!url && n.dataset.nbvacio !== undefined) n.innerHTML = n.dataset.nbvacio;
+  }
+  /* Registra un hueco de imagen. Devuelve el nodo para encadenar. */
+  function imagen(nodo, clave){
+    if(!nodo) return null;
+    nodo.setAttribute('data-nbimg', clave);
+    if(!nodo.dataset.nbvacio) nodo.dataset.nbvacio = nodo.innerHTML;
+    imgs.set(clave, nodo);
+    pintarImg(clave);
+    return nodo;
+  }
+  document.addEventListener('click', e=>{
+    if(!editando) return;
+    const n = e.target.closest('[data-nbimg]'); if(!n) return;
+    subiendo = n.getAttribute('data-nbimg');
+    entrada.value = ''; entrada.click();
+  });
+  entrada.addEventListener('change', async ()=>{
+    const arch = entrada.files && entrada.files[0];
+    if(!arch || !subiendo) return;
+    const clave = subiendo; subiendo = null;
+    avisar('Procesando la imagen…');
+    const url = await reducirImg(arch);
+    entrada.value = '';
+    if(!url){ avisar('No se pudo leer la imagen'); return; }
+    pintarImg(clave);
+    avisar(await guardar(clave, url));
+    pintarImg(clave);
+    estado();
+  });
+
+  /* ---------------- selector de tipo ---------------- */
+  const TIPOS = {
+    'Normal':'#9199a1','Fuego':'#e0602c','Agua':'#3b7fd1','Planta':'#4ca64c',
+    'Eléctrico':'#e0b000','Hielo':'#6fc4d8','Lucha':'#c0392b','Veneno':'#8e44ad',
+    'Tierra':'#b9813f','Volador':'#7aa5d8','Psíquico':'#d6467e','Bicho':'#8aa832',
+    'Roca':'#a08055','Fantasma':'#6b5b95','Dragón':'#5a4fcf','Siniestro':'#4a4039',
+    'Acero':'#8794a3','Hada':'#d87fa8'
+  };
+  const paleta = document.createElement('div');
+  paleta.className = 'nb-tipos';
+  paleta.innerHTML = Object.entries(TIPOS).map(([t,c])=>
+    '<button data-tipo="'+t+'" style="background:'+c+'">'+t.toUpperCase()+'</button>').join('');
+  addEventListener('DOMContentLoaded', ()=>document.body.appendChild(paleta));
+  if(document.body) document.body.appendChild(paleta);
+  let tipoDestino = null;
+
+  document.addEventListener('click', e=>{
+    const b = e.target.closest('.nb-tipos [data-tipo]');
+    if(b && tipoDestino){
+      const t = b.dataset.tipo, col = TIPOS[t];
+      const n = tipoDestino.nodo, clave = tipoDestino.clave;
+      // se conserva lo que haya antes del tipo (el número de gimnasio)
+      const partes = n.innerHTML.split(/<br\s*\/?>/i);
+      partes[partes.length-1] = t.toUpperCase();
+      n.innerHTML = partes.join('<br>');
+      n.style.background = col;
+      guardar(clave, n.innerHTML).then(avisar);
+      guardar(clave + '@col', col);
+      paleta.classList.remove('ver'); tipoDestino = null;
+      estado();
+      return;
+    }
+    if(!editando){ paleta.classList.remove('ver'); return; }
+    const o = e.target.closest('.orden');
+    if(o && o.hasAttribute('data-nbedit')){
+      e.preventDefault();
+      tipoDestino = { nodo:o, clave:o.getAttribute('data-nbedit') };
+      const r = o.getBoundingClientRect();
+      paleta.style.left = Math.min(r.left, innerWidth-312) + 'px';
+      paleta.style.top  = Math.min(r.bottom + 6, innerHeight-220) + 'px';
+      paleta.classList.add('ver');
+      return;
+    }
+    if(!e.target.closest('.nb-tipos')) paleta.classList.remove('ver');
+  }, true);
+
+  /* El color guardado se reaplica al repintar */
+  const aplicarBase = aplicar;
+  aplicar = function(clave){
+    aplicarBase(clave);
+    const m = marcados.get(clave);
+    if(m && m.nodo.isConnected && overrides.has(clave + '@col'))
+      m.nodo.style.background = overrides.get(clave + '@col');
+  };
+
+  window.NubiaEditor = { marcar: marcar, imagen: imagen,
+    get activo(){ return editando; } };
+  iniciar();
+})();
+
+</script>
 <script>
 /* ===========================================================
    Leyenda de casillas:
@@ -176,9 +552,9 @@ tr,.punto,.npc{transition:background .14s}
    =========================================================== */
 const COLORES = {
  '.':'#7ec46b', ',':'#d6ac74', '=':'#c6bfae', '~':'#3f9ed6', 's':'#efd9a2',
- 'h':'#3f8f45', 'T':'#2e7d4f', '^':'#9a8f7f', 'b':'#b98a52', 'o':'#463a30',
+ 'h':'#3f8f45', 'T':'#2E8B57', '^':'#9a8f7f', 'b':'#b98a52', 'o':'#463a30',
  'x':'#6b4f33', 'n':'#eef4f7', 'i':'#bfe0ee', '#':'#8a7f72', 'P':'#a9784a',
- 'L':'#7b5ba6', 'E':'#f6e7c4'
+ 'L':'#7b5ba6', 'E':'#DCE8F4'
 };
 const NOMBRES = {'.':'césped',',':'tierra','=':'empedrado','~':'agua','s':'arena',
  'h':'hierba alta','T':'árbol','^':'roca','b':'puente','o':'boca de cueva','x':'obstáculo',
