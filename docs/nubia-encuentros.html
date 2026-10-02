@@ -10,18 +10,54 @@
 <link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=Alegreya:wght@400;700&family=Alegreya+Sans:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  --tinta:#104186; --tinta-suave:#6E8CAE; --mar:#3566AB;
-  --arena:#DCE8F4; --arena-hueso:#FFFFFF; --oro:#82B8DE;
-  --selva:#2E8B57; --fucsia:#3566AB; --peligro:#C0392B;
-  --gris:#808080; --carbon:#1C1C1C; --fondo:#F1F1F1;
+  /* ---- los seis colores de la paleta ---- */
+  --p-azul:#104186; --p-medio:#3566AB; --p-claro:#82B8DE;
+  --p-hueso:#F1F1F1; --p-gris:#808080; --p-carbon:#1C1C1C;
+
+  /* ---- superficies ---- */
+  --fondo:#F1F1F1; --arena-hueso:#FFFFFF; --arena:#DCE8F4; --borde:#BCD2E6;
+
+  /* ---- texto, con contraste medido sobre las superficies de arriba ---- */
+  --txt:#1C1C1C;      /* 15.1 : 1 */
+  --txt-2:#4A5F78;    /*  6.0 : 1 */
+  --txt-3:#6B6B6B;    /*  4.8 : 1 */
+  --titulo:#104186;   /*  8.8 : 1 */
+
+  /* ---- estructura y acentos ---- */
+  --tinta:#104186; --tinta-suave:#4A5F78; --mar:#2F5E9E;
+  --oro:#82B8DE;            /* solo sobre fondo oscuro */
+  --fucsia:#3566AB; --selva:#2E8B57; --peligro:#C0392B;
+  --gris:#6B6B6B; --carbon:#1C1C1C;
+  --sobre-oscuro:#FFFFFF;   /* texto encima de las cajas azul profundo */
   --sombra:rgba(16,65,134,.13);
   --elev-1:0 1px 3px rgba(16,65,134,.10), 0 1px 2px rgba(16,65,134,.06);
   --elev-2:0 3px 10px rgba(16,65,134,.11), 0 1px 3px rgba(16,65,134,.07);
   --elev-3:0 8px 26px rgba(16,65,134,.15), 0 2px 6px rgba(16,65,134,.08);
   --r-s:7px; --r-m:11px; --r-l:15px;
 }
+
+/* ===================== MODO OSCURO ===================== */
+html[data-tema="oscuro"]{
+  --fondo:#131B26; --arena-hueso:#1B2838; --arena:#223246; --borde:#32486629;
+
+  --txt:#ECF2F8;      /* 13.8 : 1 sobre el panel */
+  --txt-2:#A9C4DC;    /*  8.3 : 1 */
+  --txt-3:#8FA6BC;    /*  6.3 : 1 */
+  --titulo:#8FC2EA;   /*  7.9 : 1 */
+
+  --tinta:#1E3A5F; --tinta-suave:#A9C4DC; --mar:#8FC2EA;
+  --oro:#9FD0F0;
+  --fucsia:#2E6FC4; --selva:#2E8B57; --peligro:#C0392B;
+  --gris:#8FA6BC; --carbon:#ECF2F8;
+  --sobre-oscuro:#FFFFFF;
+  --sombra:rgba(0,0,0,.5);
+  --elev-1:0 1px 3px rgba(0,0,0,.4);
+  --elev-2:0 3px 12px rgba(0,0,0,.45);
+  --elev-3:0 10px 30px rgba(0,0,0,.55);
+}
+
 *{box-sizing:border-box}
-body{margin:0;background:var(--arena);color:var(--tinta);
+body{margin:0;background:var(--arena);color:var(--titulo);
   font-family:'Alegreya',Georgia,serif;font-size:16px;line-height:1.58}
 .wrap{max-width:1220px;margin:0 auto;padding:0 20px}
 h1,h2,h3{font-family:'Silkscreen','Courier New',monospace;line-height:1.3}
@@ -29,20 +65,20 @@ h1,h2,h3{font-family:'Silkscreen','Courier New',monospace;line-height:1.3}
   repeating-linear-gradient(135deg,var(--tinta) 0 7px,transparent 7px 14px),
   repeating-linear-gradient(45deg,var(--tinta) 0 7px,var(--arena-hueso) 7px 14px)}
 
-header{background:var(--tinta);color:var(--arena-hueso);padding:24px 0}
+header{background:var(--tinta);color:var(--sobre-oscuro);padding:24px 0}
 header .f{display:flex;justify-content:space-between;align-items:baseline;gap:18px;flex-wrap:wrap}
-header h1{margin:0;font-size:clamp(21px,3.4vw,32px);color:var(--arena-hueso)}
+header h1{margin:0;font-size:clamp(21px,3.4vw,32px);color:var(--sobre-oscuro)}
 header h1 span{color:var(--oro)}
-header a{color:#9FC7E8;font-family:'Alegreya Sans',sans-serif;font-size:14px;text-decoration:none;border-bottom:1px solid #4d7183}
-header a:hover{color:var(--arena-hueso)}
-header p{max-width:66ch;margin:11px 0 0;color:#D7E6F4}
+header a{color:var(--txt-2);font-family:'Alegreya Sans',sans-serif;font-size:14px;text-decoration:none;border-bottom:1px solid #4d7183}
+header a:hover{color:var(--sobre-oscuro)}
+header p{max-width:66ch;margin:11px 0 0;color:var(--txt-2)}
 
 input,select,textarea{font-family:'Alegreya Sans',sans-serif;font-size:14px;padding:7px 8px;
-  border:2px solid var(--tinta);background:#fff;color:var(--tinta)}
+  border:2px solid var(--tinta);background:var(--arena-hueso);color:var(--titulo)}
 input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--mar);outline-offset:1px}
 button{font-family:'Silkscreen',monospace;cursor:pointer}
-.bt{font-size:10px;padding:9px 11px;border:2px solid var(--tinta);background:var(--arena-hueso);color:var(--tinta)}
-.bt:hover{background:#fff}
+.bt{font-size:10px;padding:9px 11px;border:2px solid var(--tinta);background:var(--arena-hueso);color:var(--titulo)}
+.bt:hover{background:var(--arena-hueso)}
 .bt.rosa{background:var(--fucsia);color:#fff}
 .bt.rosa:hover{background:#2B548C}
 .bt:focus-visible{outline:3px solid var(--fucsia);outline-offset:2px}
@@ -50,7 +86,7 @@ button{font-family:'Silkscreen',monospace;cursor:pointer}
 .barra{background:var(--arena-hueso);border-bottom:3px solid var(--tinta)}
 .barra .wrap{display:flex;gap:13px;align-items:end;flex-wrap:wrap;padding:13px 20px}
 .campo{display:flex;flex-direction:column;gap:3px}
-.campo span{font-family:'Silkscreen',monospace;font-size:9px;color:var(--tinta-suave)}
+.campo span{font-family:'Silkscreen',monospace;font-size:9px;color:var(--txt-2)}
 
 main{padding:26px 0 70px}
 .dos{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:26px;align-items:start}
@@ -59,42 +95,42 @@ main{padding:26px 0 70px}
 .panel{background:var(--arena-hueso);border:2px solid var(--tinta);padding:18px 20px;box-shadow:var(--elev-2);margin-bottom:20px}
 .panel h2{font-size:12px;margin:0 0 12px;color:var(--mar)}
 .panel p{margin:0 0 9px} .panel p:last-child{margin:0}
-.nota{font-family:'Alegreya Sans',sans-serif;font-size:13px;color:var(--tinta-suave)}
+.nota{font-family:'Alegreya Sans',sans-serif;font-size:13px;color:var(--txt-2)}
 
 .cabZ{display:flex;justify-content:space-between;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:3px}
-.cabZ h2{font-size:21px;margin:0;color:var(--tinta)}
+.cabZ h2{font-size:21px;margin:0;color:var(--titulo)}
 .etq{font-family:'Silkscreen',monospace;font-size:10px;background:var(--tinta);color:var(--oro);padding:6px 9px}
-.subZ{font-family:'Alegreya Sans',sans-serif;font-size:14px;color:var(--tinta-suave);margin:0 0 16px}
+.subZ{font-family:'Alegreya Sans',sans-serif;font-size:14px;color:var(--txt-2);margin:0 0 16px}
 
 table{width:100%;border-collapse:collapse;background:var(--arena-hueso);border:2px solid var(--tinta)}
-th{font-family:'Silkscreen',monospace;font-size:9px;text-align:left;background:var(--tinta);color:var(--arena-hueso);padding:9px 8px}
+th{font-family:'Silkscreen',monospace;font-size:9px;text-align:left;background:var(--tinta);color:var(--sobre-oscuro);padding:9px 8px}
 td{border-top:2px solid #D9E6F2;padding:6px 7px;vertical-align:middle}
 td input{width:100%;border-width:1px;padding:6px 7px}
 td.num{width:74px} td.acc{width:44px;text-align:center}
-td.rango{font-family:'Silkscreen',monospace;font-size:10px;color:var(--tinta-suave);width:74px;white-space:nowrap}
-.equis{font-size:11px;padding:5px 8px;border:2px solid var(--tinta-suave);background:#fff;color:var(--fucsia)}
+td.rango{font-family:'Silkscreen',monospace;font-size:10px;color:var(--txt-2);width:74px;white-space:nowrap}
+.equis{font-size:11px;padding:5px 8px;border:2px solid var(--tinta-suave);background:var(--arena-hueso);color:var(--fucsia)}
 .equis:hover{border-color:var(--fucsia)}
-.vacia td{padding:22px;text-align:center;color:var(--tinta-suave);font-family:'Alegreya Sans',sans-serif;font-size:14px}
+.vacia td{padding:22px;text-align:center;color:var(--txt-2);font-family:'Alegreya Sans',sans-serif;font-size:14px}
 .acciones{display:flex;gap:9px;margin-top:14px;flex-wrap:wrap}
 
 /* resultado */
-.res{border:3px solid var(--fucsia);background:#fff;padding:18px;box-shadow:var(--elev-2);text-align:center}
-.res .paso{font-family:'Alegreya Sans',sans-serif;font-size:13px;color:var(--tinta-suave);margin:0 0 8px}
+.res{border:3px solid var(--fucsia);background:var(--arena-hueso);padding:18px;box-shadow:var(--elev-2);text-align:center}
+.res .paso{font-family:'Alegreya Sans',sans-serif;font-size:13px;color:var(--txt-2);margin:0 0 8px}
 .res img{width:150px;height:150px;object-fit:contain;image-rendering:auto;display:block;margin:4px auto}
 .res .nom{font-family:'Silkscreen',monospace;font-size:19px;margin:6px 0 2px}
 .res .lv{font-family:'Silkscreen',monospace;font-size:12px;color:var(--fucsia)}
 .res .nt{font-size:15px;margin:10px 0 0}
-.res .nada{font-family:'Silkscreen',monospace;font-size:16px;color:var(--tinta-suave);padding:24px 0}
+.res .nada{font-family:'Silkscreen',monospace;font-size:16px;color:var(--txt-2);padding:24px 0}
 .dado{font-family:'Silkscreen',monospace;font-size:30px;color:var(--oro);background:var(--tinta);padding:12px;display:block;margin-bottom:12px}
 
 textarea{width:100%;min-height:150px;font-family:ui-monospace,monospace;font-size:12px;line-height:1.45}
 
-footer{background:var(--tinta);color:#a8c2ce;padding:22px 0;font-family:'Alegreya Sans',sans-serif;font-size:13px}
-footer code{background:#1c3a56;padding:2px 5px;color:#D7E6F4}
+footer{background:var(--tinta);color:var(--txt-3);padding:22px 0;font-family:'Alegreya Sans',sans-serif;font-size:13px}
+footer code{background:#1c3a56;padding:2px 5px;color:var(--txt-2)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 
-.logo{width:34px;height:34px;image-rendering:pixelated;display:block;flex:0 0 auto}
-.logo-grande{width:104px;height:104px;image-rendering:pixelated;display:block;margin:0 auto 6px;
+.logo{width:34px;height:34px;image-rendering:auto;display:block;flex:0 0 auto}
+.logo-grande{width:104px;height:104px;image-rendering:auto;display:block;margin:0 auto 6px;
   filter:drop-shadow(0 8px 18px rgba(0,0,0,.45));animation:brotar .45s ease both}
 header h1,.hero h1{display:flex;align-items:center;gap:12px}
 .hero h1{display:block}
@@ -103,7 +139,7 @@ header h1,.hero h1{display:flex;align-items:center;gap:12px}
   border:3px solid var(--oro);background:transparent;text-decoration:none;flex:0 0 auto;
   transition:background .14s,color .14s,transform .1s}
 .atras svg{width:22px;height:22px;display:block}
-.atras:hover{background:var(--oro);color:var(--tinta)}
+.atras:hover{background:var(--oro);color:var(--titulo)}
 .atras:active{transform:translateX(-2px)}
 .atras:focus-visible{outline:3px solid var(--fucsia);outline-offset:3px}
 
@@ -115,11 +151,86 @@ input,select,textarea{border-radius:var(--r-s);border:1px solid #BCD2E6;padding:
 input:focus,select:focus,textarea:focus{outline:none;border-color:var(--mar);
   box-shadow:0 0 0 3px rgba(53,102,171,.16)}
 
-/* ---- el carbón y el gris de la paleta, para leer mejor ---- */
-body{color:var(--carbon)}
-p,li,td,dd,blockquote,.desc,.act,.nota,.sub2{color:var(--carbon)}
-.nota,.sub2,.pcpie,small{color:var(--gris)}
-h1,h2,h3,h4,h5,summary,label,.eyeb{color:var(--tinta)}
+body{background:var(--fondo);color:var(--txt)}
+p,li,td,dd,blockquote,.desc,.act{color:var(--txt)}
+.nota,.sub2,.pcpie,small,figcaption{color:var(--txt-3)}
+h1,h2,h3,h4,h5,summary,label,legend{color:var(--titulo)}
+.eyeb,.campo>span,.cl span,.lead{color:var(--txt-2)}
+a{color:var(--mar)}
+
+/* Sobre las cajas azul profundo el texto siempre es claro */
+header,header *,.cab,.cab *,.orden,.orden *,.saldo,.cartera,.cartera *,
+.premio,.destino,.destino span,#railDinero,.jug b,.jug span{color:var(--sobre-oscuro)}
+header .eyeb,.cartera span{color:var(--oro)}
+
+/* ---- superficies en ambos modos ---- */
+.acc,.card,.lider,.panel,.box,.mapa-caja,.cl{background:var(--arena-hueso);border-color:var(--borde)}
+.acc[open]>summary{background:var(--arena);border-bottom-color:var(--borde)}
+.acc>summary:hover{background:var(--arena)}
+input,select,textarea{background:var(--arena-hueso);color:var(--txt);border-color:var(--borde)}
+input::placeholder,textarea::placeholder{color:var(--txt-3)}
+.bt{background:var(--arena-hueso);color:var(--titulo);border-color:var(--titulo)}
+.bt:hover:not(:disabled){background:var(--arena)}
+.bt.rosa{background:var(--fucsia);border-color:var(--fucsia);color:#fff}
+.segm{background:var(--arena);border-color:var(--borde)}
+.segm button{color:var(--txt-2)}
+.segm button[aria-pressed="true"]{background:var(--arena-hueso);color:var(--titulo)}
+.aviso{background:var(--arena);border-color:var(--borde);color:var(--txt)}
+
+/* ---- el interruptor de tema ---- */
+.tema{display:inline-flex;align-items:center;gap:0;background:rgba(255,255,255,.12);
+  border:2px solid rgba(255,255,255,.3);border-radius:999px;padding:3px}
+.tema button{width:30px;height:26px;border:0;background:transparent;border-radius:999px;
+  display:grid;place-items:center;cursor:pointer;color:#fff;opacity:.6;transition:all .15s}
+.tema button[aria-pressed="true"]{background:var(--arena-hueso);color:var(--p-azul);opacity:1}
+.tema svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;
+  stroke-linecap:round;stroke-linejoin:round}
+.tema.suelto{background:var(--arena);border-color:var(--borde)}
+.tema.suelto button{color:var(--txt-2)}
+.tema.suelto button[aria-pressed="true"]{background:var(--tinta);color:#fff}
+
+/* ---- el logo se reduce con suavizado, no a saltos ---- */
+.logo,.logo-grande,img.logo{image-rendering:auto}
+
+/* La cabecera azul lleva siempre texto claro, pase lo que pase debajo */
+header,header h1,header h1 span,header p,header .eyeb,header a,header b,header small,
+.hero,.hero *{color:var(--sobre-oscuro)}
+header h1 span,header .eyeb{color:var(--oro)}
+.tema button[aria-pressed="true"]{color:var(--p-azul)}
+
+/* ---- últimos ajustes de contraste en modo oscuro ---- */
+html[data-tema="oscuro"]{ --fucsia:#4E90E0; --mar:#8FC2EA; }
+html[data-tema="oscuro"] .bt.on,
+html[data-tema="oscuro"] .bt[aria-pressed="true"]{background:var(--p-claro);color:#0B2340;border-color:var(--p-claro)}
+html[data-tema="oscuro"] .bt.rosa{background:var(--p-claro);border-color:var(--p-claro);color:#0B2340}
+html[data-tema="oscuro"] .bt.rosa:hover:not(:disabled){background:#A9D3F0;border-color:#A9D3F0}
+html[data-tema="oscuro"] #nbBar button,
+html[data-tema="oscuro"] #nbEnc .pie button{background:var(--arena-hueso);color:var(--titulo);border-color:var(--borde)}
+html[data-tema="oscuro"] #nbBar button.on,
+html[data-tema="oscuro"] #nbEnc .pie button.ppal{background:var(--p-claro);color:#0B2340;border-color:var(--p-claro)}
+html[data-tema="oscuro"] #nbEnc .caja{background:var(--arena-hueso)}
+html[data-tema="oscuro"] #nbEstado{background:var(--arena);color:var(--txt-2)}
+html[data-tema="oscuro"] .segm button[aria-pressed="true"]{color:var(--titulo)}
+html[data-tema="oscuro"] .atras{color:var(--oro);border-color:var(--oro)}
+/* El azul de acción no se usa como texto en oscuro: ahí manda el claro */
+html[data-tema="oscuro"] [style*="color:var(--fucsia)"],
+html[data-tema="oscuro"] .fucsia,html[data-tema="oscuro"] .precio,
+html[data-tema="oscuro"] .cifra,html[data-tema="oscuro"] .dim{color:var(--p-claro)!important}
+html[data-tema="oscuro"] .atras:hover{background:var(--oro);color:#0B2340}
+
+/* Cabecera con banda azul profunda en los dos modos */
+header,.hero{background:#104186;color:#fff}
+html[data-tema="oscuro"] header,html[data-tema="oscuro"] .hero{background:#0D3268}
+header *,.hero *{color:#fff}
+header h1 span,.hero h1 span,header .eyeb,.hero .marca{color:#9FD0F0}
+header p,.hero p,header .sub,.hero .sub{color:#D7E6F4}
+
+/* El pie lleva su propia banda azul, como la cabecera */
+footer{background:#104186;color:#CFE0F2;margin-top:auto}
+html[data-tema="oscuro"] footer{background:#0D3268}
+footer *{color:#CFE0F2}
+footer a{color:#9FD0F0}
+footer code,footer b{color:#fff}
 </style>
 
 <style>
@@ -144,7 +255,7 @@ tr,.punto,.npc{transition:background .14s}
 <header><div class="wrap">
   <div class="f">
     <h1><img src="logo.png" alt="" class="logo">Tablas de <span>Encuentro</span></h1>
-    <a href="index.html" class="atras" aria-label="Volver"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 5 L7 12 L14 19" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="square" stroke-linejoin="miter"/></svg></a>
+    <a href="index.html" class="atras" aria-label="Volver"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 5 L7 12 L14 19" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="square" stroke-linejoin="miter"/></svg></a><div class="tema" aria-label="Tema"></div>
   </div>
   <p>Veintidós zonas listas para llenar. Escribe los Pokémon, ajusta los pesos y tira: primero decide si hay encuentro y después cuál. Cuando termines, exporta y pega el resultado dentro del archivo para que quede fijo.</p>
 </div></header>
@@ -398,16 +509,16 @@ pintar();
       align-items:flex-end;flex-direction:column}
     #nbBar .fila{display:flex;gap:8px;align-items:center}
     #nbBar button{font-family:'Silkscreen',monospace;font-size:10px;padding:11px 13px;
-      border:3px solid #104186;background:#FFFFFF;color:#104186;cursor:pointer;
+      border:3px solid #104186;background:var(--arena-hueso);color:#104186;cursor:pointer;
       box-shadow:var(--elev-2)}
-    #nbBar button:hover{background:#fff}
+    #nbBar button:hover{background:var(--arena-hueso)}
     #nbBar button:active{transform:translate(2px,2px);box-shadow:var(--elev-2)}
     #nbBar button.on{background:#3566AB;color:#fff}
     #nbEstado{font-family:'Alegreya Sans',sans-serif;font-size:11px;background:#104186;
       color:#D7E6F4;padding:7px 10px;max-width:280px;line-height:1.35}
     body.nb-edit [data-nbedit]{outline:2px dashed #3566AB;outline-offset:3px;cursor:text}
     body.nb-edit [data-nbedit]:hover{background:#fff1f5}
-    body.nb-edit [data-nbedit]:focus{outline:3px solid #3566AB;background:#fff}
+    body.nb-edit [data-nbedit]:focus{outline:3px solid #3566AB;background:var(--arena-hueso)}
     [data-nbedit].nb-mio{box-shadow:inset 4px 0 0 #82B8DE;background:#fffaee}
     #nbToast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(18px);
       z-index:310;background:#2E8B57;color:#fff;font-family:'Silkscreen',monospace;font-size:10px;
@@ -423,7 +534,7 @@ pintar();
     .nb-foto{display:grid;place-items:center;overflow:hidden;background:#DCE8F4;
       border:2px solid #104186;color:#6E8CAE;font-family:'Silkscreen',monospace;font-size:9px}
     .nb-foto img{width:100%;height:100%;object-fit:cover;display:block}
-    .nb-tipos{position:fixed;z-index:320;background:#fff;border:2px solid #104186;border-radius:10px;
+    .nb-tipos{position:fixed;z-index:320;background:var(--arena-hueso);border:2px solid #104186;border-radius:10px;
       box-shadow:0 10px 30px rgba(16,65,134,.22);padding:8px;display:none;
       grid-template-columns:repeat(3,1fr);gap:5px;max-width:300px}
     .nb-tipos.ver{display:grid}
@@ -738,7 +849,7 @@ pintar();
     #nbEnc{position:fixed;inset:0;z-index:340;display:none;place-items:center;
       background:rgba(16,65,134,.6);backdrop-filter:blur(3px)}
     #nbEnc.ver{display:grid}
-    #nbEnc .caja{background:#fff;border:2px solid #104186;border-radius:12px;width:min(620px,94vw);
+    #nbEnc .caja{background:var(--arena-hueso);border:2px solid #104186;border-radius:12px;width:min(620px,94vw);
       box-shadow:0 18px 50px rgba(16,65,134,.3);overflow:hidden}
     #nbEnc .cab{background:#104186;color:#fff;font-family:'Silkscreen',monospace;font-size:11px;padding:13px 15px}
     #nbEnc .cue{padding:15px}
@@ -752,7 +863,7 @@ pintar();
     #nbEnc .pct{font-family:'Silkscreen',monospace;font-size:10px;color:#3566AB;min-width:48px;text-align:right}
     #nbEnc .pie{display:flex;gap:8px;flex-wrap:wrap}
     #nbEnc .pie button{font-family:'Silkscreen',monospace;font-size:10px;padding:9px 12px;
-      border:2px solid #104186;border-radius:7px;background:#fff;color:#104186;cursor:pointer}
+      border:2px solid #104186;border-radius:7px;background:var(--arena-hueso);color:#104186;cursor:pointer}
     #nbEnc .pie button.ppal{background:#3566AB;border-color:#3566AB;color:#fff}`;
   (document.head || document.documentElement).appendChild(encCss);
 
@@ -888,5 +999,44 @@ pintar();
 
 </script>
 <script>addEventListener("load",()=>{ if(window.NubiaEditor) window.NubiaEditor.marcar(document.querySelector("main"), "encuentros"); });</script>
+
+<script>
+/* ---- tema claro / oscuro ----
+   Se recuerda en este navegador y, si nunca se eligió, sigue al sistema. */
+(function(){
+  const LL = 'nubia-tema';
+  function poner(t, guardar){
+    document.documentElement.setAttribute('data-tema', t);
+    if(guardar){ try{ localStorage.setItem(LL, t); }catch{} }
+    document.querySelectorAll('.tema [data-tema-bt]').forEach(b=>
+      b.setAttribute('aria-pressed', String(b.dataset.temaBt === t)));
+  }
+  let guardado = null;
+  try{ guardado = localStorage.getItem(LL); }catch{}
+  const sistema = matchMedia('(prefers-color-scheme: dark)');
+  poner(guardado || (sistema.matches ? 'oscuro' : 'claro'), false);
+  sistema.addEventListener('change', e=>{
+    let g = null; try{ g = localStorage.getItem(LL); }catch{}
+    if(!g) poner(e.matches ? 'oscuro' : 'claro', false);
+  });
+  const SOL  = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.2"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4"/></svg>';
+  const LUNA = '<svg viewBox="0 0 24 24"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/></svg>';
+  function montar(){
+    document.querySelectorAll('.tema').forEach(c=>{
+      if(c.dataset.listo) return;
+      c.dataset.listo = '1';
+      c.innerHTML = '<button data-tema-bt="claro" title="Modo claro" aria-label="Modo claro">'+SOL+'</button>'
+                  + '<button data-tema-bt="oscuro" title="Modo oscuro" aria-label="Modo oscuro">'+LUNA+'</button>';
+    });
+    poner(document.documentElement.getAttribute('data-tema'), false);
+  }
+  document.addEventListener('click', e=>{
+    const b = e.target.closest('[data-tema-bt]');
+    if(b) poner(b.dataset.temaBt, true);
+  });
+  if(document.readyState === 'loading') addEventListener('DOMContentLoaded', montar);
+  else montar();
+})();
+</script>
 </body>
 </html>
