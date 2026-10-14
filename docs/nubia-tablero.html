@@ -624,6 +624,19 @@ body.enfoque #perfil .pie{display:block;font-size:10px;margin-top:4px;
 .medidas .tot{flex:0 0 auto;font-family:'Silkscreen',monospace;font-size:9px;color:var(--mar);
   background:var(--arena);padding:9px 10px;border-radius:var(--r-s);white-space:nowrap}
 
+/* ------------- copia de seguridad ------------- */
+.instant{display:grid;gap:2px;background:var(--borde);border:1px solid var(--borde);
+  border-radius:var(--r-s);overflow:hidden;max-height:200px;overflow-y:auto}
+.instant .it{background:var(--arena-hueso);padding:8px 10px;display:grid;
+  grid-template-columns:1fr auto;gap:8px;align-items:center}
+.instant .it b{font-family:'Silkscreen',monospace;font-size:9px;display:block;color:var(--titulo)}
+.instant .it small{font-family:'Alegreya Sans',sans-serif;font-size:11px;color:var(--txt-3)}
+.instant .it button{font-size:8px;padding:5px 8px;border:2px solid var(--mar);
+  border-radius:5px;background:var(--arena-hueso);color:var(--mar)}
+.instant .it button:hover{background:var(--mar);color:#fff}
+.instant .vacio{background:var(--arena-hueso);padding:10px;font-family:'Alegreya Sans',sans-serif;
+  font-size:12px;color:var(--txt-3);text-align:center}
+
 /* ------------- acordeones ------------- */
 .acc{background:var(--arena-hueso);border:1px solid #D3E0EE;border-radius:var(--r-m);
   box-shadow:var(--elev-1);margin-bottom:11px;overflow:hidden;transition:box-shadow .16s}
@@ -894,7 +907,7 @@ footer code,footer b{color:#fff}
   <label class="campo"><span>TU NOMBRE</span><input id="nombre" maxlength="18" placeholder="Entrenador"></label>
   <div class="estado" id="rol">Jugador</div>
   <div class="estado" id="estado">Modo local</div>
-  <div class="estado" id="version" title="Versión del tablero. Si no coincide con la que esperas, recarga con Ctrl+Shift+R.">v7 · temas</div>
+  <div class="estado" id="version" title="Versión del tablero. Si no coincide con la que esperas, recarga con Ctrl+Shift+R.">v8 · copias</div>
   <button class="bt" id="copiar">COPIAR INVITACIÓN</button>
 </div></div>
 
@@ -991,6 +1004,20 @@ footer code,footer b{color:#fff}
     <details class="acc solodm"><summary>OBJETOS CLAVE</summary><div class="cnt2">
       <div class="cbox" id="objetos"></div>
       <p class="nota">Al marcar uno, aparece en la pantalla de todos con su sello y su melodía. Desmarcarlo lo retira sin aviso.</p>
+    </div></details>
+
+    <details class="acc solodm" id="panelCopia"><summary>COPIA DE SEGURIDAD</summary><div class="cnt2">
+      <div class="fila" style="display:flex;gap:6px;flex-wrap:wrap">
+        <button class="bt rosa" id="expPartida" style="flex:1;white-space:nowrap">GUARDAR COPIA</button>
+        <button class="bt" id="impPartida" style="flex:1;white-space:nowrap">RESTAURAR</button>
+      </div>
+      <input id="impArch" type="file" accept="application/json,.json" style="display:none">
+      <p class="nota" id="copiaInfo">La copia es un archivo que se descarga a tu equipo. Guárdalo donde quieras.</p>
+
+      <label style="margin-top:12px">PUNTOS DE RESTAURACIÓN</label>
+      <div class="instant" id="listaInst"></div>
+      <p class="nota">Se guardan solos en este navegador al cambiar de escenario y cada pocos minutos.
+        Son de este equipo: la copia en archivo es la que te sirve en cualquier sitio.</p>
     </div></details>
 
     <details class="acc solodm"><summary>NIEBLA DE GUERRA</summary><div class="cnt2">
@@ -1902,6 +1929,7 @@ function pintar(){
   pintarCatalogo();
   pintarSelMapa();
   pintarRegion();
+  pintarInstantaneas();
   pintarRailes();
   moverPerfil();
   pintarPerfil();
@@ -2403,10 +2431,33 @@ function guardarNieblaActual(){
   S.nieblas = S.nieblas || {};
   S.nieblas[S.nombreMapa] = S.niebla;
 }
-$('#cubrir').onclick=()=>{ const s=[];
-  for(let y=0;y<H();y++) for(let x=0;x<W();x++) s.push(x+','+y);
-  S.niebla=s; guardarNieblaActual(); pintar(); enviar('estado',S); };
-$('#revelar').onclick=()=>{ S.niebla=[]; guardarNieblaActual(); pintar(); enviar('estado',S); };
+/* Estos dos botones rehacen de golpe un trabajo de minutos, así que
+   preguntan antes, igual que todo lo demás que destruye algo. */
+$('#cubrir').onclick = async ()=>{
+  const puestas = (S.niebla||[]).length, total = W()*H();
+  if(puestas && puestas < total){
+    const si = await confirmarNubia({
+      titulo:'CUBRIR TODO',
+      texto:`Vas a tapar las <b>${total}</b> casillas de «${esc(S.nombreMapa)}».<br>`
+          + `Se pierde lo que ya habías revelado.`,
+      si:'CUBRIR TODO', no:'CANCELAR' });
+    if(!si) return;
+  }
+  const l=[]; for(let y=0;y<H();y++) for(let x=0;x<W();x++) l.push(x+','+y);
+  S.niebla=l; guardarNieblaActual(); pintar(); enviar('estado',S);
+};
+$('#revelar').onclick = async ()=>{
+  const puestas = (S.niebla||[]).length;
+  if(puestas){
+    const si = await confirmarNubia({
+      titulo:'REVELAR TODO',
+      texto:`Vas a quitar la niebla de <b>${puestas}</b> casillas de «${esc(S.nombreMapa)}».<br>`
+          + `Tendrías que volver a pintarlas a mano.`,
+      si:'REVELAR TODO', no:'CANCELAR' });
+    if(!si) return;
+  }
+  S.niebla=[]; guardarNieblaActual(); pintar(); enviar('estado',S);
+};
 
 function tokenEsJugadorOPokemon(t){
   if(!t || !t.id) return false;
@@ -2434,6 +2485,7 @@ function actualizarBotonTraerJugadoresPokemon(){
 
 function irAlEscenario(n){
   const m = buscarMapa(n); if(!m) return;
+  if(typeof quizaInstantanea === 'function' && n !== S.nombreMapa) quizaInstantanea('cambio de escenario');
   S.piezas = S.piezas || {}; S.imgs = S.imgs || {}; S.nieblas = S.nieblas || {};
   S.piezas[S.nombreMapa]  = S.tokens;       // guarda lo que había en el escenario anterior
   S.nieblas[S.nombreMapa] = S.niebla;       // y la niebla tal como la dejaste
@@ -3867,6 +3919,186 @@ $('#encOk').onclick = ()=>{
   encEstado = null;
   if(f) f(r);
 };
+
+
+/* ===================== COPIA DE SEGURIDAD =====================
+   Toda la campaña vive en una sola fila de la base de datos. Esto da
+   dos redes: un archivo que te llevas, y puntos de restauración que se
+   guardan solos en este navegador. */
+const COPIA_VERSION = 1;
+const LLAVE_INST = 'nubia-instantaneas';
+const MAX_INST = 8;
+
+function sello(d){
+  const f = d || new Date();
+  const dos = n => String(n).padStart(2,'0');
+  return f.getFullYear()+'-'+dos(f.getMonth()+1)+'-'+dos(f.getDate())
+       + '_' + dos(f.getHours()) + dos(f.getMinutes());
+}
+function cuandoFue(iso){
+  const d = new Date(iso), ahora = Date.now();
+  const min = Math.round((ahora - d.getTime())/60000);
+  if(min < 1) return 'hace un momento';
+  if(min < 60) return 'hace ' + min + ' min';
+  const h = Math.round(min/60);
+  if(h < 24) return 'hace ' + h + (h===1?' hora':' horas');
+  return d.toLocaleDateString('es-CO', {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'});
+}
+function paqueteCopia(){
+  return {
+    formato: 'nubia-partida',
+    version: COPIA_VERSION,
+    guardado: new Date().toISOString(),
+    sala: ($('#sala') && $('#sala').value) || '',
+    nombre: (partida && partida.nombre) || '',
+    escenario: S.nombreMapa,
+    estado: S
+  };
+}
+
+/* ---------- archivo que te llevas ---------- */
+$('#expPartida').onclick = ()=>{
+  const paq = paqueteCopia();
+  const txt = JSON.stringify(paq);
+  const blob = new Blob([txt], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'nubia-' + (paq.sala || 'partida') + '-' + sello() + '.json';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 4000);
+  const kb = Math.max(1, Math.round(txt.length/1024));
+  $('#copiaInfo').textContent = 'Copia descargada · ' + kb + ' KB · ' + a.download;
+  anotar('Copia de seguridad descargada ('+kb+' KB)', false);
+};
+
+/* ---------- restaurar desde archivo ---------- */
+$('#impPartida').onclick = ()=> $('#impArch').click();
+$('#impArch').onchange = function(){
+  const f = this.files && this.files[0];
+  this.value = '';
+  if(!f) return;
+  const lector = new FileReader();
+  lector.onload = async ()=>{
+    let paq;
+    try{ paq = JSON.parse(lector.result); }
+    catch{ await avisarCopia('ARCHIVO ILEGIBLE', 'Ese archivo no es una copia de Nubia.'); return; }
+    if(!paq || paq.formato !== 'nubia-partida' || !paq.estado){
+      await avisarCopia('ARCHIVO ILEGIBLE',
+        'Ese archivo no parece una copia de Nubia. Busca uno que empiece por <b>nubia-</b> y acabe en <b>.json</b>.');
+      return;
+    }
+    const e = paq.estado;
+    const fichas = (e.fichas||[]).length, mapas = Object.keys(e.propios||{}).length;
+    const si = await confirmarNubia({
+      titulo:'RESTAURAR PARTIDA',
+      texto:`Copia del <b>${esc(cuandoFue(paq.guardado))}</b>`
+          + (paq.sala ? ' · sala <b>'+esc(paq.sala)+'</b>' : '')
+          + `.<br>Trae ${fichas} ficha${fichas===1?'':'s'}`
+          + (mapas ? ' y '+mapas+' mapa'+(mapas===1?'':'s')+' propio'+(mapas===1?'':'s') : '')
+          + `.<br><br>Lo que hay ahora en la mesa <b>se reemplaza</b>.`
+          + `<br>Antes se guarda un punto de restauración, por si acaso.`,
+      si:'RESTAURAR', no:'CANCELAR' });
+    if(!si) return;
+    tomarInstantanea('antes de restaurar');
+    aplicarEstado(e);
+    anotar('Partida restaurada desde una copia del '+esc(cuandoFue(paq.guardado)));
+  };
+  lector.onerror = ()=> avisarCopia('NO SE PUDO LEER', 'El archivo no se pudo abrir.');
+  lector.readAsText(f);
+};
+function avisarCopia(titulo, texto){
+  return confirmarNubia({ titulo, texto, si:'ENTENDIDO', no:'CERRAR' });
+}
+
+/* Deja el estado recibido listo para usarse, con todos sus cajones. */
+function aplicarEstado(e){
+  S = e;
+  S.areas=S.areas||[]; S.objetos=S.objetos||[]; S.imgs=S.imgs||{}; S.piezas=S.piezas||{};
+  S.equipos=S.equipos||{}; S.npcs=S.npcs||[]; S.mochilas=S.mochilas||{}; S.dinero=S.dinero||{};
+  S.nieblas=S.nieblas||{}; S.propios=S.propios||{}; S.encuadres=S.encuadres||{};
+  S.region=S.region||'nubia'; S.turno=S.turno||{i:0,ronda:1};
+  S.tokens=S.tokens||[]; S.fichas=S.fichas||[]; S.niebla=S.niebla||[];
+  const m = buscarMapa(S.nombreMapa);
+  if(!m){
+    const quedan = bibliotecaMapas().flatMap(([,ms])=>ms);
+    S.nombreMapa = quedan[0] || 'Pueblo Fundación';
+  }
+  S.filas = buscarMapa(S.nombreMapa) || MAPAS.Localidades['Pueblo Fundación'];
+  cacheMapa = null; cacheNiebla = null;
+  pintarSelMapa(); pintarRegion();
+  pintar();
+  if(soyDM) enviar('estado', S);
+}
+
+/* ---------- puntos de restauración en este navegador ---------- */
+function leerInstantaneas(){
+  try{ return JSON.parse(localStorage.getItem(LLAVE_INST) || '[]'); }catch{ return []; }
+}
+function escribirInstantaneas(lista){
+  // Si no cabe, se van soltando las más viejas antes que perderlo todo.
+  for(let intento = lista.length; intento > 0; intento--){
+    try{ localStorage.setItem(LLAVE_INST, JSON.stringify(lista.slice(0, intento))); return intento; }
+    catch{}
+  }
+  try{ localStorage.removeItem(LLAVE_INST); }catch{}
+  return 0;
+}
+function tomarInstantanea(motivo){
+  if(!soyDM) return;
+  const lista = leerInstantaneas();
+  const ultima = lista[0];
+  const ahora = JSON.stringify(S);
+  if(ultima && ultima.huella === ahora.length + '·' + S.nombreMapa && motivo === 'automática') return;
+  lista.unshift({
+    cuando: new Date().toISOString(),
+    motivo: motivo || 'automática',
+    escenario: S.nombreMapa,
+    sala: ($('#sala') && $('#sala').value) || '',
+    huella: ahora.length + '·' + S.nombreMapa,
+    estado: JSON.parse(ahora)
+  });
+  const cabidos = escribirInstantaneas(lista.slice(0, MAX_INST));
+  pintarInstantaneas(cabidos);
+}
+function pintarInstantaneas(cabidos){
+  const c = $('#listaInst'); if(!c || !soyDM) return;
+  const lista = leerInstantaneas();
+  c.innerHTML = lista.length ? lista.map((x,i)=>`
+    <div class="it">
+      <div><b>${esc(cuandoFue(x.cuando))}</b>
+        <small>${esc(x.escenario||'—')} · ${esc(x.motivo)}</small></div>
+      <button data-inst="${i}">VOLVER AQUÍ</button>
+    </div>`).join('')
+    : '<div class="vacio">Todavía no hay puntos de restauración.</div>';
+  if(cabidos !== undefined && cabidos < MAX_INST && cabidos > 0)
+    $('#copiaInfo').textContent = 'Este navegador guarda ' + cabidos
+      + ' punto' + (cabidos===1?'':'s') + ' por falta de espacio. Descarga una copia en archivo.';
+}
+$('#listaInst').addEventListener('click', async e=>{
+  const b = e.target.closest('[data-inst]'); if(!b) return;
+  const x = leerInstantaneas()[+b.dataset.inst]; if(!x) return;
+  const si = await confirmarNubia({
+    titulo:'VOLVER A ESTE PUNTO',
+    texto:`Punto de <b>${esc(cuandoFue(x.cuando))}</b> en «${esc(x.escenario||'—')}».<br><br>`
+        + `Lo que hay ahora en la mesa <b>se reemplaza</b>.<br>`
+        + `Antes se guarda otro punto, así que puedes deshacer esto.`,
+    si:'VOLVER AQUÍ', no:'CANCELAR' });
+  if(!si) return;
+  tomarInstantanea('antes de volver atrás');
+  aplicarEstado(JSON.parse(JSON.stringify(x.estado)));
+  anotar('Mesa restaurada al punto de '+esc(cuandoFue(x.cuando)));
+});
+
+/* Se toma una al cambiar de escenario y cada ocho minutos de juego. */
+let ultimaInst = 0;
+function quizaInstantanea(motivo){
+  if(!soyDM) return;
+  const ahora = Date.now();
+  if(motivo === 'automática' && ahora - ultimaInst < 8*60*1000) return;
+  ultimaInst = ahora;
+  tomarInstantanea(motivo);
+}
+setInterval(()=>quizaInstantanea('automática'), 60*1000);
 
 /* ===================== MAPAS PROPIOS ===================== */
 /* El director puede construir su propia región. Un mapa propio es una
